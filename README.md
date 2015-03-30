@@ -1,3 +1,3 @@
 ## About
 
-This repo will contain all code necessary to perform the OWLSim vs Phenolog work.
+This repo will contain all scripts necessary to perform the OWLSim vs Phenolog work. 
