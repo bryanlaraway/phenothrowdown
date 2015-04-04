@@ -9,6 +9,10 @@
         'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
         'dvp.pr_nlx_151835_2',  # HPO: Annoations:Phenotype to gene view
         'dvp.pr_nlx_151835_3',  # HPO: Annoations:Disease to gene
+        'dvp.pr_nif_0000_00096_5',  # MGI:MouseGenotypes
+        'dvp.pr_nif_0000_00096_6',  # MGI:MousePhenotypes
+        'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
+        'dvp.pr_nif_0000_21427_11',  # ZFIN:OrganismGenotypes
         'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs
     ]
 
