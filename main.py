@@ -1,6 +1,6 @@
-#Author: Bryan Laraway
-#Project: Comparison of OWLSim and Phenologs for the identification of models of human disease and gene candidates for human disease.
-#Purpose: This script will call of the functions/methods/scripts for performing the processing required for this analysis.
+#AUTHOR: Bryan Laraway
+#PROJECT: Comparison of OWLSim and Phenologs for the identification of models of human disease and gene candidates for human disease.
+#PURPOSE: This script will call of the functions/methods/scripts for performing the processing required for this analysis.
 
 
 
@@ -20,7 +20,7 @@
 
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
-# Purpose: obtain data from the various resources that I will use
+#PURPOSE: obtain data from the various resources that I will use
 #in this study. Will need human, mouse, and zebrafish data.
 
 ### GET HUMAN DATA ###
@@ -44,5 +44,17 @@
 ### GET ADDITIONAL DATA ###
 #Depending on time available/data available, will also need to get gene-phenotype data from other model organisms for the additional Phenologs work.
 
+
+
+
+
+##############    SCRUB DATA    #############
+#PURPOSE: Perform any pre-scrubbing that is necessary for each resource/data file.
+#Data from NIF sources should fortunately be decently scrubbed (confirm this before proceeding),
+# but other resources will likely require additional scrubbing before further processing.
+
+
+##############    PHENOLOG DATA PRE-PROCESSING    #############
+#PURPOSE
 
 
