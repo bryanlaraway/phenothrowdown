@@ -73,8 +73,6 @@ tables = [
 
 
 
-
-
 # HPO Annotations: Disease Phenotypes view ((nlx_151835-1)
 # Columns available: e_uid, disorder_id, disorder_database_prefix,disorder_database_link, disorder_name,
 # disorder_qualifier,phenotype_id,phenotype_label, publication_id, evidence_code_id, evidence_code_label,
@@ -89,4 +87,32 @@ tables = [
 # disease_id = OMIM:1234567 or ORPHANET:1234567 or DECIPHER:1234567
 # gene_id = NCBI_gene:1234567
 # Sources: OMIM, DECIPHER, ORPHANET. Can filter on just one source if necessary.
+
+
+
+
+##############    ASSEMBLE DATA FOR PHENOLOGS    #############
+# PURPOSE: To assemble the phenotype-gene lists necessary for performing the calculation of phenologs.
+
+# Data format: phenotype_id, [gene_id array]
+# Process for assembling lists:
+# Create output table
+# Open input table of scrubbed phenotype-gene associations.
+# Iterate through each row of a scrubbed phenotype-gene resource table.
+    # If phenotype ID is not in output table
+        # Add phenotype ID to output table (column 0)
+        # Add gene ID to new array in output table (column 0, same row)
+    # ElseIf phenotype ID is in output table
+        # GoTo row with the phenotype ID
+        # If gene ID is not in array
+            # Append gene ID to array
+
+
+
+
+
+
+
+
+
 
