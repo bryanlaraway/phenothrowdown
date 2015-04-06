@@ -35,11 +35,14 @@ tables = [
 
 ### GET ZEBRAFISH DATA ###
 # Get Genotype to Phenotype data from NIF (nif-0000-21427-10) for genotype-phenotype associations.
-# Get OrganismGenotype data from NIF (nif-0000-21427-11). Like with MGI, this likely won't be needed, as I can extract the implicated genes from the phenotype view for the gene-phenotype associations.
+# Get OrganismGenotype data from NIF (nif-0000-21427-11). Like with MGI, this likely won't be needed,
+# as I can extract the implicated genes from the phenotype view for the gene-phenotype associations.
 
 ### GET GENE ORTHOLOG DATA ###
 # Get Panther:Orthologs data from NIF (nlx_84521-1)
-# NOTE: For optimization, will want to only grab data for human, mouse, and zebrafish, so select only rows where Species A/Species B in {Homo sapiens, Mus musculus, Danio rerio}. Should greatly reduce the size of the table.
+# NOTE: For optimization, will want to only grab data for human, mouse, and zebrafish,
+# so select only rows where Species A/Species B in {Homo sapiens, Mus musculus, Danio rerio}.
+# Should greatly reduce the size of the table.
 
 ### GET ADDITIONAL DATA ###
 # Depending on time available/data available, will also need to get gene-phenotype data from other model organisms for the additional Phenologs work.
@@ -62,17 +65,28 @@ tables = [
 
 
 
-# HPO Annotations: Phenotype to Gene view ((nlx_151835-3)
+# HPO Annotations: Phenotype to Gene view ((nlx_151835-2)
 # Columns available: e_uid, phenotype_id, phenotype_label, gene_id, gene_num, gene_label, v_uid, v_uuid, v_lastmodified
 # phenotype_id = HP:1234567
 # gene_id = NCBI_gene:1234567
+
+
+
+
 
 
 # HPO Annotations: Disease Phenotypes view ((nlx_151835-1)
 # Columns available: e_uid, disorder_id, disorder_database_prefix,disorder_database_link, disorder_name,
 # disorder_qualifier,phenotype_id,phenotype_label, publication_id, evidence_code_id, evidence_code_label,
 # onset_id,onset_label,frequency,aspect, aspect_text, synonyms, v_uid, v_uuid, v_lastmodified
+# Sources: OMIM and, ORPHANET only. Can filter on just one source if necessary.
+# disease_id = OMIM:1234567 or ORPHANET:1234567
 # phenotype_id = HP:1234567
-# gene_id = NCBI_gene:1234567
 
+
+# HPO Annotations: Disease to Gene view ((nlx_151835-3)
+# Columns available: e_uid, disease_id, disorder_name, disorder_database_link, gene_id, gene_num, gene_label, v_uid, v_uuid, v_lastmodified
+# disease_id = OMIM:1234567 or ORPHANET:1234567 or DECIPHER:1234567
+# gene_id = NCBI_gene:1234567
+# Sources: OMIM, DECIPHER, ORPHANET. Can filter on just one source if necessary.
 
