@@ -4,6 +4,8 @@
 
 
 
+# NOTE: Could either include the fetch code to retrieve the data from the resources,
+# or retrieve them and have the code just open local files, already retrieved.
 
 tables = [
         'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
@@ -93,8 +95,10 @@ tables = [
 
 ##############    ASSEMBLE DATA FOR PHENOLOGS    #############
 # PURPOSE: To assemble the phenotype-gene lists necessary for performing the calculation of phenologs.
+# NOTE: Create a method for this, as it should be reusable for all gene-phenotype tables for each species.
+# Data input format: table with rows of gene_id - phenotype_id columns.
+# Data output format: table with phenotype_id, [gene_id array] columns.
 
-# Data format: phenotype_id, [gene_id array]
 # Process for assembling lists:
 # Create output table
 # Open input table of scrubbed phenotype-gene associations.
@@ -107,12 +111,40 @@ tables = [
         # If gene ID is not in array
             # Append gene ID to array
 
+# Close input table
+# Close output table
+
+
+##############    IDENTIFY ORTHOLOGS USING PANTHER    #############
 
 
 
+##############    IDENTIFY PHENOLOGS    #############
+# PURPOSE: To calculate the phenologs by comparing the phenotype-gene lists between species.
 
 
+# Data input format: table with phenotype_id, [gene_id array] columns.
+# Data output format: table with species_a, species_a_phenotype_id, species_b, species_b_phenotype_id,
+# matched ortholog IDs, species A unmatched ortholog IDs, species B unmatched ortholog IDs
 
+
+# For each pair of species, iterate through each possible phenotype pair between the two input tables.
+
+# Open table from species A
+# Set taxon_id for species A
+# Open table from species B
+# Set taxon_id for species B
+# Create output table
+
+
+# For row in species A table
+    # For row in species B table
+        # phenotype_pair_id = phenotype_a_id+'_'+phenotype_b_id
+        # (Necessary to make a full entry ID? Both phenotype IDs, both taxon IDs, ortholog IDs, etc?)
+        #TODO: How best to prepare variables for the hypergeometric probability calculation?
+
+        # If there are matching orthologs
+            # Call hypergeometric probability calculation.
 
 
 
