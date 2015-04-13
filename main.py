@@ -96,6 +96,7 @@ tables = [
 ##############    ASSEMBLE DATA FOR PHENOLOGS    #############
 # PURPOSE: To assemble the phenotype-gene lists necessary for performing the calculation of phenologs.
 # NOTE: Create a method for this, as it should be reusable for all gene-phenotype tables for each species.
+# CAVEATS: If a phenotype has less than 3 associated genes, then the phenotype must be removed from the analysis.
 # Data input format: table with rows of gene_id - phenotype_id columns.
 # Data output format: table with phenotype_id, [gene_id array] columns.
 
