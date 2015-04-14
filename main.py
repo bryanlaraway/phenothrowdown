@@ -3,10 +3,14 @@
 #PURPOSE: This script will call of the functions/methods/scripts for performing the processing required for this analysis.
 
 
+import os
+import re
+import csv
 
 # NOTE: Could either include the fetch code to retrieve the data from the resources,
 # or retrieve them and have the code just open local files, already retrieved.
 
+# Required table from NIF/DISCO
 tables = [
         'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
         'dvp.pr_nlx_151835_2',  # HPO: Annoations:Phenotype to gene view
@@ -16,7 +20,15 @@ tables = [
         'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
         'dvp.pr_nif_0000_21427_11',  # ZFIN:OrganismGenotypes
         'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs
+
 ]
+
+files = {
+    'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
+    'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
+}
+
+###MAIN####
 
 
 
@@ -24,6 +36,8 @@ tables = [
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
 # PURPOSE: obtain data from the various resources that I will use
 # in this study. Will need human, mouse, and zebrafish data.
+# NOTE: May just compile the data sources off-line, removing requirements for database logins, etc.
+# Then again, perhaps could just extract the NIF/DISCO data through the download services?
 
 ### GET HUMAN DATA ###
 # Get HPO:Disease to Phenotype data from NIF (nlx_151835-1)
@@ -57,6 +71,12 @@ tables = [
 # PURPOSE: Perform any pre-scrubbing that is necessary for each resource/data file.
 # Data from NIF sources should fortunately be decently scrubbed (confirm this before proceeding),
 # but other resources will likely require additional scrubbing before further processing.
+
+
+def _scrub_animal_qtl(self, limit=None):
+    raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
+    out =
+
 
 
 ##############    PHENOLOG DATA PRE-PROCESSING    #############
