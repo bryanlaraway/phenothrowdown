@@ -30,6 +30,10 @@ files = {
     'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
     'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
 }
+
+
+
+
 mgi_gene_id = 'MGI:2182454'
 mgi_gene_to_phenotype_hash = {}
 ### Testing using SciGraph Rest Services
@@ -37,8 +41,6 @@ disease_id = 'OMIM:106240'
 #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
 url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
 with urllib.request.urlopen(url) as response:
-
-###MAIN####
 
 #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
 #response = urllib.request(url)
@@ -55,7 +57,7 @@ with urllib.request.urlopen(url) as response:
             mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
     print(mgi_gene_to_phenotype_hash)
 
-
+###MAIN####
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
 # PURPOSE: obtain data from the various resources that I will use
