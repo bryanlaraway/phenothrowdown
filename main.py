@@ -32,13 +32,14 @@ files = {
 }
 
 
-
+### Testing using SciGraph Rest Services
 
 mgi_gene_id = 'MGI:2182454'
 mgi_gene_to_phenotype_hash = {}
-### Testing using SciGraph Rest Services
-disease_id = 'OMIM:106240'
-#url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
+human_disease_to_phenotype_hash = {}
+
+disease_id = 'OMIM:267450'
+disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
 url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
 with urllib.request.urlopen(url) as response:
 
@@ -56,6 +57,24 @@ with urllib.request.urlopen(url) as response:
         else:
             mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
     print(mgi_gene_to_phenotype_hash)
+
+with urllib.request.urlopen(disease_url) as response:
+#url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
+#response = urllib.request(url)
+    #print(response)
+    reader = codecs.getreader("utf-8")
+    data = json.load(reader(response))
+    #print(data)
+    pheno_ids = data['nodes']
+    #print(pheno_ids)
+    for rs in pheno_ids:
+        if disease_id not in human_disease_to_phenotype_hash:
+            human_disease_to_phenotype_hash[disease_id] = [rs['id']]
+        else:
+            human_disease_to_phenotype_hash[disease_id].append(rs['id'])
+    print(human_disease_to_phenotype_hash)
+
+
 
 ###MAIN####
 
