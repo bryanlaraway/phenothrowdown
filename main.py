@@ -6,9 +6,14 @@ import json
 import urllib.request
 import codecs
 
+import os
+import re
+import csv
+
 # NOTE: Could either include the fetch code to retrieve the data from the resources,
 # or retrieve them and have the code just open local files, already retrieved.
 
+# Required table from NIF/DISCO
 tables = [
         'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
         'dvp.pr_nlx_151835_2',  # HPO: Annoations:Phenotype to gene view
@@ -18,8 +23,13 @@ tables = [
         'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
         'dvp.pr_nif_0000_21427_11',  # ZFIN:OrganismGenotypes
         'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs
+
 ]
 
+files = {
+    'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
+    'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
+}
 mgi_gene_id = 'MGI:2182454'
 mgi_gene_to_phenotype_hash = {}
 ### Testing using SciGraph Rest Services
@@ -28,6 +38,7 @@ disease_id = 'OMIM:106240'
 url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
 with urllib.request.urlopen(url) as response:
 
+###MAIN####
 
 #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
 #response = urllib.request(url)
@@ -44,9 +55,13 @@ with urllib.request.urlopen(url) as response:
             mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
     print(mgi_gene_to_phenotype_hash)
 
+
+
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
 # PURPOSE: obtain data from the various resources that I will use
 # in this study. Will need human, mouse, and zebrafish data.
+# NOTE: May just compile the data sources off-line, removing requirements for database logins, etc.
+# Then again, perhaps could just extract the NIF/DISCO data through the download services?
 
 ### GET HUMAN DATA ###
 # Get HPO:Disease to Phenotype data from NIF (nlx_151835-1)
@@ -80,6 +95,12 @@ with urllib.request.urlopen(url) as response:
 # PURPOSE: Perform any pre-scrubbing that is necessary for each resource/data file.
 # Data from NIF sources should fortunately be decently scrubbed (confirm this before proceeding),
 # but other resources will likely require additional scrubbing before further processing.
+
+
+def _scrub_animal_qtl(self, limit=None):
+    raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
+    out =
+
 
 
 ##############    PHENOLOG DATA PRE-PROCESSING    #############
@@ -119,6 +140,7 @@ with urllib.request.urlopen(url) as response:
 ##############    ASSEMBLE DATA FOR PHENOLOGS    #############
 # PURPOSE: To assemble the phenotype-gene lists necessary for performing the calculation of phenologs.
 # NOTE: Create a method for this, as it should be reusable for all gene-phenotype tables for each species.
+# CAVEATS: If a phenotype has less than 3 associated genes, then the phenotype must be removed from the analysis.
 # Data input format: table with rows of gene_id - phenotype_id columns.
 # Data output format: table with phenotype_id, [gene_id array] columns.
 
