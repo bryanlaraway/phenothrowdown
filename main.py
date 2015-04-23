@@ -97,9 +97,9 @@ with urllib.request.urlopen(url) as response:
 # but other resources will likely require additional scrubbing before further processing.
 
 
-def _scrub_animal_qtl(self, limit=None):
-    raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
-    out =
+#def _scrub_animal_qtl(self, limit=None):
+    #raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
+    #out =
 
 
 
