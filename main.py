@@ -42,8 +42,14 @@ class main():
 
     def _assemble_human_disease_to_phenotype(self):
         print('INFO: Assembling human disease to phenotype data.')
+
         line_counter = 0
         raw = 'raw/hpo/diseases.csv'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human diseases to process.')
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -51,7 +57,7 @@ class main():
                 line_counter += 1
                 #print(row)
                 disease_id = row[0]
-                print(disease_id)
+                #print(disease_id)
                 disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
                 try:
                     response = urllib.request.urlopen(disease_url, timeout=10)
@@ -70,13 +76,13 @@ class main():
                 except Exception:
                     continue
 
-                print(len(hu_disease_to_phenotype_hash.keys()))
+                #print(len(hu_disease_to_phenotype_hash.keys()))
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
 
         print('INFO: Done assembling human disease to phenotype data.')
-        print('INFO: '+len(hu_disease_to_phenotype_hash.keys()))+' human diseases present.'
+        print('INFO: '+str(len(hu_disease_to_phenotype_hash.keys())))+' human diseases processed.'
         return
 
 
@@ -86,6 +92,11 @@ class main():
         print('INFO:Assembling mouse genotype to phenotype data.')
         line_counter = 0
         raw = 'raw/mgi/genotypes.csv'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' mouse genotypes to process.')
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -114,7 +125,7 @@ class main():
                     continue
 
         print('INFO: Done assembling mouse genotype to phenotype data.')
-        print('INFO: '+len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.'
+        print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys())))+' mouse genotypes present.'
         return
 
 
@@ -123,6 +134,11 @@ class main():
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
         raw = 'raw/zfin/genotypes.csv'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish genotypes to process.')
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -152,7 +168,7 @@ class main():
                     continue
 
         print('INFO: Done assembling mouse genotype to phenotype data.')
-        print('INFO: '+len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.'
+        print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys())))+' mouse genotypes present.'
         return
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
