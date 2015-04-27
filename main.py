@@ -10,11 +10,14 @@ import os
 import re
 import csv
 
-# NOTE: Could either include the fetch code to retrieve the data from the resources,
-# or retrieve them and have the code just open local files, already retrieved.
 
-# Required table from NIF/DISCO
-tables = [
+class main():
+
+    # NOTE: Could either include the fetch code to retrieve the data from the resources,
+    # or retrieve them and have the code just open local files, already retrieved.
+
+    # Required table from NIF/DISCO
+    tables = [
         'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
         'dvp.pr_nlx_151835_2',  # HPO: Annoations:Phenotype to gene view
         'dvp.pr_nlx_151835_3',  # HPO: Annoations:Disease to gene
@@ -23,59 +26,77 @@ tables = [
         'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
         'dvp.pr_nif_0000_21427_11',  # ZFIN:OrganismGenotypes
         'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs
+    ]
 
-]
-
-files = {
-    'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
-    'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
-}
-
-
-### Testing using SciGraph Rest Services
-
-mgi_gene_id = 'MGI:2182454'
-mgi_gene_to_phenotype_hash = {}
-human_disease_to_phenotype_hash = {}
-
-disease_id = 'OMIM:267450'
-disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
-url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
-with urllib.request.urlopen(url) as response:
-
-#url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
-#response = urllib.request(url)
-    #print(response)
-    reader = codecs.getreader("utf-8")
-    data = json.load(reader(response))
-    #print(data)
-    pheno_ids = data['nodes']
-    #print(pheno_ids)
-    for rs in pheno_ids:
-        if mgi_gene_id not in mgi_gene_to_phenotype_hash:
-            mgi_gene_to_phenotype_hash[mgi_gene_id] = [rs['id']]
-        else:
-            mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
-    print(mgi_gene_to_phenotype_hash)
-
-with urllib.request.urlopen(disease_url) as response:
-#url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
-#response = urllib.request(url)
-    #print(response)
-    reader = codecs.getreader("utf-8")
-    data = json.load(reader(response))
-    #print(data)
-    pheno_ids = data['nodes']
-    #print(pheno_ids)
-    for rs in pheno_ids:
-        if disease_id not in human_disease_to_phenotype_hash:
-            human_disease_to_phenotype_hash[disease_id] = [rs['id']]
-        else:
-            human_disease_to_phenotype_hash[disease_id].append(rs['id'])
-    print(human_disease_to_phenotype_hash)
+    files = {
+        'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
+        'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
+    }
 
 
+    ### Testing using SciGraph Rest Services
 
+    mgi_gene_id = 'MGI:2182454'
+    mgi_gene_to_phenotype_hash = {}
+    human_disease_to_phenotype_hash = {}
+
+    disease_id = 'OMIM:267450'
+    disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
+    url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
+    with urllib.request.urlopen(url) as response:
+
+        #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
+        #response = urllib.request(url)
+        #print(response)
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(response))
+        #print(data)
+        pheno_ids = data['nodes']
+        #print(pheno_ids)
+        for rs in pheno_ids:
+            if mgi_gene_id not in mgi_gene_to_phenotype_hash:
+                mgi_gene_to_phenotype_hash[mgi_gene_id] = [rs['id']]
+            else:
+                mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
+        print(mgi_gene_to_phenotype_hash)
+
+    with urllib.request.urlopen(disease_url) as response:
+        #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
+        #response = urllib.request(url)
+        #print(response)
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(response))
+        #print(data)
+        pheno_ids = data['nodes']
+        #print(pheno_ids)
+        for rs in pheno_ids:
+            if disease_id not in human_disease_to_phenotype_hash:
+                human_disease_to_phenotype_hash[disease_id] = [rs['id']]
+            else:
+                human_disease_to_phenotype_hash[disease_id].append(rs['id'])
+        print(human_disease_to_phenotype_hash)
+
+    #_assemble_human_disease_phenotypes()
+
+
+
+
+    def _assemble_human_disease_phenotypes(self):
+        line_counter = 0
+        raw = 'raw/hpo/diseases.csv'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                line_counter += 1
+                print(row)
+        return
+
+    # Need list of phenotypes with all associated genes for human, mouse, zebrafish
+
+
+
+m = main()
+m._assemble_human_disease_phenotypes()
 ###MAIN####
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
@@ -119,8 +140,8 @@ with urllib.request.urlopen(disease_url) as response:
 
 
 #def _scrub_animal_qtl(self, limit=None):
-    #raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
-    #out =
+#raw = ('/').join((self.rawdir,self.files['aqtl']['file']))
+#out =
 
 
 
@@ -169,13 +190,13 @@ with urllib.request.urlopen(disease_url) as response:
 # Create output table
 # Open input table of scrubbed phenotype-gene associations.
 # Iterate through each row of a scrubbed phenotype-gene resource table.
-    # If phenotype ID is not in output table
-        # Add phenotype ID to output table (column 0)
-        # Add gene ID to new array in output table (column 0, same row)
-    # ElseIf phenotype ID is in output table
-        # GoTo row with the phenotype ID
-        # If gene ID is not in array
-            # Append gene ID to array
+# If phenotype ID is not in output table
+# Add phenotype ID to output table (column 0)
+# Add gene ID to new array in output table (column 0, same row)
+# ElseIf phenotype ID is in output table
+# GoTo row with the phenotype ID
+# If gene ID is not in array
+# Append gene ID to array
 
 # Close input table
 # Close output table
@@ -204,13 +225,14 @@ with urllib.request.urlopen(disease_url) as response:
 
 
 # For row in species A table
-    # For row in species B table
-        # phenotype_pair_id = phenotype_a_id+'_'+phenotype_b_id
-        # (Necessary to make a full entry ID? Both phenotype IDs, both taxon IDs, ortholog IDs, etc?)
-        #TODO: How best to prepare variables for the hypergeometric probability calculation?
+# For row in species B table
+# phenotype_pair_id = phenotype_a_id+'_'+phenotype_b_id
+# (Necessary to make a full entry ID? Both phenotype IDs, both taxon IDs, ortholog IDs, etc?)
+#TODO: How best to prepare variables for the hypergeometric probability calculation?
 
-        # If there are matching orthologs
-            # Call hypergeometric probability calculation.
+# If there are matching orthologs
+# Call hypergeometric probability calculation.
+
 
 
 
