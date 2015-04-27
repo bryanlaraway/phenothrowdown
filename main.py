@@ -10,7 +10,7 @@ import os
 import re
 import csv
 
-
+hu_disease_to_phenotype_hash = {'disease_id': {}}
 class main():
 
     # NOTE: Could either include the fetch code to retrieve the data from the resources,
@@ -35,7 +35,6 @@ class main():
 
 
     ### Testing using SciGraph Rest Services
-
     mgi_gene_id = 'MGI:2182454'
     mgi_gene_to_phenotype_hash = {}
     human_disease_to_phenotype_hash = {}
@@ -58,7 +57,7 @@ class main():
                 mgi_gene_to_phenotype_hash[mgi_gene_id] = [rs['id']]
             else:
                 mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
-        print(mgi_gene_to_phenotype_hash)
+        #print(mgi_gene_to_phenotype_hash)
 
     with urllib.request.urlopen(disease_url) as response:
         #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
@@ -74,7 +73,7 @@ class main():
                 human_disease_to_phenotype_hash[disease_id] = [rs['id']]
             else:
                 human_disease_to_phenotype_hash[disease_id].append(rs['id'])
-        print(human_disease_to_phenotype_hash)
+        #print(human_disease_to_phenotype_hash)
 
     #_assemble_human_disease_phenotypes()
 
@@ -86,9 +85,32 @@ class main():
         raw = 'raw/hpo/diseases.csv'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
             for row in filereader:
                 line_counter += 1
-                print(row)
+                #print(row)
+                disease_id = row[0]
+                #print(disease_id)
+                disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
+                with urllib.request.urlopen(disease_url) as response:
+
+                    reader = codecs.getreader("utf-8")
+                    data = json.load(reader(response))
+                    #print(data)
+                    pheno_ids = data['nodes']
+                    #print(pheno_ids)
+                    for rs in pheno_ids:
+                        if disease_id not in hu_disease_to_phenotype_hash:
+                            hu_disease_to_phenotype_hash[disease_id] = [rs['id']]
+                            #print(hu_disease_to_phenotype_hash[disease_id])
+                        else:
+                            hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
+                            #print(hu_disease_to_phenotype_hash[disease_id])
+        #print(hu_disease_to_phenotype_hash)
+                #if disease_id not in hu_disease_to_phenotype_hash:
+                    #hu_disease_to_phenotype_hash['disease_id'] =
+
+
         return
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
