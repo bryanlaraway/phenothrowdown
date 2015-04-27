@@ -5,13 +5,14 @@
 import json
 import urllib.request
 import codecs
-
+from socket import *
 import os
 import re
 import csv
 
 hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
+zfin_genotype_to_phenotype_hash = {'genotype_id': {}}
 class main():
 
     # NOTE: Could either include the fetch code to retrieve the data from the resources,
@@ -35,54 +36,12 @@ class main():
     }
 
 
-    ### Testing using SciGraph Rest Services
-    mgi_gene_id = 'MGI:2182454'
-    mgi_gene_to_phenotype_hash = {}
-    human_disease_to_phenotype_hash = {}
-
-    disease_id = 'OMIM:267450'
-    disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
-    url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/MGI:2182454/phenotypes/targets'
-    with urllib.request.urlopen(url) as response:
-
-        #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
-        #response = urllib.request(url)
-        #print(response)
-        reader = codecs.getreader("utf-8")
-        data = json.load(reader(response))
-        #print(data)
-        pheno_ids = data['nodes']
-        #print(pheno_ids)
-        for rs in pheno_ids:
-            if mgi_gene_id not in mgi_gene_to_phenotype_hash:
-                mgi_gene_to_phenotype_hash[mgi_gene_id] = [rs['id']]
-            else:
-                mgi_gene_to_phenotype_hash[mgi_gene_id].append(rs['id'])
-        #print(mgi_gene_to_phenotype_hash)
-
-    with urllib.request.urlopen(disease_url) as response:
-        #url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/OMIM:106240/phenotypes/targets'
-        #response = urllib.request(url)
-        #print(response)
-        reader = codecs.getreader("utf-8")
-        data = json.load(reader(response))
-        #print(data)
-        pheno_ids = data['nodes']
-        #print(pheno_ids)
-        for rs in pheno_ids:
-            if disease_id not in human_disease_to_phenotype_hash:
-                human_disease_to_phenotype_hash[disease_id] = [rs['id']]
-            else:
-                human_disease_to_phenotype_hash[disease_id].append(rs['id'])
-        #print(human_disease_to_phenotype_hash)
-
-    #_assemble_human_disease_phenotypes()
 
 
 
 
     def _assemble_human_disease_to_phenotype(self):
-        print('INFO:Assembling human disease to phenotype data.')
+        print('INFO: Assembling human disease to phenotype data.')
         line_counter = 0
         raw = 'raw/hpo/diseases.csv'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -92,10 +51,10 @@ class main():
                 line_counter += 1
                 #print(row)
                 disease_id = row[0]
-                #print(disease_id)
+                print(disease_id)
                 disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
-                with urllib.request.urlopen(disease_url) as response:
-
+                try:
+                    response = urllib.request.urlopen(disease_url, timeout=10)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
                     #print(data)
@@ -108,11 +67,16 @@ class main():
                         else:
                             hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
                             #print(hu_disease_to_phenotype_hash[disease_id])
+                except Exception:
+                    continue
+
+                print(len(hu_disease_to_phenotype_hash.keys()))
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
 
-
+        print('INFO: Done assembling human disease to phenotype data.')
+        print('INFO: '+len(hu_disease_to_phenotype_hash.keys()))+' human diseases present.'
         return
 
 
@@ -129,7 +93,8 @@ class main():
                 line_counter += 1
                 genotype_id = row[0]
                 genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
-                with urllib.request.urlopen(genotype_url) as response:
+                try:
+                    response = urllib.request.urlopen(genotype_url, timeout=10)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
                     #print(data)
@@ -145,8 +110,49 @@ class main():
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
+                except Exception:
+                    continue
+
+        print('INFO: Done assembling mouse genotype to phenotype data.')
+        print('INFO: '+len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.'
+        return
 
 
+
+    def assemble_zebrafish_genotype_to_phenotype(self):
+        print('INFO:Assembling zebrafish genotype to phenotype data.')
+        line_counter = 0
+        raw = 'raw/zfin/genotypes.csv'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                genotype_id = row[0]
+                genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
+                try:
+                    response = urllib.request.urlopen(genotype_url, timeout=10)
+                    reader = codecs.getreader("utf-8")
+                    data = json.load(reader(response))
+                    #print(data)
+                    pheno_ids = data['nodes']
+                    #print(pheno_ids)
+                    for rs in pheno_ids:
+                        if genotype_id not in mouse_genotype_to_phenotype_hash:
+                            mouse_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
+                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
+                        else:
+                            mouse_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
+                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
+                    print(len(mouse_genotype_to_phenotype_hash.keys()))
+        #print(hu_disease_to_phenotype_hash)
+                #if disease_id not in hu_disease_to_phenotype_hash:
+                    #hu_disease_to_phenotype_hash['disease_id'] =
+                except Exception:
+                    continue
+
+        print('INFO: Done assembling mouse genotype to phenotype data.')
+        print('INFO: '+len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.'
         return
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
@@ -156,6 +162,7 @@ class main():
 m = main()
 m._assemble_human_disease_to_phenotype()
 m._assemble_mouse_genotype_to_phenotype()
+m.assemble_zebrafish_genotype_to_phenotype()
 ###MAIN####
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
