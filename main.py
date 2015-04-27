@@ -9,6 +9,7 @@ from socket import *
 import os
 import re
 import csv
+import pickle
 
 hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
@@ -40,16 +41,18 @@ class main():
 
 
 
-    def _assemble_human_disease_to_phenotype(self):
+    def _assemble_human_disease_to_phenotype(self, limit=None):
         print('INFO: Assembling human disease to phenotype data.')
-
         line_counter = 0
         raw = 'raw/hpo/diseases.csv'
+        out = 'out/hpo/human_disease_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
             print(str(row_count)+' human diseases to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -75,28 +78,31 @@ class main():
                             #print(hu_disease_to_phenotype_hash[disease_id])
                 except Exception:
                     continue
+                if limit is not None and line_counter > limit:
+                    break
 
                 #print(len(hu_disease_to_phenotype_hash.keys()))
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
-
+        with open(out, 'wb') as handle:
+            pickle.dump(hu_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
-        print('INFO: '+str(len(hu_disease_to_phenotype_hash.keys())))+' human diseases processed.'
+        print('INFO: '+str(len(hu_disease_to_phenotype_hash.keys()))+' human diseases processed.')
         return
 
-
-
-
-    def _assemble_mouse_genotype_to_phenotype(self):
+    def _assemble_mouse_genotype_to_phenotype(self, limit=None):
         print('INFO:Assembling mouse genotype to phenotype data.')
         line_counter = 0
         raw = 'raw/mgi/genotypes.csv'
+        out = 'out/mgi/mouse_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
             print(str(row_count)+' mouse genotypes to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -123,22 +129,30 @@ class main():
                     #hu_disease_to_phenotype_hash['disease_id'] =
                 except Exception:
                     continue
+                if limit is not None and line_counter > limit:
+                    break
 
+
+        with open(out, 'wb') as handle:
+            pickle.dump(mouse_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
-        print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys())))+' mouse genotypes present.'
+        print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.')
         return
 
 
 
-    def assemble_zebrafish_genotype_to_phenotype(self):
+    def assemble_zebrafish_genotype_to_phenotype(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
         raw = 'raw/zfin/genotypes.csv'
+        out = 'out/zfin/zebrafish_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
             print(str(row_count)+' zebrafish genotypes to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -154,31 +168,32 @@ class main():
                     pheno_ids = data['nodes']
                     #print(pheno_ids)
                     for rs in pheno_ids:
-                        if genotype_id not in mouse_genotype_to_phenotype_hash:
-                            mouse_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
-                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
+                        if genotype_id not in zfin_genotype_to_phenotype_hash:
+                            zfin_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
+                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
                         else:
-                            mouse_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
-                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
-                    print(len(mouse_genotype_to_phenotype_hash.keys()))
-        #print(hu_disease_to_phenotype_hash)
-                #if disease_id not in hu_disease_to_phenotype_hash:
-                    #hu_disease_to_phenotype_hash['disease_id'] =
+                            zfin_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
+                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    print(len(zfin_genotype_to_phenotype_hash.keys()))
                 except Exception:
                     continue
-
-        print('INFO: Done assembling mouse genotype to phenotype data.')
-        print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys())))+' mouse genotypes present.'
+                if limit is not None and line_counter > limit:
+                    break
+        with open(out, 'wb') as handle:
+            pickle.dump(zfin_genotype_to_phenotype_hash, handle)
+        print('INFO: Done assembling zebrafish genotype to phenotype data.')
+        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
         return
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
 
 
 
-m = main()
-m._assemble_human_disease_to_phenotype()
-m._assemble_mouse_genotype_to_phenotype()
-m.assemble_zebrafish_genotype_to_phenotype()
+main = main()
+main._assemble_human_disease_to_phenotype(100)
+main._assemble_mouse_genotype_to_phenotype(100)
+#FIXME: Note that the zebrafish data is not currently available through REST services.
+#main.assemble_zebrafish_genotype_to_phenotype(500)
 ###MAIN####
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
