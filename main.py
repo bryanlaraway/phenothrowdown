@@ -5,11 +5,14 @@
 import json
 import urllib.request
 import codecs
+import time
 from socket import *
 import os
 import re
 import csv
 import pickle
+
+start_time = time.time()
 
 hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
@@ -44,6 +47,7 @@ class main():
     def _assemble_human_disease_to_phenotype(self, limit=None):
         print('INFO: Assembling human disease to phenotype data.')
         line_counter = 0
+        failure_counter = 0
         raw = 'raw/hpo/diseases.csv'
         out = 'out/hpo/human_disease_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -77,6 +81,8 @@ class main():
                             hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
                             #print(hu_disease_to_phenotype_hash[disease_id])
                 except Exception:
+                    print('Retrieval of '+disease_id+' failed.')
+                    failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
                     break
@@ -89,11 +95,13 @@ class main():
             pickle.dump(hu_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
         print('INFO: '+str(len(hu_disease_to_phenotype_hash.keys()))+' human diseases processed.')
+        print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
     def _assemble_mouse_genotype_to_phenotype(self, limit=None):
         print('INFO:Assembling mouse genotype to phenotype data.')
         line_counter = 0
+        failure_counter = 0
         raw = 'raw/mgi/genotypes.csv'
         out = 'out/mgi/mouse_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -128,6 +136,8 @@ class main():
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
                 except Exception:
+                    print('Retrieval of '+disease_id+' failed.')
+                    failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
                     break
@@ -137,6 +147,7 @@ class main():
             pickle.dump(mouse_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
         print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.')
+        print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
 
@@ -144,6 +155,7 @@ class main():
     def assemble_zebrafish_genotype_to_phenotype(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
+        failure_counter = 0
         raw = 'raw/zfin/genotypes.csv'
         out = 'out/zfin/zebrafish_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -174,8 +186,10 @@ class main():
                         else:
                             zfin_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
                             #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    print(len(zfin_genotype_to_phenotype_hash.keys()))
+                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
                 except Exception:
+                    print('Retrieval of '+disease_id+' failed.')
+                    failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
                     break
@@ -183,6 +197,7 @@ class main():
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
         print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
+        print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
@@ -190,10 +205,17 @@ class main():
 
 
 main = main()
-main._assemble_human_disease_to_phenotype(100)
-main._assemble_mouse_genotype_to_phenotype(100)
+main._assemble_human_disease_to_phenotype()
+main._assemble_mouse_genotype_to_phenotype()
 #FIXME: Note that the zebrafish data is not currently available through REST services.
 #main.assemble_zebrafish_genotype_to_phenotype(500)
+
+
+elapsed_time = time.time() - start_time
+print('Processing completed in '+elapsed_time+' seconds.')
+
+
+
 ###MAIN####
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
