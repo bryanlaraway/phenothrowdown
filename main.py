@@ -304,6 +304,56 @@ class main():
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
         return
 
+    def assemble_nif_mgi_phenotype_to_gene(self, limit=None):
+        print('INFO:Assembling mouse genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
+        out = 'out/mgi/mouse_pheno_gene_hash.txt'
+        mgi_phenotype_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (annotation_id, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 genomic_variation_complement_id, genomic_variation_complement_label,
+                 genomic_variation_complement_label_html, implicated_gene_ids, implicated_gene_labels,
+                 implicated_sequence_alteration_ids, implicated_sequence_alteration_labels, genomic_background_id,
+                 genomic_background_label, phenotype_id, phenotype_label, phenotype_description_free_text,
+                 phenotype_modifier, evidence_code_id, evidence_code_symbol, evidence_code_label, environment_id,
+                 environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
+                 e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                print(phenotype_id)
+                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+                genes = implicated_gene_ids.split()
+                print(genes)
+                if phenotype_id not in mgi_phenotype_to_gene_hash:
+                    mgi_phenotype_to_gene_hash[phenotype_id] = genes
+                    #print(mgi_phenotype_to_gene_hash[genotype_id])
+                else:
+                    mgi_phenotype_to_gene_hash[phenotype_id].append(genes)
+                    #print(mgi_phenotype_to_gene_hash[genotype_id])
+                    #print(len(mgi_phenotype_to_gene_hash.keys()))
+                    print('Repeat phenotype: '+phenotype_id)
+                if limit is not None and line_counter > limit:
+                    break
+        with open(out, 'wb') as handle:
+            pickle.dump(mgi_phenotype_to_gene_hash, handle)
+        print('INFO: Done assembling mouse phenotype to gene data.')
+        print('INFO: '+str(len(mgi_phenotype_to_gene_hash.keys()))+' mouse phenotypes present.')
+        return
+
+
 
 ###MAIN####
 limit = 100
@@ -312,6 +362,7 @@ main = main()
 #main._assemble_human_disease_to_phenotype(limit)
 #main._assemble_mouse_genotype_to_phenotype(limit)
 main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
 #FIXME: Note that the zebrafish data is not currently available through REST services.
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
