@@ -40,10 +40,6 @@ class main():
     }
 
 
-
-
-
-
     def _assemble_human_disease_to_phenotype(self, limit=None):
         print('INFO: Assembling human disease to phenotype data.')
         line_counter = 0
@@ -67,7 +63,7 @@ class main():
                 #print(disease_id)
                 disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
                 try:
-                    response = urllib.request.urlopen(disease_url, timeout=10)
+                    response = urllib.request.urlopen(disease_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
                     #print(data)
@@ -119,10 +115,11 @@ class main():
                 genotype_id = row[0]
                 genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
                 try:
-                    response = urllib.request.urlopen(genotype_url, timeout=10)
+                    response = urllib.request.urlopen(genotype_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
                     #print(data)
+                    print(genotype_id)
                     pheno_ids = data['nodes']
                     #print(pheno_ids)
                     for rs in pheno_ids:
@@ -136,7 +133,7 @@ class main():
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
                 except Exception:
-                    print('Retrieval of '+disease_id+' failed.')
+                    print('Retrieval of '+genotype_id+' failed.')
                     failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
@@ -173,7 +170,7 @@ class main():
                 genotype_id = row[0]
                 genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
                 try:
-                    response = urllib.request.urlopen(genotype_url, timeout=10)
+                    response = urllib.request.urlopen(genotype_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
                     #print(data)
@@ -188,7 +185,7 @@ class main():
                             #print(zfin_genotype_to_phenotype_hash[genotype_id])
                     #print(len(zfin_genotype_to_phenotype_hash.keys()))
                 except Exception:
-                    print('Retrieval of '+disease_id+' failed.')
+                    print('Retrieval of '+genotype_id+' failed.')
                     failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
@@ -202,21 +199,128 @@ class main():
 
     # Need list of phenotypes with all associated genes for human, mouse, zebrafish
 
+    #FIXME: Creating a general phenotype-gene processing script.
+    # Will require adjustment once the SciGraph REST call is operational again.
+    def assemble_phenotype_to_gene(self, limit=None):
+        print('INFO:Assembling zebrafish genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/zfin/genotypes.csv'
+        out = 'out/zfin/zebrafish_geno_pheno_hash.txt'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish genotypes to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                genotype_id = row[0]
+                genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
+                try:
+                    response = urllib.request.urlopen(genotype_url, timeout=5)
+                    reader = codecs.getreader("utf-8")
+                    data = json.load(reader(response))
+                    #print(data)
+                    pheno_ids = data['nodes']
+                    #print(pheno_ids)
+                    for rs in pheno_ids:
+                        if genotype_id not in zfin_genotype_to_phenotype_hash:
+                            zfin_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
+                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                        else:
+                            zfin_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
+                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                except Exception:
+                    print('Retrieval of '+genotype_id+' failed.')
+                    failure_counter += 1
+                    continue
+                if limit is not None and line_counter > limit:
+                    break
+        with open(out, 'wb') as handle:
+            pickle.dump(zfin_genotype_to_phenotype_hash, handle)
+        print('INFO: Done assembling zebrafish genotype to phenotype data.')
+        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
+        print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
+        return
 
 
+
+    def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
+        print('INFO:Assembling zebrafish genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
+        out = 'out/zfin/zebrafish_pheno_gene_hash.txt'
+        zfin_phenotype_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_num, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 extrinsic_genotype_id, extrinsic_genotype_label, extrinsic_genotype_label_html, phenotype_id,
+                 phenotype_label, phenotype_modifier, implicated_gene_ids, implicated_gene_labels, start_stage_id,
+                 start_stage_zfin_id, start_stage_label, end_stage_id ,end_stage_zfin_id, end_stage_label, stages,
+                 genomic_background_id, genomic_background_num, genomic_background_label,
+                 affected_structure_or_process_1_superterm_id, affected_structure_or_process_1_superterm_name,
+                 affected_structure_or_process_1_subterm_id, affected_structure_or_process_1_subterm_name,
+                 quality_id, quality_label, affected_structure_or_process_2_superterm_id,
+                 affected_structure_or_process_2_superterm_name, affected_structure_or_process_2_subterm_id,
+                 affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
+                 evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
+                 taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
+
+                print(phenotype_id)
+                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+                genes = implicated_gene_ids.split()
+                print(genes)
+                if phenotype_id not in zfin_phenotype_to_gene_hash:
+                    zfin_phenotype_to_gene_hash[phenotype_id] = genes
+                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                else:
+                    zfin_phenotype_to_gene_hash[phenotype_id].append(genes)
+                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                    print('Repeat phenotype: '+phenotype_id)
+                if limit is not None and line_counter > limit:
+                    break
+        with open(out, 'wb') as handle:
+            pickle.dump(zfin_phenotype_to_gene_hash, handle)
+        print('INFO: Done assembling zebrafish phenotype to gene data.')
+        print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
+        return
+
+
+###MAIN####
+limit = 100
+#limit = 100
 main = main()
-main._assemble_human_disease_to_phenotype()
-main._assemble_mouse_genotype_to_phenotype()
+#main._assemble_human_disease_to_phenotype(limit)
+#main._assemble_mouse_genotype_to_phenotype(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
 #FIXME: Note that the zebrafish data is not currently available through REST services.
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 
 elapsed_time = time.time() - start_time
-print('Processing completed in '+elapsed_time+' seconds.')
+print('Processing completed in '+str(elapsed_time)+' seconds.')
 
-
-
-###MAIN####
+#FIXME:OWLSim server call. Server is currently down.
+#http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
 # PURPOSE: obtain data from the various resources that I will use
