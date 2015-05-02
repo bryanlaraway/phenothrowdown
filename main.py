@@ -450,12 +450,14 @@ class main():
 
 
     def assemble_nif_zfin_genotype_to_phenotype(self, limit=None):
+        #TODO: Assuming want to filter out to intrinsic genotypes only?
+        # Can filter on extrinsic genotype = ''
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
         out = 'out/zfin/zebrafish_pheno_gene_hash.txt'
-        zfin_phenotype_to_gene_hash = {}
+        zfin_genotype_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -481,25 +483,26 @@ class main():
                  affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
-
-                print(phenotype_id)
-                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-                genes = implicated_gene_ids.split()
-                print(genes)
-                if phenotype_id not in zfin_phenotype_to_gene_hash:
-                    zfin_phenotype_to_gene_hash[phenotype_id] = genes
-                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                else:
-                    zfin_phenotype_to_gene_hash[phenotype_id].append(genes)
-                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
-                if limit is not None and line_counter > limit:
-                    break
+                if extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
+                    print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
+                    #print(phenotype_id)
+                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+                    genes = implicated_gene_ids.split()
+                    print(genes)
+                    if phenotype_id not in zfin_genotype_to_phenotype_hash:
+                        zfin_genotype_to_phenotype_hash[phenotype_id] = genes
+                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    else:
+                        zfin_genotype_to_phenotype_hash[phenotype_id].append(genes)
+                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                        #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                        print('Repeat phenotype: '+phenotype_id)
+                    if limit is not None and line_counter > limit:
+                        break
         with open(out, 'wb') as handle:
-            pickle.dump(zfin_phenotype_to_gene_hash, handle)
+            pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish phenotype to gene data.')
-        print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
+        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish phenotypes present.')
         return
 
 
@@ -558,11 +561,11 @@ main = main()
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
-main.assemble_nif_hpo_disease_to_gene(limit)
-
+#main.assemble_nif_hpo_disease_to_gene(limit)
+main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #TODO:
-#hpo: disease to gene
-#zfin: genotype to phenotype
+#hpo: disease to gene ##DONE##
+#zfin: genotype to phenotype ##DONE##
 #zfin: gene to phenotype
 #mgi: genotype to phenotype
 #mgi: gene to phenotype
