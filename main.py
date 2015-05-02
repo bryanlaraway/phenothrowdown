@@ -31,7 +31,8 @@ class main():
         'dvp.pr_nif_0000_00096_6',  # MGI:MousePhenotypes
         'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
         'dvp.pr_nif_0000_21427_11',  # ZFIN:OrganismGenotypes
-        'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs
+        'dvp.pr_nlx_84521_1'  # PANTHER:Orthologs,
+        'dvp.pr_nif_0000_02550_3' # ANIMAL QTL DB: Traits
     ]
 
     files = {
@@ -398,18 +399,179 @@ class main():
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
         return
 
+    def assemble_nif_animalqtl_phenotype_to_gene(self, limit=None):
+        print('INFO:Assembling mouse genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/animalqtldb/dvp.pr_nif_0000_02550_3'
+        out = 'out/aqtl/aqtl_pheno_gene_hash.txt'
+        aqtl_phenotype_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, qtl_id, qtl_num, qtl_label, qtl_url, qtl_source, qtl_type_label, association_type_label,
+                 trait_category_label, trait_id, trait_num, trait_label, trait_url, vto_id, vto_label, cmo_id,
+                 cmo_label, pto_id, pto_label, gene_id, gene_label, gene_url, gene_num, gene_id_src, taxon_label,
+                 taxon_id, breed, organism, map_type, model, test_base, significance, genomic_location, chromosome,
+                 start_bp, stop_bp, frame, strand, score, genetic_location, peak_cm, range_cm, combo_flankmarkers,
+                 flankmarkers, flankmark_a1, flankmark_a2, flankmark_b1, flankmark_b2, peak_mark, publication_num,
+                 publication_url, publication_id, p_value, variance, bayes_value, f_statistics, lod_score,
+                 additive_effect, dominance_effect, likelihood_ratio, ls_means, v_uid, v_uuid, v_lastmodified) = row
 
+                print(trait_id)
+                #TODO: Separate by species.
+
+                #print(genes)
+                if trait_id not in aqtl_phenotype_to_gene_hash:
+                    aqtl_phenotype_to_gene_hash[trait_id] = [gene_id]
+                    #print(aqtl_phenotype_to_gene_hash[genotype_id])
+                else:
+                    aqtl_phenotype_to_gene_hash[trait_id].append(gene_id)
+                    #print(aqtl_phenotype_to_gene_hash[genotype_id])
+                    #print(len(aqtl_phenotype_to_gene_hash.keys()))
+                    print('Repeat phenotype: '+trait_id)
+                if limit is not None and line_counter > limit:
+                    break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
+        with open(out, 'wb') as handle:
+            pickle.dump(aqtl_phenotype_to_gene_hash, handle)
+        print('INFO: Done assembling human phenotype to gene data.')
+        print('INFO: '+str(len(aqtl_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
+        return
+
+
+    def assemble_nif_zfin_genotype_to_phenotype(self, limit=None):
+        print('INFO:Assembling zebrafish genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
+        out = 'out/zfin/zebrafish_pheno_gene_hash.txt'
+        zfin_phenotype_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_num, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 extrinsic_genotype_id, extrinsic_genotype_label, extrinsic_genotype_label_html, phenotype_id,
+                 phenotype_label, phenotype_modifier, implicated_gene_ids, implicated_gene_labels, start_stage_id,
+                 start_stage_zfin_id, start_stage_label, end_stage_id ,end_stage_zfin_id, end_stage_label, stages,
+                 genomic_background_id, genomic_background_num, genomic_background_label,
+                 affected_structure_or_process_1_superterm_id, affected_structure_or_process_1_superterm_name,
+                 affected_structure_or_process_1_subterm_id, affected_structure_or_process_1_subterm_name,
+                 quality_id, quality_label, affected_structure_or_process_2_superterm_id,
+                 affected_structure_or_process_2_superterm_name, affected_structure_or_process_2_subterm_id,
+                 affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
+                 evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
+                 taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
+
+                print(phenotype_id)
+                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+                genes = implicated_gene_ids.split()
+                print(genes)
+                if phenotype_id not in zfin_phenotype_to_gene_hash:
+                    zfin_phenotype_to_gene_hash[phenotype_id] = genes
+                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                else:
+                    zfin_phenotype_to_gene_hash[phenotype_id].append(genes)
+                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                    print('Repeat phenotype: '+phenotype_id)
+                if limit is not None and line_counter > limit:
+                    break
+        with open(out, 'wb') as handle:
+            pickle.dump(zfin_phenotype_to_gene_hash, handle)
+        print('INFO: Done assembling zebrafish phenotype to gene data.')
+        print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
+        return
+
+
+    def assemble_nif_hpo_disease_to_gene(self, limit=None):
+        print('INFO:Assembling human disease to gene data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/hpo/dvp.pr_nlx_151835_3'
+        out = 'out/hpo/human_disease_gene_hash.txt'
+        hpo_disease_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human disease to gene rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, disease_id, disorder_name, disorder_database_link, gene_id,
+                 gene_num, gene_label, v_uid, v_uuid, v_lastmodified) = row
+
+                print(disease_id)
+                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+
+                #print(genes)
+                if disease_id not in hpo_disease_to_gene_hash:
+                    hpo_disease_to_gene_hash[disease_id] = [gene_id]
+                    #print(hpo_phenotype_to_gene_hash[genotype_id])
+                else:
+                    hpo_disease_to_gene_hash[disease_id].append(gene_id)
+                    #print(hpo_disease_to_gene_hash[disease_id])
+                    #print(len(hpo_disease_to_gene_hash.keys()))
+                    print('Repeat disease: '+disease_id)
+                if limit is not None and line_counter > limit:
+                    break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
+        with open(out, 'wb') as handle:
+            pickle.dump(hpo_disease_to_gene_hash, handle)
+        print('INFO: Done assembling human phenotype to gene data.')
+        print('INFO: '+str(len(hpo_disease_to_gene_hash.keys()))+' human phenotypes present.')
+        return
 
 
 ###MAIN####
 limit = None
 #limit = 100
 main = main()
-#main._assemble_human_disease_to_phenotype(limit)
-#main._assemble_mouse_genotype_to_phenotype(limit)
+
+### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)
 #main.assemble_nif_mgi_phenotype_to_gene(limit)
-main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_animalqtl_phenotype_to_gene(limit)
+
+main.assemble_nif_hpo_disease_to_gene(limit)
+
+#TODO:
+#hpo: disease to gene
+#zfin: genotype to phenotype
+#zfin: gene to phenotype
+#mgi: genotype to phenotype
+#mgi: gene to phenotype
+
+
+
+### Data assembly via SciGraph ###
+#main._assemble_human_disease_to_phenotype(limit)
+#main._assemble_mouse_genotype_to_phenotype(limit)
 #FIXME: Note that the zebrafish data is not currently available through REST services.
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
