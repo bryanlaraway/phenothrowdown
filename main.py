@@ -347,6 +347,7 @@ class main():
                     print('Repeat phenotype: '+phenotype_id)
                 if limit is not None and line_counter > limit:
                     break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
         with open(out, 'wb') as handle:
             pickle.dump(mgi_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling mouse phenotype to gene data.')
@@ -354,15 +355,61 @@ class main():
         return
 
 
+    def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
+        print('INFO:Assembling mouse genotype to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/hpo/dvp.pr_nlx_151835_2'
+        out = 'out/hpo/human_pheno_gene_hash.txt'
+        hpo_phenotype_to_gene_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
+                 gene_label, v_uid, v_uuid, v_lastmodified) = row
+
+                print(phenotype_id)
+                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+
+                #print(genes)
+                if phenotype_id not in hpo_phenotype_to_gene_hash:
+                    hpo_phenotype_to_gene_hash[phenotype_id] = [gene_id]
+                    #print(hpo_phenotype_to_gene_hash[genotype_id])
+                else:
+                    hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
+                    #print(hpo_phenotype_to_gene_hash[genotype_id])
+                    #print(len(hpo_phenotype_to_gene_hash.keys()))
+                    print('Repeat phenotype: '+phenotype_id)
+                if limit is not None and line_counter > limit:
+                    break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
+        with open(out, 'wb') as handle:
+            pickle.dump(hpo_phenotype_to_gene_hash, handle)
+        print('INFO: Done assembling human phenotype to gene data.')
+        print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
+        return
+
+
+
 
 ###MAIN####
-limit = 100
+limit = None
 #limit = 100
 main = main()
 #main._assemble_human_disease_to_phenotype(limit)
 #main._assemble_mouse_genotype_to_phenotype(limit)
-main.assemble_nif_zfin_phenotype_to_gene(limit)
-main.assemble_nif_mgi_phenotype_to_gene(limit)
+#main.assemble_nif_zfin_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_hpo_phenotype_to_gene(limit)
 #FIXME: Note that the zebrafish data is not currently available through REST services.
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
