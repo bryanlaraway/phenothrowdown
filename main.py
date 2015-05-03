@@ -602,6 +602,62 @@ class main():
         print('INFO: '+str(len(hpo_disease_to_gene_hash.keys()))+' human phenotypes present.')
         return
 
+    def assemble_nif_mgi_disease_to_gene(self, limit=None):
+        print('INFO:Assembling mouse gene to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
+        out = 'out/mgi/mouse_gene_phenotype_hash.txt'
+        mgi_gene_to_phenotype_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' mouse gene to phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (annotation_id, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 genomic_variation_complement_id, genomic_variation_complement_label,
+                 genomic_variation_complement_label_html, implicated_gene_ids, implicated_gene_labels,
+                 implicated_sequence_alteration_ids, implicated_sequence_alteration_labels, genomic_background_id,
+                 genomic_background_label, phenotype_id, phenotype_label, phenotype_description_free_text,
+                 phenotype_modifier, evidence_code_id, evidence_code_symbol, evidence_code_label, environment_id,
+                 environment_label, publication_id, publication_label, publication_url, taxon_id,
+                 taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                #print(implicated_gene_ids)
+                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+
+                if not re.match('.*,.*',implicated_gene_ids):
+                    print(implicated_gene_labels)
+                    #print(genes)
+                    if implicated_gene_ids not in mgi_gene_to_phenotype_hash:
+                        mgi_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
+                    #print(mgi_gene_to_phenotype_hash[gene_id])
+                    else:
+                        mgi_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                        #print(mgi_gene_to_phenotype_hash[gene_id])
+                        #print(len(mgi_gene_to_phenotype_hash.keys()))
+                        print('Repeat gene: '+implicated_gene_ids)
+                else:
+                    print('Skipping multi-gene genotype: '+effective_genotype_label)
+                if limit is not None and line_counter > limit:
+                    break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
+        with open(out, 'wb') as handle:
+            pickle.dump(mgi_gene_to_phenotype_hash, handle)
+        print('INFO: Done assembling human phenotype to gene data.')
+        print('INFO: '+str(len(mgi_gene_to_phenotype_hash.keys()))+' human phenotypes present.')
+        return
+
+
+
 
 ###MAIN####
 limit = None
@@ -615,14 +671,15 @@ main = main()
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
-main.assemble_nif_zfin_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_genotype_to_phenotype(limit)
+#main.assemble_nif_zfin_genotype_to_phenotype(limit)
+#main.assemble_nif_mgi_genotype_to_phenotype(limit)
+#main.assemble_nif_mgi_genotype_to_phenotype(limit)
+main.assemble_nif_mgi_disease_to_gene()
 #TODO:
 #hpo: disease to gene ##DONE##
 #zfin: genotype to phenotype ##DONE##
 #zfin: gene to phenotype
-#mgi: genotype to phenotype
+#mgi: genotype to phenotype ##DONE##
 #mgi: gene to phenotype
 
 
@@ -637,7 +694,7 @@ main.assemble_nif_mgi_genotype_to_phenotype(limit)
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
-#FIXME:OWLSim server call. Server is currently down.
+
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
