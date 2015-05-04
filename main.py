@@ -42,13 +42,14 @@ class main():
         'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
     }
 
+    ####### SCIGRAPH DATA ASSEMBLY #######
 
     def _assemble_human_disease_to_phenotype(self, limit=None):
         print('INFO: Assembling human disease to phenotype data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/diseases.csv'
-        out = 'out/hpo/human_disease_pheno_hash.txt'
+        inter = 'inter/hpo/human_disease_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -90,7 +91,7 @@ class main():
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
                     #hu_disease_to_phenotype_hash['disease_id'] =
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(hu_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
         print('INFO: '+str(len(hu_disease_to_phenotype_hash.keys()))+' human diseases processed.')
@@ -102,7 +103,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/genotypes.csv'
-        out = 'out/mgi/mouse_geno_pheno_hash.txt'
+        inter = 'inter/mgi/mouse_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -143,7 +144,7 @@ class main():
                     break
 
 
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(mouse_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
         print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.')
@@ -157,7 +158,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/genotypes.csv'
-        out = 'out/zfin/zebrafish_geno_pheno_hash.txt'
+        inter = 'inter/zfin/zebrafish_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -193,7 +194,7 @@ class main():
                     continue
                 if limit is not None and line_counter > limit:
                     break
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
         print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
@@ -209,7 +210,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/genotypes.csv'
-        out = 'out/zfin/zebrafish_geno_pheno_hash.txt'
+        inter = 'inter/zfin/zebrafish_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -245,21 +246,21 @@ class main():
                     continue
                 if limit is not None and line_counter > limit:
                     break
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
         print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
-
+    ####### NIF DATA ASSEMBLY #######
 
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
-        out = 'out/zfin/zebrafish_pheno_gene_hash.txt'
+        inter = 'inter/zfin/zebrafish_pheno_gene_hash.txt'
         zfin_phenotype_to_gene_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -301,7 +302,7 @@ class main():
                     print('Repeat phenotype: '+phenotype_id)
                 if limit is not None and line_counter > limit:
                     break
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(zfin_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling zebrafish phenotype to gene data.')
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
@@ -312,7 +313,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
-        out = 'out/mgi/mouse_pheno_gene_hash.txt'
+        inter = 'inter/mgi/mouse_pheno_gene_hash.txt'
         mgi_phenotype_to_gene_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -351,7 +352,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(mgi_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling mouse phenotype to gene data.')
         print('INFO: '+str(len(mgi_phenotype_to_gene_hash.keys()))+' mouse phenotypes present.')
@@ -363,7 +364,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_2'
-        out = 'out/hpo/human_pheno_gene_hash.txt'
+        inter = 'inter/hpo/human_pheno_gene_hash.txt'
         hpo_phenotype_to_gene_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -395,7 +396,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(hpo_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
@@ -406,7 +407,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/animalqtldb/dvp.pr_nif_0000_02550_3'
-        out = 'out/aqtl/aqtl_pheno_gene_hash.txt'
+        inter = 'inter/aqtl/aqtl_pheno_gene_hash.txt'
         aqtl_phenotype_to_gene_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -444,7 +445,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(aqtl_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(aqtl_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
@@ -458,7 +459,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
-        out = 'out/zfin/zebrafish_genotype_phenotype_hash.txt'
+        inter = 'inter/zfin/zebrafish_genotype_phenotype_hash.txt'
         zfin_genotype_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -501,7 +502,7 @@ class main():
                         print('Repeat phenotype: '+phenotype_id)
                     if limit is not None and line_counter > limit:
                         break
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish phenotype to gene data.')
         print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish phenotypes present.')
@@ -515,7 +516,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
-        out = 'out/mgi/mouse_genotype_phenotype_hash.txt'
+        inter = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         mgi_genotype_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -553,7 +554,7 @@ class main():
                     print('Repeat phenotype: '+phenotype_id)
                 if limit is not None and line_counter > limit:
                     break
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(mgi_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
         print('INFO: '+str(len(mgi_genotype_to_phenotype_hash.keys()))+' mouse phenotypes present.')
@@ -564,7 +565,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_3'
-        out = 'out/hpo/human_disease_gene_hash.txt'
+        inter = 'inter/hpo/human_disease_gene_hash.txt'
         hpo_disease_to_gene_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -595,7 +596,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(hpo_disease_to_gene_hash, handle)
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(hpo_disease_to_gene_hash.keys()))+' human phenotypes present.')
@@ -606,7 +607,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_1'
-        out = 'out/hpo/nif_human_disease_phenotype_hash.txt'
+        inter = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
         hpo_disease_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -640,7 +641,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(hpo_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
         print('INFO: '+str(len(hpo_disease_to_phenotype_hash.keys()))+' human diseases present.')
@@ -651,7 +652,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
-        out = 'out/mgi/mouse_gene_phenotype_hash.txt'
+        inter = 'inter/mgi/mouse_gene_phenotype_hash.txt'
         mgi_gene_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -694,7 +695,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(mgi_gene_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse gene to phenotype data.')
         print('INFO: '+str(len(mgi_gene_to_phenotype_hash.keys()))+' human genes present.')
@@ -705,7 +706,7 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
-        out = 'out/zfin/zebrafish_gene_to_phenotype_hash.txt'
+        inter = 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt'
         zfin_gene_to_phenotype_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -752,21 +753,21 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(out, 'wb') as handle:
+        with open(inter, 'wb') as handle:
             pickle.dump(zfin_gene_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish gene to phenotype data.')
         print('INFO: '+str(len(zfin_gene_to_phenotype_hash.keys()))+' human phenotypes present.')
         return
 
+    ####### OWLSIM DATA PROCESSING #######
 
-
-    def _perform_owlsim_queries(self, limit=None):
-        print('INFO: Assembling human disease to phenotype data.')
+    def perform_owlsim_queries(self, limit=None):
+        print('INFO: Performing OWLSim queries.')
         line_counter = 0
         failure_counter = 0
 
-        raw1 = 'out/hpo/human_disease_pheno_hash.txt'
-        raw2 = 'out/mgi/mouse_geno_pheno_hash.txt'
+        raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
+        raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         data1 = open(raw1,'rb')
         organism_a_hash = pickle.load(data1)
         data1.close()
@@ -778,7 +779,7 @@ class main():
             #organism_a_hash = pickle.loads(handle1.read())
         #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
             #organism_b_hash = pickle.loads(handle2.read())
-        print(organism_a_hash)
+        #print(organism_a_hash)
 
         #print(str(row_count)+' human diseases to process.')
         if limit is not None:
@@ -791,12 +792,20 @@ class main():
             response = urllib.request.urlopen(query_url, timeout=5)
             reader = codecs.getreader("utf-8")
             data = json.load(reader(response))
-            print(data)
+            #print(data)
+            results = data['results']
+            print(results)
+                    #print(pheno_ids)
+                    #for rs in pheno_ids:
+                        #if disease_id not in hu_disease_to_phenotype_hash:
+                            #hu_disease_to_phenotype_hash[disease_id] = [rs['id']]
+                            #print(hu_disease_to_phenotype_hash[disease_id])
+                        #else:
+                            #hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
+                            #print(hu_disease_to_phenotype_hash[disease_id])
         except Exception:
             print('Retrieval failed.')
             #continue
-
-
 
         return
 
@@ -819,8 +828,8 @@ main = main()
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
-main.assemble_nif_hpo_disease_to_phenotype(limit)
-main._perform_owlsim_queries()
+#main.assemble_nif_hpo_disease_to_phenotype(limit)
+main.perform_owlsim_queries()
 
 
 
