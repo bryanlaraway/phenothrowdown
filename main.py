@@ -542,10 +542,10 @@ class main():
 
                 #print(phenotype_id)
                 #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-                genes = implicated_gene_ids.split()
-                print(genes)
-                if phenotype_id not in mgi_genotype_to_phenotype_hash:
-                    mgi_genotype_to_phenotype_hash[effective_genotype_id] = phenotype_id
+                #genes = implicated_gene_ids.split()
+                #print(genes)
+                if effective_genotype_id not in mgi_genotype_to_phenotype_hash:
+                    mgi_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
                     #print(mgi_genotype_to_phenotype_hash[genotype_id])
                 else:
                     mgi_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
@@ -765,7 +765,8 @@ class main():
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
         failure_counter = 0
-
+        if limit is not None:
+            print('Only querying first '+str(limit)+' phenotypic profile pairs.')
         raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
         raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         data1 = open(raw1,'rb')
@@ -781,55 +782,63 @@ class main():
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
         base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        print(organism_a_hash)
         print(organism_b_hash)
-        for i in organism_a_hash:
-            entity_a = i
-            entity_a_attributes = organism_a_hash[i]
-            #print(attributes)
-            print(entity_a_attributes)
-            phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
-            for j in organism_b_hash:
-                entity_b = j
-                entity_b_attributes = organism_b_hash[j]
-                print(entity_b_attributes)
-                phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
-                query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+        with open('out/owlsim.csv', 'w', newline='') as csvfile:
+            owlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
+            for i in organism_a_hash:
+                entity_a = i
+                entity_a_attributes = organism_a_hash[i]
+                #print(attributes)
+                print(entity_a_attributes)
+                phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+                for j in organism_b_hash:
+                    entity_b = j
+                    entity_b_attributes = organism_b_hash[j]
+                    print(entity_b_attributes)
+                    phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+                    query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+                    print(query_url)
+                    try:
+                        response = urllib.request.urlopen(query_url, timeout=5)
+                        reader = codecs.getreader("utf-8")
+                        data = json.load(reader(response))
+                        print(data)
+                        print('#####')
+                        results = data['results']
+                        maxIC = data['results'][0]['maxIC']
+                        simJ = data['results'][0]['simJ']
+                        ICCS = 'xxxx'
+                        simIC = 'yyyy'
+                        print(results)
+                        #FIXME: Queries are working, need to adjust writing output to file.
+                        row = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
+                        print(row)
+                        owlsimwriter.writerow(row)
+
+                    except Exception:
+                        print('OWLSim query failed.')
+                        continue
+
+
+
         #entity_a = 'entity_1'
         #entity_a_attributes = ['attr1','attr2','attr3']
         #entity_b = 'genotype_id'
         #entity_b_attributes = ['attrb1','attrb2','attrb3']
         #print(str(row_count)+' human diseases to process.')
-        if limit is not None:
-            print('Only parsing first '+str(limit)+' phenotypic profiles.' )
+
 
         #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
 
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
-        phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
-        phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
-        combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
-        print(combined_url)
+        #phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+        #phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+        #combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+        #print(combined_url)
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&b=HP:0000580'
-        query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0001559&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
-        try:
-            response = urllib.request.urlopen(query_url, timeout=5)
-            reader = codecs.getreader("utf-8")
-            data = json.load(reader(response))
-            print(data)
-            print('#####')
-            results = data['results']
-            maxIC = data['results'][0]['maxIC']
-            simJ = data['results'][0]['simJ']
-            ICCS = 'xxxx'
-            simIC = 'yyyy'
-            print(results)
-            with open('out/owlsim.csv', 'w', newline='') as csvfile:
-                owlsimwriter = csv.writer(csvfile, delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                owlsimwriter.writerow([entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC])
+        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0001559&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
 
-        except Exception:
-            print('Retrieval failed.')
-            #continue
 
         return
 
@@ -848,8 +857,7 @@ main = main()
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
 #main.assemble_nif_zfin_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_genotype_to_phenotype(limit)
+main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
