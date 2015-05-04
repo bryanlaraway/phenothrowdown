@@ -85,7 +85,7 @@ class main():
                     continue
                 if limit is not None and line_counter > limit:
                     break
-
+                    #
                 #print(len(hu_disease_to_phenotype_hash.keys()))
         #print(hu_disease_to_phenotype_hash)
                 #if disease_id not in hu_disease_to_phenotype_hash:
@@ -580,7 +580,6 @@ class main():
                 line_counter += 1
                 (e_uid, disease_id, disorder_name, disorder_database_link, gene_id,
                  gene_num, gene_label, v_uid, v_uuid, v_lastmodified) = row
-
                 print(disease_id)
                 #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
 
@@ -600,6 +599,51 @@ class main():
             pickle.dump(hpo_disease_to_gene_hash, handle)
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(hpo_disease_to_gene_hash.keys()))+' human phenotypes present.')
+        return
+
+    def assemble_nif_hpo_disease_to_phenotype(self, limit=None):
+        print('INFO:Assembling human disease to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/hpo/dvp.pr_nlx_151835_1'
+        out = 'out/hpo/nif_human_disease_phenotype_hash.txt'
+        hpo_disease_to_phenotype_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human disease to phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, disorder_id, disorder_database_prefix, disorder_id_num, disorder_database_link, disorder_name,
+                 disorder_qualifier, phenotype_id, phenotype_label, publication_id, evidence_code_id,
+                 evidence_code_symbol, evidence_code_label, onset_id, onset_label, frequency, aspect, aspect_text,
+                 synonyms, v_uid, v_uuid, v_lastmodified) = row
+
+                print(disorder_id)
+                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+
+                #print(genes)
+                if disorder_id not in hpo_disease_to_phenotype_hash:
+                    hpo_disease_to_phenotype_hash[disorder_id] = [phenotype_id]
+                    #print(hpo_disease_to_phenotype_hash[disease)id])
+                else:
+                    hpo_disease_to_phenotype_hash[disorder_id].append(phenotype_id)
+                    #print(hpo_disease_to_phenotype_hash[disorder_id])
+                    #print(len(hpo_disease_to_phenotype_hash.keys()))
+                    print('Repeat disease: '+disorder_id)
+                if limit is not None and line_counter > limit:
+                    break
+        #TODO: Need to filter out phenotypes that don't have any associated genes.
+        with open(out, 'wb') as handle:
+            pickle.dump(hpo_disease_to_phenotype_hash, handle)
+        print('INFO: Done assembling human disease to phenotype data.')
+        print('INFO: '+str(len(hpo_disease_to_phenotype_hash.keys()))+' human diseases present.')
         return
 
     def assemble_nif_mgi_gene_to_phenotype(self, limit=None):
@@ -715,9 +759,52 @@ class main():
         return
 
 
+
+    def _perform_owlsim_queries(self, limit=None):
+        print('INFO: Assembling human disease to phenotype data.')
+        line_counter = 0
+        failure_counter = 0
+
+        raw1 = 'out/hpo/human_disease_pheno_hash.txt'
+        raw2 = 'out/mgi/mouse_geno_pheno_hash.txt'
+        data1 = open(raw1,'rb')
+        organism_a_hash = pickle.load(data1)
+        data1.close()
+        data2 = open(raw2,'rb')
+        organism_b_hash = pickle.load(data2)
+        data2.close()
+        #data2 = open(raw2,'r', encoding="iso-8859-1")
+        #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
+            #organism_a_hash = pickle.loads(handle1.read())
+        #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
+            #organism_b_hash = pickle.loads(handle2.read())
+        print(organism_a_hash)
+
+        #print(str(row_count)+' human diseases to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' phenotypic profiles.' )
+        query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
+        phenotypic_profile_a = ''
+        phenotypic_profile_b = ''
+        query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
+        try:
+            response = urllib.request.urlopen(query_url, timeout=5)
+            reader = codecs.getreader("utf-8")
+            data = json.load(reader(response))
+            print(data)
+        except Exception:
+            print('Retrieval failed.')
+            #continue
+
+
+
+        return
+
+
+
 ###MAIN####
-limit = None
-#limit = 100
+
+limit = 10
 main = main()
 
 ### Data assembly via NIF/DISCO ###
@@ -730,14 +817,11 @@ main = main()
 #main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_gene_to_phenotype()
-main.assemble_nif_zfin_gene_to_phenotype()
-#TODO:
-#hpo: disease to gene ##DONE##
-#zfin: genotype to phenotype ##DONE##
-#zfin: gene to phenotype
-#mgi: genotype to phenotype ##DONE##
-#mgi: gene to phenotype
+#main.assemble_nif_mgi_gene_to_phenotype(limit)
+#main.assemble_nif_zfin_gene_to_phenotype(limit)
+main.assemble_nif_hpo_disease_to_phenotype(limit)
+main._perform_owlsim_queries()
+
 
 
 
@@ -753,6 +837,8 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
+#Format for mutliple:
+#http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
 
 ##############    OBTAIN DATA FROM DATA SOURCES    #############
 # PURPOSE: obtain data from the various resources that I will use
@@ -884,7 +970,7 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 # phenotype_pair_id = phenotype_a_id+'_'+phenotype_b_id
 # (Necessary to make a full entry ID? Both phenotype IDs, both taxon IDs, ortholog IDs, etc?)
 #TODO: How best to prepare variables for the hypergeometric probability calculation?
-
+#test
 # If there are matching orthologs
 # Call hypergeometric probability calculation.
 
