@@ -781,17 +781,21 @@ class main():
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
 
-        entity_1 = 'entity_1'
-        entity_1_attributes = 'attributes'
-        entity_2 = 'genotype_id'
-        entity_2_attributes = 'attributes'
+        entity_a = 'entity_1'
+        entity_a_attributes = ['attr1','attr2','attr3']
+        entity_b = 'genotype_id'
+        entity_b_attributes = ['attrb1','attrb2','attrb3']
         #print(str(row_count)+' human diseases to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' phenotypic profiles.' )
         base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
+
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
-        phenotypic_profile_a = ''
-        phenotypic_profile_b = ''
+        phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+        phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+        combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+        print(combined_url)
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&b=HP:0000580'
         query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0001559&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
         try:
@@ -805,23 +809,14 @@ class main():
             simJ = data['results'][0]['simJ']
             ICCS = 'xxxx'
             simIC = 'yyyy'
-            row = (entity_1,entity_1_attributes,entity_2, entity_2_attributes,maxIC,simJ,ICCS,simIC)
             print(results)
+            with open('out/owlsim.csv', 'w', newline='') as csvfile:
+                owlsimwriter = csv.writer(csvfile, delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                owlsimwriter.writerow([entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC])
 
-                    #print(pheno_ids)
-                    #for rs in pheno_ids:
-                        #if disease_id not in hu_disease_to_phenotype_hash:
-                            #hu_disease_to_phenotype_hash[disease_id] = [rs['id']]
-                            #print(hu_disease_to_phenotype_hash[disease_id])
-                        #else:
-                            #hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
-                            #print(hu_disease_to_phenotype_hash[disease_id])
         except Exception:
             print('Retrieval failed.')
             #continue
-        with open('out/owlsim.csv', 'w', newline='') as csvfile:
-            owlsimwriter = csv.writer(csvfile, delimiter=' ',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            owlsimwriter.writerow([entity_1,entity_1_attributes,entity_2, entity_2_attributes,maxIC,simJ,ICCS,simIC])
 
         return
 
