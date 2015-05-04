@@ -545,13 +545,13 @@ class main():
                 genes = implicated_gene_ids.split()
                 print(genes)
                 if phenotype_id not in mgi_genotype_to_phenotype_hash:
-                    mgi_genotype_to_phenotype_hash[phenotype_id] = genes
+                    mgi_genotype_to_phenotype_hash[effective_genotype_id] = phenotype_id
                     #print(mgi_genotype_to_phenotype_hash[genotype_id])
                 else:
-                    mgi_genotype_to_phenotype_hash[phenotype_id].append(genes)
+                    mgi_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
                     #print(mgi_genotype_to_phenotype_hash[genotype_id])
                     #print(len(mgi_genotype_to_phenotype_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
+                    print('Repeat genotype: '+effective_genotype_id)
                 if limit is not None and line_counter > limit:
                     break
         with open(inter, 'wb') as handle:
@@ -780,15 +780,28 @@ class main():
         #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
-
-        entity_a = 'entity_1'
-        entity_a_attributes = ['attr1','attr2','attr3']
-        entity_b = 'genotype_id'
-        entity_b_attributes = ['attrb1','attrb2','attrb3']
+        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        print(organism_b_hash)
+        for i in organism_a_hash:
+            entity_a = i
+            entity_a_attributes = organism_a_hash[i]
+            #print(attributes)
+            print(entity_a_attributes)
+            phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+            for j in organism_b_hash:
+                entity_b = j
+                entity_b_attributes = organism_b_hash[j]
+                print(entity_b_attributes)
+                phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+                query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+        #entity_a = 'entity_1'
+        #entity_a_attributes = ['attr1','attr2','attr3']
+        #entity_b = 'genotype_id'
+        #entity_b_attributes = ['attrb1','attrb2','attrb3']
         #print(str(row_count)+' human diseases to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' phenotypic profiles.' )
-        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+
         #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
 
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
