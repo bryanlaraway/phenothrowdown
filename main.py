@@ -846,21 +846,21 @@ class main():
 
 ###MAIN####
 
-limit = 10
+limit = 100
 main = main()
 
 ### Data assembly via NIF/DISCO ###
-#main.assemble_nif_zfin_phenotype_to_gene(limit)
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
-#main.assemble_nif_hpo_phenotype_to_gene(limit)
-#main.assemble_nif_animalqtl_phenotype_to_gene(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_hpo_phenotype_to_gene(limit)
+main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
-#main.assemble_nif_hpo_disease_to_gene(limit)
-#main.assemble_nif_zfin_genotype_to_phenotype(limit)
+main.assemble_nif_hpo_disease_to_gene(limit)
+main.assemble_nif_zfin_genotype_to_phenotype(limit)
 main.assemble_nif_mgi_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_gene_to_phenotype(limit)
-#main.assemble_nif_zfin_gene_to_phenotype(limit)
-#main.assemble_nif_hpo_disease_to_phenotype(limit)
+main.assemble_nif_mgi_gene_to_phenotype(limit)
+main.assemble_nif_zfin_gene_to_phenotype(limit)
+main.assemble_nif_hpo_disease_to_phenotype(limit)
 main.perform_owlsim_queries()
 
 
