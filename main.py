@@ -810,9 +810,9 @@ class main():
                         maxIC = data['results'][0]['maxIC']
                         simJ = data['results'][0]['simJ']
                         #FIXME: Is this the correct variable to grab for the ICCS?
-                        ICCS = 'xxxx'
+                        ICCS = data['results'][0]['bmaSymIC']
                         #FIXME: Is this the correct variable to grab for the simIC?
-                        simIC = 'yyyy'
+                        simIC = data['results'][0]['simGIC']
                         #print(results)
                         #FIXME: Queries are working, need to adjust writing output to file.
 
@@ -820,6 +820,8 @@ class main():
                         #row = (entity_a+' | '+entity_a_attributes+' | '+entity_b+' | '+entity_b_attributes+' | '+maxIC+' | '+simJ+' | '+ICCS+' | '+simIC)
                         sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
                         json.dump(sequence, outfile)
+                        outfile.write('\n')
+
 
                         #print(sequence)
                         #print('failed here')
@@ -850,7 +852,7 @@ class main():
         #combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
         #print(combined_url)
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&b=HP:0000580'
-        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0001559&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
+        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0000599&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
 
 
         return
