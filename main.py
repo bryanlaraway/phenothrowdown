@@ -808,11 +808,14 @@ class main():
                         results = data['results']
                         maxIC = data['results'][0]['maxIC']
                         simJ = data['results'][0]['simJ']
+                        #FIXME: Is this the correct variable to grab for the ICCS?
                         ICCS = 'xxxx'
+                        #FIXME: Is this the correct variable to grab for the simIC?
                         simIC = 'yyyy'
                         print(results)
                         #FIXME: Queries are working, need to adjust writing output to file.
                         row = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
+
                         print(row)
                         owlsimwriter.writerow(row)
 
@@ -850,17 +853,17 @@ limit = 100
 main = main()
 
 ### Data assembly via NIF/DISCO ###
-main.assemble_nif_zfin_phenotype_to_gene(limit)
-main.assemble_nif_mgi_phenotype_to_gene(limit)
-main.assemble_nif_hpo_phenotype_to_gene(limit)
-main.assemble_nif_animalqtl_phenotype_to_gene(limit)
+#main.assemble_nif_zfin_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)
+#main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
-main.assemble_nif_hpo_disease_to_gene(limit)
-main.assemble_nif_zfin_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_gene_to_phenotype(limit)
-main.assemble_nif_zfin_gene_to_phenotype(limit)
-main.assemble_nif_hpo_disease_to_phenotype(limit)
+#main.assemble_nif_hpo_disease_to_gene(limit)
+#main.assemble_nif_zfin_genotype_to_phenotype(limit)
+#main.assemble_nif_mgi_genotype_to_phenotype(limit)
+#main.assemble_nif_mgi_gene_to_phenotype(limit)
+#main.assemble_nif_zfin_gene_to_phenotype(limit)
+#main.assemble_nif_hpo_disease_to_phenotype(limit)
 main.perform_owlsim_queries()
 
 
@@ -876,6 +879,7 @@ main.perform_owlsim_queries()
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
+#TODO: Make sure and have the ability to filter between single-gene genotypes and multi-gene genotypes.
 
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 #Format for mutliple:
