@@ -782,20 +782,20 @@ class main():
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
         base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
-        print(organism_a_hash)
-        print(organism_b_hash)
-        with open('out/owlsim.csv', 'w', newline='') as csvfile:
-            owlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
+        #print(organism_a_hash)
+        #print(organism_b_hash)
+        with open('out/owlsim.txt', 'w', newline='') as outfile:
+            #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
             for i in organism_a_hash:
                 entity_a = i
                 entity_a_attributes = organism_a_hash[i]
                 #print(attributes)
-                print(entity_a_attributes)
+                #print(entity_a_attributes)
                 phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
                 for j in organism_b_hash:
                     entity_b = j
                     entity_b_attributes = organism_b_hash[j]
-                    print(entity_b_attributes)
+                    #print(entity_b_attributes)
                     phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
                     print(query_url)
@@ -803,8 +803,9 @@ class main():
                         response = urllib.request.urlopen(query_url, timeout=5)
                         reader = codecs.getreader("utf-8")
                         data = json.load(reader(response))
-                        print(data)
-                        print('#####')
+                        #print(data)
+                        #print('#####')
+                        print('query successful')
                         results = data['results']
                         maxIC = data['results'][0]['maxIC']
                         simJ = data['results'][0]['simJ']
@@ -812,15 +813,24 @@ class main():
                         ICCS = 'xxxx'
                         #FIXME: Is this the correct variable to grab for the simIC?
                         simIC = 'yyyy'
-                        print(results)
+                        #print(results)
                         #FIXME: Queries are working, need to adjust writing output to file.
-                        row = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
 
-                        print(row)
-                        owlsimwriter.writerow(row)
+                        #str = '\t'
+                        #row = (entity_a+' | '+entity_a_attributes+' | '+entity_b+' | '+entity_b_attributes+' | '+maxIC+' | '+simJ+' | '+ICCS+' | '+simIC)
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
+                        json.dump(sequence, outfile)
+
+                        #print(sequence)
+                        #print('failed here')
+                        #row = str.join(sequence)
+
+                        #print(row)
+                        #owlsimwriter.writerow(row)
+                        print('query processing completed')
 
                     except Exception:
-                        print('OWLSim query failed.')
+                        print('Processing of OWLSim query failed.')
                         continue
 
 
