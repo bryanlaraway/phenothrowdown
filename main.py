@@ -869,10 +869,163 @@ class main():
 
     ####### PHENOLOG DATA PROCESSING #######
 
+    def trim_panther_data(self):
+        print('INFO: Trimming PANTHER data.')
+        line_counter = 0
+        failure_counter = 0
+        raw = 'raw/panther/dvp.pr_nlx_84521_1'
+        inter = 'inter/panther/panther.txt'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' PANTHER rows to process.')
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                 proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                 gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
+                 e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                if taxon_id_a == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) or taxon_id_b == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']):
+                    monkey = 1
+        return
+
+
+    def get_gene_orthologs(self):
+        # TODO: Would it make sense to do a pre-processing step where we filter out based on the taxon? Might speed up calculations.
+
+        return
+
+
+
+
+
+    def perform_phenolog_calculations(self, raw1, raw2, out, limit=None):
+        print('INFO: Performing phenolog calculations.')
+        line_counter = 0
+        failure_counter = 0
+        if limit is not None:
+            print('Only querying first '+str(limit)+' phenotypic profile pairs.')
+        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
+        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
+        data1 = open(raw1, 'rb')
+        organism_a_hash = pickle.load(data1)
+        data1.close()
+        data2 = open(raw2, 'rb')
+        organism_b_hash = pickle.load(data2)
+        data2.close()
+        #data2 = open(raw2,'r', encoding="iso-8859-1")
+        #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
+            #organism_a_hash = pickle.loads(handle1.read())
+        #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
+            #organism_b_hash = pickle.loads(handle2.read())
+        #print(organism_a_hash)
+        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #print(organism_a_hash)
+        #print(organism_b_hash)
+        with open(out, 'w', newline='') as outfile:
+            #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
+            for i in organism_a_hash:
+                entity_a = i
+                entity_a_attributes = organism_a_hash[i]
+                #print(attributes)
+                #print(entity_a_attributes)
+                phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+                for j in organism_b_hash:
+                    entity_b = j
+                    entity_b_attributes = organism_b_hash[j]
+                    #print(entity_b_attributes)
+                    phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+                    query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+                    #print(query_url)
+                    try:
+                        response = urllib.request.urlopen(query_url, timeout=5)
+                        reader = codecs.getreader("utf-8")
+                        data = json.load(reader(response))
+                        #print(data)
+                        #print('#####')
+                        #print('query successful')
+                        results = data['results']
+                        maxIC = data['results'][0]['maxIC']
+                        simJ = data['results'][0]['simJ']
+                        #FIXME: Is this the correct variable to grab for the ICCS?
+                        ICCS = data['results'][0]['bmaSymIC']
+                        #FIXME: Is this the correct variable to grab for the simIC?
+                        simIC = data['results'][0]['simGIC']
+                        #print(results)
+                        #FIXME: Queries are working, need to adjust writing output to file.
+
+                        query_flag = 'success'
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                        json.dump(sequence, outfile)
+                        outfile.write('\n')
+
+
+                        #print(sequence)
+                        #print('failed here')
+                        #row = str.join(sequence)
+
+                        #print(row)
+                        #owlsimwriter.writerow(row)
+                        #print('query processing completed')
+
+                    except Exception:
+                        #print('Processing of OWLSim query failed.')
+                        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
+                        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
+                        maxIC = 0
+                        simJ = 0
+                        ICCS = 0
+                        simIC = 0
+                        query_flag = 'fail'
+
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                        json.dump(sequence, outfile)
+                        outfile.write('\n')
+                        continue
+
+
+
+        #entity_a = 'entity_1'
+        #entity_a_attributes = ['attr1','attr2','attr3']
+        #entity_b = 'genotype_id'
+        #entity_b_attributes = ['attrb1','attrb2','attrb3']
+        #print(str(row_count)+' human diseases to process.')
+
+
+        #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
+
+        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
+        #phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+        #phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+        #combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+        #print(combined_url)
+        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&b=HP:0000580'
+        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0000599&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
+
+
+        return
+
+
+
+
+
+
 ###MAIN####
 
 limit = 100
 main = main()
+
+
+### Data assembly via SciGraph ###
+#main._assemble_human_disease_to_phenotype(limit)
+#main._assemble_mouse_genotype_to_phenotype(limit)
+#FIXME: Note that the zebrafish data is not currently available through REST services.
+#main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)
@@ -881,30 +1034,30 @@ main = main()
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
-main.assemble_nif_zfin_genotype_to_phenotype(limit)
+#main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
 # Compare human diseases & mouse genotypes via OWLSim.
-print('OWLSim processing human vs mouse')
-main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
-print('Done processing human vs mouse')
+#print('OWLSim processing human vs mouse')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
+#print('Done processing human vs mouse')
 # Compare human diseases & zebrafish genotypes via OWLSim.
-print('OWLSim processing human vs zebrafish')
-main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
-print('Done processing human vs zebrafish')
+#print('OWLSim processing human vs zebrafish')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
+#print('Done processing human vs zebrafish')
 # Compare mouse genotypes & zebrafish genotypes via OWLSim.
-print('OWLSim processing mouse vs zebrafish')
-main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_mouse_genotype_zebrafish_genotype.txt')
-print('Done processing mouse vs zebrafish')
+#print('OWLSim processing mouse vs zebrafish')
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_mouse_genotype_zebrafish_genotype.txt')
+#print('Done processing mouse vs zebrafish')
 
-### Data assembly via SciGraph ###
-#main._assemble_human_disease_to_phenotype(limit)
-#main._assemble_mouse_genotype_to_phenotype(limit)
-#FIXME: Note that the zebrafish data is not currently available through REST services.
-#main.assemble_zebrafish_genotype_to_phenotype(500)
+#print()
+main.trim_panther_data()
+#main.perform_phenolog_calculations()
+
+
 
 
 elapsed_time = time.time() - start_time
