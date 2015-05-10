@@ -490,16 +490,16 @@ class main():
                     print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
                     #print(phenotype_id)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-                    genes = implicated_gene_ids.split()
-                    print(genes)
-                    if phenotype_id not in zfin_genotype_to_phenotype_hash:
-                        zfin_genotype_to_phenotype_hash[phenotype_id] = genes
+                    #genes = implicated_gene_ids.split()
+                    #print(genes)
+                    if effective_genotype_id not in zfin_genotype_to_phenotype_hash:
+                        zfin_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
                         #print(zfin_genotype_to_phenotype_hash[genotype_id])
                     else:
-                        zfin_genotype_to_phenotype_hash[phenotype_id].append(genes)
+                        zfin_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
                         #print(zfin_genotype_to_phenotype_hash[genotype_id])
                         #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                        print('Repeat phenotype: '+phenotype_id)
+                        print('Repeat genotype: '+effective_genotype_id)
                     if limit is not None and line_counter > limit:
                         break
         with open(inter, 'wb') as handle:
@@ -761,18 +761,18 @@ class main():
 
     ####### OWLSIM DATA PROCESSING #######
 
-    def perform_owlsim_queries(self, limit=None):
+    def perform_owlsim_queries(self, raw1, raw2, out, limit=None):
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
         failure_counter = 0
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
-        raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
-        raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
-        data1 = open(raw1,'rb')
+        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
+        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
+        data1 = open(raw1, 'rb')
         organism_a_hash = pickle.load(data1)
         data1.close()
-        data2 = open(raw2,'rb')
+        data2 = open(raw2, 'rb')
         organism_b_hash = pickle.load(data2)
         data2.close()
         #data2 = open(raw2,'r', encoding="iso-8859-1")
@@ -784,7 +784,7 @@ class main():
         base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
-        with open('out/owlsim.txt', 'w', newline='') as outfile:
+        with open(out, 'w', newline='') as outfile:
             #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
             for i in organism_a_hash:
                 entity_a = i
@@ -798,14 +798,14 @@ class main():
                     #print(entity_b_attributes)
                     phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
-                    print(query_url)
+                    #print(query_url)
                     try:
                         response = urllib.request.urlopen(query_url, timeout=5)
                         reader = codecs.getreader("utf-8")
                         data = json.load(reader(response))
                         #print(data)
                         #print('#####')
-                        print('query successful')
+                        #print('query successful')
                         results = data['results']
                         maxIC = data['results'][0]['maxIC']
                         simJ = data['results'][0]['simJ']
@@ -828,10 +828,10 @@ class main():
 
                         #print(row)
                         #owlsimwriter.writerow(row)
-                        print('query processing completed')
+                        #print('query processing completed')
 
                     except Exception:
-                        print('Processing of OWLSim query failed.')
+                        #print('Processing of OWLSim query failed.')
                         #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
                         #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
                         maxIC = 0
@@ -867,7 +867,7 @@ class main():
 
         return
 
-
+    ####### PHENOLOG DATA PROCESSING #######
 
 ###MAIN####
 
@@ -881,15 +881,24 @@ main = main()
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
-#main.assemble_nif_zfin_genotype_to_phenotype(limit)
+main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
-main.perform_owlsim_queries()
 
-
-
+# Compare human diseases & mouse genotypes via OWLSim.
+print('OWLSim processing human vs mouse')
+main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
+print('Done processing human vs mouse')
+# Compare human diseases & zebrafish genotypes via OWLSim.
+print('OWLSim processing human vs zebrafish')
+main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
+print('Done processing human vs zebrafish')
+# Compare mouse genotypes & zebrafish genotypes via OWLSim.
+print('OWLSim processing mouse vs zebrafish')
+main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_mouse_genotype_zebrafish_genotype.txt')
+print('Done processing mouse vs zebrafish')
 
 ### Data assembly via SciGraph ###
 #main._assemble_human_disease_to_phenotype(limit)
