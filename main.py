@@ -872,7 +872,7 @@ class main():
     def trim_panther_data(self):
         print('INFO: Trimming PANTHER data.')
         line_counter = 0
-        failure_counter = 0
+        output_line_counter = 0
         raw = 'raw/panther/dvp.pr_nlx_84521_1'
         inter = 'inter/panther/panther.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -889,9 +889,21 @@ class main():
                  proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
                  gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
                  e_uid, v_uid, v_uuid, v_lastmodified) = row
+                with open(inter, 'wb') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter=' ')
+                    #Currently filtering on the big three taxons, and ortholog relations only.
+                    if (taxon_id_a == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) or taxon_id_b == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])) and orthology_class_label == 'Ortholog':
+                        output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                        proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
+                        output_line_counter += 1
+                        csvwriter.writerow(output_row)
+        print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
 
-                if taxon_id_a == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) or taxon_id_b == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']):
-                    monkey = 1
+
+
+
+
         return
 
 
