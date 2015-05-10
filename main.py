@@ -816,9 +816,8 @@ class main():
                         #print(results)
                         #FIXME: Queries are working, need to adjust writing output to file.
 
-                        #str = '\t'
-                        #row = (entity_a+' | '+entity_a_attributes+' | '+entity_b+' | '+entity_b_attributes+' | '+maxIC+' | '+simJ+' | '+ICCS+' | '+simIC)
-                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC)
+                        query_flag = 'success'
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
                         json.dump(sequence, outfile)
                         outfile.write('\n')
 
@@ -833,6 +832,17 @@ class main():
 
                     except Exception:
                         print('Processing of OWLSim query failed.')
+                        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
+                        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
+                        maxIC = 0
+                        simJ = 0
+                        ICCS = 0
+                        simIC = 0
+                        query_flag = 'fail'
+
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                        json.dump(sequence, outfile)
+                        outfile.write('\n')
                         continue
 
 
