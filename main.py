@@ -869,12 +869,12 @@ class main():
 
     ####### PHENOLOG DATA PROCESSING #######
 
-    def trim_panther_data(self):
+    def trim_panther_data(self, inter, taxons):
         print('INFO: Trimming PANTHER data.')
         line_counter = 0
         output_line_counter = 0
         raw = 'raw/panther/dvp.pr_nlx_84521_1'
-        inter = 'inter/panther/panther.txt'
+        #inter = 'inter/panther/panther.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -893,7 +893,7 @@ class main():
                     e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                     #Currently filtering on the big three taxons, and ortholog relations only.
-                    if (taxon_id_a in ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'] or taxon_id_b in ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) and orthology_class_label == 'Ortholog':
+                    if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
                         output_row = [panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                         proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
                         gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id]
@@ -902,10 +902,6 @@ class main():
                         csvwriter.writerow(output_row)
 
         print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
-
-
-
-
 
         return
 
@@ -1011,9 +1007,6 @@ class main():
         #entity_b_attributes = ['attrb1','attrb2','attrb3']
         #print(str(row_count)+' human diseases to process.')
 
-
-        #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
-
         #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
         #phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
         #phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
@@ -1069,7 +1062,12 @@ main = main()
 #print('Done processing mouse vs zebrafish')
 
 #print()
-main.trim_panther_data()
+
+#Trim the PANTHER data set for
+main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
+main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
+main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
+main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 #main.perform_phenolog_calculations()
 
 
