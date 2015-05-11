@@ -880,24 +880,27 @@ class main():
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
             print(str(row_count)+' PANTHER rows to process.')
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
-                 proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                 gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
-                 e_uid, v_uid, v_uuid, v_lastmodified) = row
-                with open(inter, 'wb') as csvfile:
-                    csvwriter = csv.writer(csvfile, delimiter=' ')
+        with open(inter, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=' ')
+            with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+                next(filereader,None)
+                for row in filereader:
+                    line_counter += 1
+                    (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                    proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                    gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
+                    e_uid, v_uid, v_uuid, v_lastmodified) = row
+
                     #Currently filtering on the big three taxons, and ortholog relations only.
-                    if (taxon_id_a == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) or taxon_id_b == any(['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])) and orthology_class_label == 'Ortholog':
-                        output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                    if (taxon_id_a in ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'] or taxon_id_b in ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090']) and orthology_class_label == 'Ortholog':
+                        output_row = [panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                         proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
+                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id]
+                        #print('found one')
                         output_line_counter += 1
                         csvwriter.writerow(output_row)
+
         print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
 
 
