@@ -143,15 +143,12 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
 
-
         with open(inter, 'wb') as handle:
             pickle.dump(mouse_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
         print('INFO: '+str(len(mouse_genotype_to_phenotype_hash.keys()))+' mouse genotypes present.')
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
-
-
 
     def assemble_zebrafish_genotype_to_phenotype(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
@@ -201,9 +198,6 @@ class main():
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
-    # Need list of phenotypes with all associated genes for human, mouse, zebrafish
-
-    #FIXME: Creating a general phenotype-gene processing script.
     # Will require adjustment once the SciGraph REST call is operational again.
     def assemble_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
@@ -254,6 +248,8 @@ class main():
         return
 
     ####### NIF DATA ASSEMBLY #######
+
+    ####### PHENOLOG PHENOTYPE TO GENE #######
 
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling zebrafish genotype to phenotype data.')
@@ -309,17 +305,18 @@ class main():
         return
 
     def assemble_nif_mgi_phenotype_to_gene(self, limit=None):
-        print('INFO:Assembling mouse genotype to phenotype data.')
+        print('INFO:Assembling mouse phenotype to gene ortholog data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
         inter = 'inter/mgi/mouse_pheno_gene_hash.txt'
         mgi_phenotype_to_gene_hash = {}
+        mgi_phenotype_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
-            print(str(row_count)+' zebrafish phenotype rows to process.')
+            print(str(row_count)+' mouse phenotype rows to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -337,18 +334,31 @@ class main():
                  environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
                  e_uid, v_uid, v_uuid, v_lastmodified) = row
 
-                print(phenotype_id)
+                #print(phenotype_id)
                 #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
                 genes = implicated_gene_ids.split()
                 print(genes)
                 if phenotype_id not in mgi_phenotype_to_gene_hash:
                     mgi_phenotype_to_gene_hash[phenotype_id] = genes
-                    #print(mgi_phenotype_to_gene_hash[genotype_id])
+                    print(mgi_phenotype_to_gene_hash[phenotype_id])
+                    for gene in genes:
+                        panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
+                        if panther_id != 'fail':
+                            print('found ortholog')
+                        elif panther_id == 'fail':
+                            print('No ortholog found.')
                 else:
-                    mgi_phenotype_to_gene_hash[phenotype_id].append(genes)
-                    #print(mgi_phenotype_to_gene_hash[genotype_id])
-                    #print(len(mgi_phenotype_to_gene_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
+                    for gene in genes:
+                        mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
+                        print(mgi_phenotype_to_gene_hash[phenotype_id])
+                        #print(len(mgi_phenotype_to_gene_hash.keys()))
+                        print('Repeat phenotype: '+phenotype_id)
+                        panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
+                        if panther_id != 'fail':
+                            print('found ortholog')
+                        elif panther_id == 'fail':
+                            print('No ortholog found.')
+
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
@@ -451,6 +461,7 @@ class main():
         print('INFO: '+str(len(aqtl_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
         return
 
+    ####### OWLSIM GENOTYPE TO PHENOTYPE #######
 
     def assemble_nif_zfin_genotype_to_phenotype(self, limit=None):
         #TODO: Assuming want to filter out to intrinsic genotypes only?
@@ -507,7 +518,6 @@ class main():
         print('INFO: Done assembling zebrafish phenotype to gene data.')
         print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish phenotypes present.')
         return
-
 
     def assemble_nif_mgi_genotype_to_phenotype(self, limit=None):
         #TODO: Assuming want to filter out to intrinsic genotypes only?
@@ -881,7 +891,7 @@ class main():
             row_count = row_count - 1
             print(str(row_count)+' PANTHER rows to process.')
         with open(inter, 'w', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter=' ')
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             with open(raw, 'r', encoding="iso-8859-1") as csvfile:
                 filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
                 next(filereader,None)
@@ -894,9 +904,9 @@ class main():
 
                     #Currently filtering on the big three taxons, and ortholog relations only.
                     if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
-                        output_row = [panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                        output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                         proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id]
+                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
                         #print('found one')
                         output_line_counter += 1
                         csvwriter.writerow(output_row)
@@ -906,10 +916,25 @@ class main():
         return
 
 
-    def get_gene_orthologs(self):
-        # TODO: Would it make sense to do a pre-processing step where we filter out based on the taxon? Might speed up calculations.
+    def get_ortholog(self, query_gene_id, panther):
 
-        return
+        with open(panther, 'r') as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            #print(str(row_count)+' zebrafish gene to phenotype rows to process.')
+            print('query= '+query_gene_id)
+            for row in filereader:
+                #print(row)
+                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id) = row
+                #print(panther_speciesa)
+                #print(panther_id)
+
+                if query_gene_id in [genea, gene_id_a, geneb, gene_id_b]:
+                    result_panther_id = panther_id
+                    print('found ortholog')
+                    return(result_panther_id)
+
+        print('no ortholog found for '+query_gene_id)
+        return('fail')
 
 
 
@@ -1028,6 +1053,11 @@ class main():
 limit = 100
 main = main()
 
+#Trim the PANTHER data set for each taxon.
+#main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
+#main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
+#main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
+#main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 
 ### Data assembly via SciGraph ###
 #main._assemble_human_disease_to_phenotype(limit)
@@ -1037,7 +1067,7 @@ main = main()
 
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
@@ -1063,11 +1093,9 @@ main = main()
 
 #print()
 
-#Trim the PANTHER data set for
-main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
-main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
-main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
-main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
+
+
+
 #main.perform_phenolog_calculations()
 
 
