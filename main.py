@@ -252,12 +252,14 @@ class main():
     ####### PHENOLOG PHENOTYPE TO GENE #######
 
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
-        print('INFO:Assembling zebrafish genotype to phenotype data.')
+        print('INFO:Assembling zebrafish phenotype to ortholog data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
-        inter = 'inter/zfin/zebrafish_pheno_gene_hash.txt'
+        inter1 = 'inter/zfin/zebrafish_pheno_gene_hash.txt'
+        inter2 = 'inter/zfin/zebrafish_pheno_ortholog_hash.txt'
         zfin_phenotype_to_gene_hash = {}
+        zfin_phenotype_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -291,15 +293,37 @@ class main():
                 if phenotype_id not in zfin_phenotype_to_gene_hash:
                     zfin_phenotype_to_gene_hash[phenotype_id] = genes
                     #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                    for gene in genes:
+                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                        if panther_id != 'fail':
+                            print('found ortholog')
+                            if phenotype_id not in zfin_phenotype_to_ortholog_hash:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                            else:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                        elif panther_id == 'fail':
+                            print('No ortholog found.')
                 else:
-                    zfin_phenotype_to_gene_hash[phenotype_id].append(genes)
-                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
+                    for gene in genes:
+                        zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
+                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                        #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                        print('Repeat phenotype: '+phenotype_id)
+                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                        if panther_id != 'fail':
+                            print('found ortholog')
+                            if phenotype_id not in zfin_phenotype_to_ortholog_hash:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                            else:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                        elif panther_id == 'fail':
+                            print('No ortholog found.')
                 if limit is not None and line_counter > limit:
                     break
-        with open(inter, 'wb') as handle:
+        with open(inter1, 'wb') as handle:
             pickle.dump(zfin_phenotype_to_gene_hash, handle)
+        with open(inter2, 'wb') as handle:
+            pickle.dump(zfin_phenotype_to_ortholog_hash, handle)
         print('INFO: Done assembling zebrafish phenotype to gene data.')
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
         return
@@ -345,7 +369,10 @@ class main():
                         panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
                         if panther_id != 'fail':
                             print('found ortholog')
-                            mgi_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
+                            if phenotype_id not in mgi_phenotype_to_ortholog_hash:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                            else:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                         elif panther_id == 'fail':
                             print('No ortholog found.')
                 else:
@@ -1094,8 +1121,8 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-#main.assemble_nif_zfin_phenotype_to_gene(limit)
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
 main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
