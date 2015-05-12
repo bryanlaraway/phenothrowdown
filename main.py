@@ -1109,10 +1109,10 @@ limit = 100
 main = main()
 
 #Trim the PANTHER data set for each taxon.
-#main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
-#main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
-#main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
-#main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
+main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
+main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
+main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
+main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 
 ### Data assembly via SciGraph ###
 #main._assemble_human_disease_to_phenotype(limit)
@@ -1124,14 +1124,14 @@ main = main()
 main.assemble_nif_zfin_phenotype_to_gene(limit)
 main.assemble_nif_mgi_phenotype_to_gene(limit)
 main.assemble_nif_hpo_phenotype_to_gene(limit)
-#main.assemble_nif_animalqtl_phenotype_to_gene(limit)
+main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
-#main.assemble_nif_hpo_disease_to_gene(limit)
-#main.assemble_nif_zfin_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_gene_to_phenotype(limit)
-#main.assemble_nif_zfin_gene_to_phenotype(limit)
-#main.assemble_nif_hpo_disease_to_phenotype(limit)
+main.assemble_nif_hpo_disease_to_gene(limit)
+main.assemble_nif_zfin_genotype_to_phenotype(limit)
+main.assemble_nif_mgi_genotype_to_phenotype(limit)
+main.assemble_nif_mgi_gene_to_phenotype(limit)
+main.assemble_nif_zfin_gene_to_phenotype(limit)
+main.assemble_nif_hpo_disease_to_phenotype(limit)
 
 
 
@@ -1139,14 +1139,14 @@ main.assemble_nif_hpo_phenotype_to_gene(limit)
 ####### OWLSIM COMPARISONS #######
 
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
-#print('OWLSim processing human diseases vs mouse genotypes')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
-#print('Done processing human diseases vs mouse genotypes')
+print('OWLSim processing human diseases vs mouse genotypes')
+main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
+print('Done processing human diseases vs mouse genotypes')
 
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#print('OWLSim processing human disease vs zebrafish genotype')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
-#print('Done processing human disease vs zebrafish genotype')
+print('OWLSim processing human disease vs zebrafish genotype')
+main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
+print('Done processing human disease vs zebrafish genotype')
 
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 print('OWLSim processing mouse genotype vs zebrafish genotypes')
