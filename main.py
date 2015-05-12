@@ -382,8 +382,10 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_2'
-        inter = 'inter/hpo/human_pheno_gene_hash.txt'
+        inter1 = 'inter/hpo/human_pheno_gene_hash.txt'
+        inter2 = 'inter/hpo/human_pheno_ortholog_hash.txt'
         hpo_phenotype_to_gene_hash = {}
+        hpo_phenotype_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -400,24 +402,42 @@ class main():
                  gene_label, v_uid, v_uuid, v_lastmodified) = row
 
                 print(phenotype_id)
-                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
+
 
                 #print(genes)
                 if phenotype_id not in hpo_phenotype_to_gene_hash:
                     hpo_phenotype_to_gene_hash[phenotype_id] = [gene_id]
                     #print(hpo_phenotype_to_gene_hash[genotype_id])
+                    panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                    if panther_id != 'fail':
+                        print('found ortholog')
+                        hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
+                    elif panther_id == 'fail':
+                        print('No ortholog found.')
                 else:
                     hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
                     #print(hpo_phenotype_to_gene_hash[genotype_id])
                     #print(len(hpo_phenotype_to_gene_hash.keys()))
                     print('Repeat phenotype: '+phenotype_id)
+                    panther_id = self.get_ortholog(gene_id, 'inter/panther/panther_mouse.txt')
+                    if panther_id != 'fail':
+                        print('found ortholog')
+                        if phenotype_id not in hpo_phenotype_to_ortholog_hash:
+                            hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
+                        else:
+                            hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                    elif panther_id == 'fail':
+                        print('No ortholog found.')
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(inter, 'wb') as handle:
+        with open(inter1, 'wb') as handle:
             pickle.dump(hpo_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
+        with open(inter2, 'wb') as handle:
+            pickle.dump(hpo_phenotype_to_ortholog_hash, handle)
+        print('INFO: Done assembling mouse phenotype to ortholog data.')
         return
 
     def assemble_nif_animalqtl_phenotype_to_gene(self, limit=None):
@@ -1075,8 +1095,8 @@ main = main()
 
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)
-main.assemble_nif_mgi_phenotype_to_gene(limit)
-#main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
