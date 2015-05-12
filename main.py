@@ -400,7 +400,7 @@ class main():
                 line_counter += 1
                 (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
                  gene_label, v_uid, v_uuid, v_lastmodified) = row
-
+                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
                 print(phenotype_id)
 
 
