@@ -309,7 +309,8 @@ class main():
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
-        inter = 'inter/mgi/mouse_pheno_gene_hash.txt'
+        inter1 = 'inter/mgi/mouse_pheno_gene_hash.txt'
+        inter2 = 'inter/mgi/mouse_pheno_ortholog_hash.txt'
         mgi_phenotype_to_gene_hash = {}
         mgi_phenotype_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
@@ -335,37 +336,44 @@ class main():
                  e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                 #print(phenotype_id)
-                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
                 genes = implicated_gene_ids.split()
-                print(genes)
+                #print(genes)
                 if phenotype_id not in mgi_phenotype_to_gene_hash:
                     mgi_phenotype_to_gene_hash[phenotype_id] = genes
-                    print(mgi_phenotype_to_gene_hash[phenotype_id])
+                    #print(mgi_phenotype_to_gene_hash[phenotype_id])
                     for gene in genes:
                         panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
                         if panther_id != 'fail':
                             print('found ortholog')
+                            mgi_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
                         elif panther_id == 'fail':
                             print('No ortholog found.')
                 else:
                     for gene in genes:
                         mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
-                        print(mgi_phenotype_to_gene_hash[phenotype_id])
+                        #print(mgi_phenotype_to_gene_hash[phenotype_id])
                         #print(len(mgi_phenotype_to_gene_hash.keys()))
-                        print('Repeat phenotype: '+phenotype_id)
-                        panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
+                        #print('Repeat phenotype: '+phenotype_id)
+                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_mouse.txt')
                         if panther_id != 'fail':
                             print('found ortholog')
+                            if phenotype_id not in mgi_phenotype_to_ortholog_hash:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                            else:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                         elif panther_id == 'fail':
                             print('No ortholog found.')
 
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(inter, 'wb') as handle:
+        with open(inter1, 'wb') as handle:
             pickle.dump(mgi_phenotype_to_gene_hash, handle)
         print('INFO: Done assembling mouse phenotype to gene data.')
         print('INFO: '+str(len(mgi_phenotype_to_gene_hash.keys()))+' mouse phenotypes present.')
+        with open(inter2, 'wb') as handle:
+            pickle.dump(mgi_phenotype_to_ortholog_hash, handle)
+        print('INFO: Done assembling mouse phenotype to ortholog data.')
         return
 
 
