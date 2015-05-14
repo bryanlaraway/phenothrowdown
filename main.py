@@ -251,6 +251,8 @@ class main():
 
     ####### PHENOLOG PHENOTYPE TO GENE #######
 
+    #FIXME: Some of the ZFIN phenotypes are coming through as blanks.
+
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling zebrafish phenotype to ortholog data.')
         line_counter = 0
@@ -1001,15 +1003,32 @@ class main():
         line_counter = 0
         failure_counter = 0
 
-        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
-        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
-
-
-        with open(inter1, 'wb') as handle:
+        with open(inter1, 'rb') as handle:
             species_a_pheno_gene_hash = pickle.load(handle)
-        print(species_a_pheno_gene_hash)
-        with open(inter2, 'wb') as handle:
-            species_a_pheno_gene_hash = pickle.load(handle)
+        #print(species_a_pheno_gene_hash)
+        with open(inter2, 'rb') as handle:
+            species_b_pheno_gene_hash = pickle.load(handle)
+        #print(species_b_pheno_gene_hash)
+
+        for i in species_a_pheno_gene_hash:
+            species_a_phenotype_id = i
+            species_a_orthologs = species_a_pheno_gene_hash[i]
+            #print(species_a_orthologs)
+            for j in species_b_pheno_gene_hash:
+                species_b_phenotype_id = j
+                species_b_orthologs = species_b_pheno_gene_hash[j]
+                #print(species_b_orthologs)
+                ortholog_matches = 0
+                for k in species_a_orthologs:
+                    species_a_ortholog = k
+                    for l in species_b_orthologs:
+                        species_b_ortholog = l
+                        if species_a_ortholog == species_b_ortholog:
+                            print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                            ortholog_matches += 1
+                        else:
+                            monkey = 1
+                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
 
 
 
@@ -1024,7 +1043,7 @@ class main():
 
 ###MAIN####
 
-limit = 100
+limit = 500
 main = main()
 
 #Trim the PANTHER data set for each taxon.
@@ -1040,8 +1059,8 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-#main.assemble_nif_zfin_phenotype_to_gene(limit)
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
@@ -1094,7 +1113,8 @@ main = main()
 # Would it be easier/more efficient to add the phenolog data to the OWLSim output table,
 # or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
-main.perform_phenolog_calculations()
+#initial testing of phenolog algorithm - mouse vs zebrafish
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt')
 
 
 
