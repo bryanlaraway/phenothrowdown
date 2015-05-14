@@ -1033,6 +1033,21 @@ class main():
                             monkey = 1
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
 
+            # After the number of matching orthologs has been tallied, perform the
+            # hypergeometric probability calculation for the phenotype-gene data objects,
+            # then write the results to the output file.
+
+            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
+            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
+            # given that the ortholog lists for species a and species b may be of different sizes?
+            #TODO: Consult the phenolog paper on the question above.
+            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+
+            # x =
+            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
+            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
+            # N = Number of type I objects drawn. (Number of matching orhtologs.)
+            #prb = hypergeom.cdf(x, M, n, N)
 
 
 
