@@ -1005,6 +1005,10 @@ class main():
         print('INFO: Performing phenolog calculations.')
         line_counter = 0
         failure_counter = 0
+        total_ortholog_matches = 0
+        total_ortholog_nonmatches = 0
+        ortholog_matches = 0
+        ortholog_non_matches = 0
 
         with open(inter1, 'rb') as handle:
             species_a_pheno_gene_hash = pickle.load(handle)
@@ -1022,17 +1026,25 @@ class main():
                 species_b_orthologs = species_b_pheno_gene_hash[j]
                 #print(species_b_orthologs)
                 ortholog_matches = 0
+                ortholog_non_matches = 0
                 for k in species_a_orthologs:
                     species_a_ortholog = k
                     for l in species_b_orthologs:
                         species_b_ortholog = l
                         if species_a_ortholog == species_b_ortholog:
-                            print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                             ortholog_matches += 1
+                            total_ortholog_matches += 1
                         else:
                             monkey = 1
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                            ortholog_non_matches += 1
+                            total_ortholog_nonmatches += 1
 
+            print('Matches: '+str(ortholog_matches))
+            print('Non-matches: '+str(ortholog_non_matches))
+        print('Total Matches: '+str(total_ortholog_matches))
+        print('Total non-matches: '+str(total_ortholog_nonmatches))
             # After the number of matching orthologs has been tallied, perform the
             # hypergeometric probability calculation for the phenotype-gene data objects,
             # then write the results to the output file.
@@ -1077,8 +1089,8 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-main.assemble_nif_zfin_phenotype_to_gene(limit)
-main.assemble_nif_mgi_phenotype_to_gene(limit)
+#main.assemble_nif_zfin_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
