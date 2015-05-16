@@ -21,6 +21,11 @@ hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
 zfin_genotype_to_phenotype_hash = {'genotype_id': {}}
 
+#Selected distinct PANTHER IDs from the NIF/DISCO tables.
+#TODO: See about
+total_human_mouse_orthologs = 5625
+total_human_zebrafish_orthologs = 5212
+total_mouse_zebrafish_orhtologs = 5210
 
 class main():
 
@@ -1001,7 +1006,7 @@ class main():
 
 
 
-    def perform_phenolog_calculations(self, inter1, inter2, out):
+    def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs):
         print('INFO: Performing phenolog calculations.')
         line_counter = 0
         failure_counter = 0
@@ -1052,7 +1057,7 @@ class main():
             print('Non-matches: '+str(ortholog_non_matches))
             m = phenotype_b_ortholog_count
             n = phenotype_a_ortholog_count
-            N = 2000 #FIXME: Need to get total number of shared orthologs between species.
+            N = shared_orthologs #2000 #FIXME: Need to get total number of shared orthologs between species.
             c = ortholog_matches
             prb = hypergeom.cdf(c, N, m, n)
             print(prb)
@@ -1164,7 +1169,7 @@ main = main()
 # or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
 #initial testing of phenolog algorithm - mouse vs zebrafish
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt')
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orhtologs)
 
 
 
