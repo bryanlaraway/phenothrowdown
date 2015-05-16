@@ -1009,6 +1009,8 @@ class main():
         total_ortholog_nonmatches = 0
         ortholog_matches = 0
         ortholog_non_matches = 0
+        phenotype_a_ortholog_count = 0
+        phenotype_b_ortholog_count = 0
 
         with open(inter1, 'rb') as handle:
             species_a_pheno_gene_hash = pickle.load(handle)
@@ -1021,13 +1023,18 @@ class main():
             species_a_phenotype_id = i
             species_a_orthologs = species_a_pheno_gene_hash[i]
             #print(species_a_orthologs)
+            phenotype_a_ortholog_count = len(species_a_orthologs)
+
             for j in species_b_pheno_gene_hash:
                 species_b_phenotype_id = j
                 species_b_orthologs = species_b_pheno_gene_hash[j]
                 #print(species_b_orthologs)
                 ortholog_matches = 0
                 ortholog_non_matches = 0
+
+                phenotype_b_ortholog_count = len(species_b_orthologs)
                 for k in species_a_orthologs:
+
                     species_a_ortholog = k
                     for l in species_b_orthologs:
                         species_b_ortholog = l
@@ -1043,6 +1050,12 @@ class main():
 
             print('Matches: '+str(ortholog_matches))
             print('Non-matches: '+str(ortholog_non_matches))
+            m = phenotype_b_ortholog_count
+            n = phenotype_a_ortholog_count
+            N = 2000 #FIXME: Need to get total number of shared orthologs between species.
+            c = ortholog_matches
+            prb = hypergeom.cdf(c, N, m, n)
+            print(prb)
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
             # After the number of matching orthologs has been tallied, perform the
@@ -1055,7 +1068,14 @@ class main():
             #TODO: Consult the phenolog paper on the question above.
             # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
 
-            # x =
+            # N = total number of orthologs shared between species
+            # n = nummber of orthologs in species A phenotype
+            # m = nummber of orthologs in species B phenotype
+            # c = number of common orthologs between phenotypes (ortholog matches)
+
+
+
+            # c =
             # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
             # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
             # N = Number of type I objects drawn. (Number of matching orhtologs.)
