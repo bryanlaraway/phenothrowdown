@@ -11,8 +11,9 @@ import os
 import re
 import csv
 import pickle
-import numpy
+from numpy import *
 from scipy.stats import hypergeom
+import math
 import matplotlib.pyplot as plt
 
 start_time = time.time()
@@ -22,10 +23,10 @@ mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
 zfin_genotype_to_phenotype_hash = {'genotype_id': {}}
 
 #Selected distinct PANTHER IDs from the NIF/DISCO tables.
-#TODO: See about
+#TODO: See about getting these numbers from the Panther table to allow for dynamic updating with file updates.
 total_human_mouse_orthologs = 5625
 total_human_zebrafish_orthologs = 5212
-total_mouse_zebrafish_orhtologs = 5210
+total_mouse_zebrafish_orthologs = 5210
 
 class main():
 
@@ -296,39 +297,42 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                print(phenotype_id)
-                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-                #TODO: Need to handle phenotypes with no associated genes.
-                genes = implicated_gene_ids.split()
-                print(genes)
-                if phenotype_id not in zfin_phenotype_to_gene_hash:
-                    zfin_phenotype_to_gene_hash[phenotype_id] = genes
-                    #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    for gene in genes:
-                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
-                        if panther_id != 'fail':
-                            print('found ortholog')
-                            if phenotype_id not in zfin_phenotype_to_ortholog_hash:
-                                zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                            else:
-                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                        elif panther_id == 'fail':
-                            print('No ortholog found.')
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
                 else:
-                    for gene in genes:
-                        zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
+                    print(phenotype_id)
+                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+                    #TODO: Need to handle phenotypes with no associated genes.
+                    genes = implicated_gene_ids.split()
+                    print(genes)
+                    if phenotype_id not in zfin_phenotype_to_gene_hash:
+                        zfin_phenotype_to_gene_hash[phenotype_id] = genes
                         #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                        #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                        print('Repeat phenotype: '+phenotype_id)
-                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
-                        if panther_id != 'fail':
-                            print('found ortholog')
-                            if phenotype_id not in zfin_phenotype_to_ortholog_hash:
-                                zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                            else:
-                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                        elif panther_id == 'fail':
-                            print('No ortholog found.')
+                        for gene in genes:
+                            panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                            if panther_id != 'fail':
+                                print('found ortholog')
+                                if phenotype_id not in zfin_phenotype_to_ortholog_hash:
+                                    zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                                else:
+                                    zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                            elif panther_id == 'fail':
+                                print('No ortholog found.')
+                    else:
+                        for gene in genes:
+                            zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
+                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
+                            #print(len(zfin_genotype_to_phenotype_hash.keys()))
+                            print('Repeat phenotype: '+phenotype_id)
+                            panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                            if panther_id != 'fail':
+                                print('found ortholog')
+                                if phenotype_id not in zfin_phenotype_to_ortholog_hash:
+                                    zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                                else:
+                                    zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                            elif panther_id == 'fail':
+                                print('No ortholog found.')
                 if limit is not None and line_counter > limit:
                     break
         with open(inter1, 'wb') as handle:
@@ -1053,16 +1057,33 @@ class main():
                             ortholog_non_matches += 1
                             total_ortholog_nonmatches += 1
 
-            print('Matches: '+str(ortholog_matches))
-            print('Non-matches: '+str(ortholog_non_matches))
-            m = phenotype_b_ortholog_count
-            n = phenotype_a_ortholog_count
-            N = shared_orthologs #2000 #FIXME: Need to get total number of shared orthologs between species.
-            c = ortholog_matches
-            prb = hypergeom.cdf(c, N, m, n)
-            print(prb)
+                    if ortholog_matches > 0:
+                        #print('Matches: '+str(ortholog_matches))
+                        #print('Non-matches: '+str(ortholog_non_matches))
+                        m = float(phenotype_b_ortholog_count)
+                        n = float(phenotype_a_ortholog_count)
+                        N = float(shared_orthologs)
+                        c = float(ortholog_matches)
+                        prb = float(hypergeom.cdf(c, N, m, n))
+                        print(prb)
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
+        #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
+        #print(prb)
+        #prb = hypergeom.cdf(1, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(2, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(3, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(4, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(5, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(6, 5000, 7, 12)
+        #print(prb)
+        #prb = hypergeom.cdf(7, 5000, 7, 12)
+        #print(prb)
             # After the number of matching orthologs has been tallied, perform the
             # hypergeometric probability calculation for the phenotype-gene data objects,
             # then write the results to the output file.
@@ -1077,8 +1098,6 @@ class main():
             # n = nummber of orthologs in species A phenotype
             # m = nummber of orthologs in species B phenotype
             # c = number of common orthologs between phenotypes (ortholog matches)
-
-
 
             # c =
             # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
@@ -1114,7 +1133,7 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-#main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
 #main.assemble_nif_mgi_phenotype_to_gene(limit)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
@@ -1169,10 +1188,11 @@ main = main()
 # or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
 #initial testing of phenolog algorithm - mouse vs zebrafish
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orhtologs)
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orthologs)
 
+main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
 
-
+main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', total_human_zebrafish_orthologs)
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
@@ -1182,5 +1202,7 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 #Format for mutliple:
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
+
+
 
 
