@@ -1068,7 +1068,7 @@ class main():
                         n = float(phenotype_a_ortholog_count)
                         N = float(shared_orthologs)
                         c = float(ortholog_matches)
-                        prb = float(hypergeom.cdf(c, N, m, n))
+                        prb = 1 - float(hypergeom.cdf(c, N, m, n))
                         print(prb)
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
@@ -1112,14 +1112,46 @@ class main():
 
         return
 
-    def generate_random_data(self, inter, out):
+    def generate_random_data(self, mouse, zebrafish, human):
         #Take the phenotype-ortholog hashes I have created.
         #Remove all orthologs and place in a list, replace with 0s or 1s or something.
         #Randomly shuffle the ortholog list
         #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
 
         #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
+        # Should the random data set have the same presence of orthologs as the test set?
+        # Meaning, if ortholog X is present in the test data set Y times, should it also be present in the test data set Y times?
         #Need to have a way to make the data set creation fail if we get to the end and can only put an ortholog with a phenotype that already has that ortholog with it.
+        test_pheno_ortholog_hash = {}
+        orthologs = []
+        list_length = 0
+        with open(mouse, 'rb') as handle:
+            mouse_pheno_ortholog_hash = pickle.load(handle)
+        with open(zebrafish, 'rb') as handle:
+            zebrafish_pheno_ortholog_hash = pickle.load(handle)
+        with open(human, 'rb') as handle:
+            human_pheno_ortholog_hash = pickle.load(handle)
+
+        for i in mouse_pheno_ortholog_hash:
+            for j in mouse_pheno_ortholog_hash[i]:
+                orthologs.append(j)
+        random.shuffle(orthologs)
+
+        for i in mouse_pheno_ortholog_hash:
+            test_pheno_ortholog_hash[i] = []
+            for j in mouse_pheno_ortholog_hash[i]:
+                list_length = len(orthologs)
+                print(list_length)
+                if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
+                    test_pheno_ortholog_hash[i].append(orthologs.pop())
+                #else
+                #if orthologs.pop
+
+
+
+
+
+
 
         return
 
@@ -1198,12 +1230,20 @@ main = main()
 # Would it be easier/more efficient to add the phenolog data to the OWLSim output table,
 # or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
+####### PHENOLOG COMPARISONS #######
+
 #initial testing of phenolog algorithm - mouse vs zebrafish
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orthologs)
+#main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orthologs)
 
-main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
+#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
 
-main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', total_human_zebrafish_orthologs)
+#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', total_human_zebrafish_orthologs)
+
+
+####### FDR CALCULATION #######
+
+main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt','inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_hash.txt')
+
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
