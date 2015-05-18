@@ -1110,11 +1110,18 @@ class main():
             #prb = hypergeom.cdf(x, M, n, N)
 
 
-
-
         return
 
+    def generate_random_data(self, inter, out):
+        #Take the phenotype-ortholog hashes I have created.
+        #Remove all orthologs and place in a list, replace with 0s or 1s or something.
+        #Randomly shuffle the ortholog list
+        #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
 
+        #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
+        #Need to have a way to make the data set creation fail if we get to the end and can only put an ortholog with a phenotype that already has that ortholog with it.
+
+        return
 
 
 
@@ -1137,7 +1144,7 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-main.assemble_nif_zfin_phenotype_to_gene(limit)
+#main.assemble_nif_zfin_phenotype_to_gene(limit)
 #main.assemble_nif_mgi_phenotype_to_gene(limit)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
