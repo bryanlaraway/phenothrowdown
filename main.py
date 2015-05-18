@@ -814,24 +814,28 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                #print(implicated_gene_ids)
-                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-
-                if not re.match('.*,.*',implicated_gene_ids):
-                    print(implicated_gene_labels)
-                    #print(genes)
-                    if implicated_gene_ids not in zfin_gene_to_phenotype_hash:
-                        zfin_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
-                    #print(zfin_gene_to_phenotype_hash[gene_id])
-                    else:
-                        zfin_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
-                        #print(zfin_gene_to_phenotype_hash[gene_id])
-                        #print(len(zfin_gene_to_phenotype_hash.keys()))
-                        print('Repeat gene: '+implicated_gene_ids)
+                if phenotype_id == '' or phenotype_id == None:
+                    continue
                 else:
-                    print('Skipping multi-gene genotype: '+effective_genotype_label)
-                if limit is not None and line_counter > limit:
-                    break
+
+                    #print(implicated_gene_ids)
+                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+
+                    if not re.match('.*,.*',implicated_gene_ids):
+                        print(implicated_gene_labels)
+                        #print(genes)
+                        if implicated_gene_ids not in zfin_gene_to_phenotype_hash:
+                            zfin_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
+                        #print(zfin_gene_to_phenotype_hash[gene_id])
+                        else:
+                            zfin_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                            #print(zfin_gene_to_phenotype_hash[gene_id])
+                            #print(len(zfin_gene_to_phenotype_hash.keys()))
+                            print('Repeat gene: '+implicated_gene_ids)
+                    else:
+                        print('Skipping multi-gene genotype: '+effective_genotype_label)
+                    if limit is not None and line_counter > limit:
+                        break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
         with open(inter, 'wb') as handle:
             pickle.dump(zfin_gene_to_phenotype_hash, handle)
