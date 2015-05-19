@@ -1159,7 +1159,8 @@ class main():
                 with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
                     pickle.dump(test_pheno_ortholog_hash, handle)
                     counter += 1
-
+            else:
+                continue
 
         return
 
@@ -1251,7 +1252,8 @@ main = main()
 ####### FDR CALCULATION #######
 
 main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/random/mgi/')
-
+main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/random/hpo/')
+main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/random/zfin/')
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
