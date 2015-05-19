@@ -1112,7 +1112,7 @@ class main():
 
         return
 
-    def generate_random_data(self, mouse, zebrafish, human):
+    def generate_random_data(self, pheno_gene_hash, out_dir):
         #Take the phenotype-ortholog hashes I have created.
         #Remove all orthologs and place in a list, replace with 0s or 1s or something.
         #Randomly shuffle the ortholog list
@@ -1126,41 +1126,39 @@ class main():
         # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
         # would it make more sense to populate from the total orthologs shared between two species?
         # What about getting random.sample from the total list of orthologs, with replacement?
-        test_pheno_ortholog_hash = {}
-        orthologs = []
-        list_length = 0
-        with open(mouse, 'rb') as handle:
-            mouse_pheno_ortholog_hash = pickle.load(handle)
-        with open(zebrafish, 'rb') as handle:
-            zebrafish_pheno_ortholog_hash = pickle.load(handle)
-        with open(human, 'rb') as handle:
-            human_pheno_ortholog_hash = pickle.load(handle)
+        counter = 0
+        while counter < 1000:
+            test_pheno_ortholog_hash = {}
 
-        for i in mouse_pheno_ortholog_hash:
-            for j in mouse_pheno_ortholog_hash[i]:
-                orthologs.append(j)
-        #FIXME: How random is this? Is it sufficiently random?
-        random.shuffle(orthologs)
+            orthologs = []
+            list_length = 0
+            with open(pheno_gene_hash, 'rb') as handle:
+                pheno_ortholog_hash = pickle.load(handle)
 
-        for i in mouse_pheno_ortholog_hash:
-            test_pheno_ortholog_hash[i] = []
-            for j in mouse_pheno_ortholog_hash[i]:
-                list_length = len(orthologs)
-                print(list_length)
+            for i in pheno_ortholog_hash:
+                for j in pheno_ortholog_hash[i]:
+                    orthologs.append(j)
+            #FIXME: How random is this? Is it sufficiently random?
+            random.shuffle(orthologs)
 
-                if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
-                    test_pheno_ortholog_hash[i].append(orthologs.pop())
-                else:
-                    while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
-                        random.shuffle(orthologs)
-                    test_pheno_ortholog_hash[i].append(orthologs.pop())
-                #if orthologs.pop
-        if len(orthologs) == 0:
-            print('Completed randomization successfully!')
+            for i in pheno_ortholog_hash:
+                test_pheno_ortholog_hash[i] = []
+                for j in pheno_ortholog_hash[i]:
+                    list_length = len(orthologs)
+                    #print(list_length)
 
-
-
-
+                    if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
+                        test_pheno_ortholog_hash[i].append(orthologs.pop())
+                    else:
+                        while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
+                            random.shuffle(orthologs)
+                        test_pheno_ortholog_hash[i].append(orthologs.pop())
+                    #if orthologs.pop
+            if len(orthologs) == 0:
+                print('Completed randomization successfully!')
+                with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
+                    pickle.dump(test_pheno_ortholog_hash, handle)
+                    counter += 1
 
 
         return
@@ -1252,7 +1250,7 @@ main = main()
 
 ####### FDR CALCULATION #######
 
-main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt','inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_hash.txt')
+main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/random/mgi/')
 
 
 elapsed_time = time.time() - start_time
