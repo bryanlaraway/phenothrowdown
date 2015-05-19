@@ -1122,6 +1122,10 @@ class main():
         # Should the random data set have the same presence of orthologs as the test set?
         # Meaning, if ortholog X is present in the test data set Y times, should it also be present in the test data set Y times?
         #Need to have a way to make the data set creation fail if we get to the end and can only put an ortholog with a phenotype that already has that ortholog with it.
+
+        # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
+        # would it make more sense to populate from the total orthologs shared between two species?
+        # What about getting random.sample from the total list of orthologs, with replacement?
         test_pheno_ortholog_hash = {}
         orthologs = []
         list_length = 0
@@ -1135,6 +1139,7 @@ class main():
         for i in mouse_pheno_ortholog_hash:
             for j in mouse_pheno_ortholog_hash[i]:
                 orthologs.append(j)
+        #FIXME: How random is this? Is it sufficiently random?
         random.shuffle(orthologs)
 
         for i in mouse_pheno_ortholog_hash:
@@ -1142,11 +1147,16 @@ class main():
             for j in mouse_pheno_ortholog_hash[i]:
                 list_length = len(orthologs)
                 print(list_length)
+
                 if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
                     test_pheno_ortholog_hash[i].append(orthologs.pop())
-                #else
+                else:
+                    while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
+                        random.shuffle(orthologs)
+                    test_pheno_ortholog_hash[i].append(orthologs.pop())
                 #if orthologs.pop
-
+        if len(orthologs) == 0:
+            print('Completed randomization successfully!')
 
 
 
