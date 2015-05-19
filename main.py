@@ -1235,6 +1235,18 @@ class main():
             mvz_mouse_file = mvz_mouse_dir+'random_'+str(random_counter)+'.txt'
             mvz_zebrafish_file = mvz_zebrafish_dir+'random_'+str(random_counter)+'.txt'
 
+            with open(hvm_human_file, 'rb') as handle:
+                hvm_human_pheno_gene_hash = pickle.load(handle)
+            with open(hvm_mouse_file, 'rb') as handle:
+                hvm_mouse_pheno_gene_hash = pickle.load(handle)
+            with open(hvz_human_file, 'rb') as handle:
+                hvz_human_pheno_gene_hash = pickle.load(handle)
+            with open(hvz_zebrafish_file, 'rb') as handle:
+                hvz_zebrafish_pheno_gene_hash = pickle.load(handle)
+            with open(mvz_mouse_file, 'rb') as handle:
+                mvz_mouse_pheno_gene_hash = pickle.load(handle)
+            with open(mvz_zebrafish_file, 'rb') as handle:
+                mvz_zebrafish_pheno_gene_hash = pickle.load(handle)
 
         line_counter = 0
         failure_counter = 0
@@ -1245,8 +1257,7 @@ class main():
         phenotype_a_ortholog_count = 0
         phenotype_b_ortholog_count = 0
 
-        with open(inter1, 'rb') as handle:
-            species_a_pheno_gene_hash = pickle.load(handle)
+
         #print(species_a_pheno_gene_hash)
         with open(inter2, 'rb') as handle:
             species_b_pheno_gene_hash = pickle.load(handle)
