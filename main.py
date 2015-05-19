@@ -22,7 +22,7 @@ start_time = time.time()
 hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
 zfin_genotype_to_phenotype_hash = {'genotype_id': {}}
-getcontext().prec = 320
+getcontext().prec = 500
 #print(getcontext())
 #Selected distinct PANTHER IDs from the NIF/DISCO tables.
 #TODO: See about getting these numbers from the Panther table to allow for dynamic updating with file updates.
@@ -1153,7 +1153,7 @@ class main():
 
         return
 
-    def generate_random_data(self, pheno_gene_hash, out_dir):
+    def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir):
         #Take the phenotype-ortholog hashes I have created.
         #Remove all orthologs and place in a list, replace with 0s or 1s or something.
         #Randomly shuffle the ortholog list
@@ -1175,33 +1175,42 @@ class main():
             list_length = 0
             with open(pheno_gene_hash, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
-
-            for i in pheno_ortholog_hash:
-                for j in pheno_ortholog_hash[i]:
-                    orthologs.append(j)
+            with open(common_orthologs, 'rb') as handle:
+                orthologs = pickle.load(handle)
+            # Adjusting this to instead call from the full pool of common orthologs.
+            #for i in pheno_ortholog_hash:
+                #for j in pheno_ortholog_hash[i]:
+                    #orthologs.append(j)
             #FIXME: How random is this? Is it sufficiently random?
             random.shuffle(orthologs)
 
             for i in pheno_ortholog_hash:
                 test_pheno_ortholog_hash[i] = []
+                ortholog_list_length = len(pheno_ortholog_hash[i])
+                #print(ortholog_list_length)
+                ortholog_draw = orthologs
+                random.shuffle(ortholog_draw)
+                #random_orthologs = random.sample(orthologs)
+                #test_pheno_ortholog_hash[i].append(random_orthologs)
+
                 for j in pheno_ortholog_hash[i]:
-                    list_length = len(orthologs)
+                    test_pheno_ortholog_hash[i].append(ortholog_draw.pop())
+                    random.shuffle(ortholog_draw)
+                    #list_length = len(orthologs)
                     #print(list_length)
 
-                    if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
-                        test_pheno_ortholog_hash[i].append(orthologs.pop())
-                    else:
-                        while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
-                            random.shuffle(orthologs)
-                        test_pheno_ortholog_hash[i].append(orthologs.pop())
+                    #if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
+                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
+                    #else:
+                        #while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
+                            #random.shuffle(orthologs)
+                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
                     #if orthologs.pop
-            if len(orthologs) == 0:
-                print('Completed randomization successfully!')
-                with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
-                    pickle.dump(test_pheno_ortholog_hash, handle)
-                    counter += 1
-            else:
-                continue
+            print('Completed randomization successfully!')
+            with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
+                pickle.dump(test_pheno_ortholog_hash, handle)
+                counter += 1
+
 
         return
 
@@ -1219,9 +1228,9 @@ main = main()
 #main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
 #main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 
-main.get_common_orthologs('inter/panther/common_orthologs_human_zebrafish.txt', ['NCBITaxon:9606', 'NCBITaxon:7955'])
-main.get_common_orthologs('inter/panther/common_orthologs_human_mouse.txt', ['NCBITaxon:9606', 'NCBITaxon:10090'])
-main.get_common_orthologs('inter/panther/common_orthologs_mouse_zebrafish.txt', ['NCBITaxon:10090', 'NCBITaxon:7955'])
+#main.get_common_orthologs('inter/panther/common_orthologs_human_zebrafish.txt', ['NCBITaxon:9606', 'NCBITaxon:7955'])
+#main.get_common_orthologs('inter/panther/common_orthologs_human_mouse.txt', ['NCBITaxon:9606', 'NCBITaxon:10090'])
+#main.get_common_orthologs('inter/panther/common_orthologs_mouse_zebrafish.txt', ['NCBITaxon:10090', 'NCBITaxon:7955'])
 
 ### Data assembly via SciGraph ###
 #main._assemble_human_disease_to_phenotype(limit)
@@ -1296,9 +1305,15 @@ main.get_common_orthologs('inter/panther/common_orthologs_mouse_zebrafish.txt', 
 
 ####### FDR CALCULATION #######
 
-#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/random/mgi/')
-#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/random/hpo/')
-#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/random/zfin/')
+main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
+main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
+
+main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
+main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
+
+main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
+main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
+
 
 #decimal.Decimal()
 prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
