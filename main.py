@@ -1214,7 +1214,108 @@ class main():
 
         return
 
+    def perform_phenolog_calculations_for_FDR(self, inter1, inter2, out, shared_orthologs):
+        print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
 
+        hvm_human_dir = 'inter/random/human_vs_mouse/human/'
+        hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
+        hvz_human_dir = 'inter/random/human_vs_zebrafish/human/'
+        hvz_zebrafish_dir = 'inter/random/human_vs_zebrafish/zebrafish/'
+        mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
+        mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
+
+        random_counter = 0
+        if random_counter < 1000:
+            hvm_human_file = hvm_human_dir+'random_'+str(random_counter)+'.txt'
+            hvm_mouse_file = hvm_mouse_dir+'random_'+str(random_counter)+'.txt'
+            hvz_human_file = hvz_human_dir+'random_'+str(random_counter)+'.txt'
+            hvz_zebrafish_file = hvz_zebrafish_dir+'random_'+str(random_counter)+'.txt'
+            mvz_mouse_file = mvz_mouse_dir+'random_'+str(random_counter)+'.txt'
+            mvz_zebrafish_file = mvz_zebrafish_dir+'random_'+str(random_counter)+'.txt'
+
+
+        line_counter = 0
+        failure_counter = 0
+        total_ortholog_matches = 0
+        total_ortholog_nonmatches = 0
+        ortholog_matches = 0
+        ortholog_non_matches = 0
+        phenotype_a_ortholog_count = 0
+        phenotype_b_ortholog_count = 0
+
+        with open(inter1, 'rb') as handle:
+            species_a_pheno_gene_hash = pickle.load(handle)
+        #print(species_a_pheno_gene_hash)
+        with open(inter2, 'rb') as handle:
+            species_b_pheno_gene_hash = pickle.load(handle)
+        #print(species_b_pheno_gene_hash)
+
+        for i in species_a_pheno_gene_hash:
+            species_a_phenotype_id = i
+            species_a_orthologs = species_a_pheno_gene_hash[i]
+            #print(species_a_orthologs)
+            phenotype_a_ortholog_count = len(species_a_orthologs)
+
+            for j in species_b_pheno_gene_hash:
+                species_b_phenotype_id = j
+                species_b_orthologs = species_b_pheno_gene_hash[j]
+                #print(species_b_orthologs)
+                ortholog_matches = 0
+                ortholog_non_matches = 0
+
+                phenotype_b_ortholog_count = len(species_b_orthologs)
+                for k in species_a_orthologs:
+
+                    species_a_ortholog = k
+                    for l in species_b_orthologs:
+                        species_b_ortholog = l
+                        if species_a_ortholog == species_b_ortholog:
+                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                            ortholog_matches += 1
+                            total_ortholog_matches += 1
+                        else:
+                            monkey = 1
+                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                            ortholog_non_matches += 1
+                            total_ortholog_nonmatches += 1
+
+                    if ortholog_matches > 0:
+                        #print('Matches: '+str(ortholog_matches))
+                        #print('Non-matches: '+str(ortholog_non_matches))
+                        m = float(phenotype_b_ortholog_count)
+                        n = float(phenotype_a_ortholog_count)
+                        N = float(shared_orthologs)
+                        c = float(ortholog_matches)
+                        prb = 1 - float(hypergeom.cdf(c, N, m, n))
+                        print(prb)
+        print('Total Matches: '+str(total_ortholog_matches))
+        print('Total non-matches: '+str(total_ortholog_nonmatches))
+
+            # After the number of matching orthologs has been tallied, perform the
+            # hypergeometric probability calculation for the phenotype-gene data objects,
+            # then write the results to the output file.
+
+            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
+            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
+            # given that the ortholog lists for species a and species b may be of different sizes?
+            #TODO: Consult the phenolog paper on the question above.
+            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+
+            # N = total number of orthologs shared between species
+            # n = nummber of orthologs in species A phenotype
+            # m = nummber of orthologs in species B phenotype
+            # c = number of common orthologs between phenotypes (ortholog matches)
+
+            # c =
+            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
+            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
+            # N = Number of type I objects drawn. (Number of matching orhtologs.)
+            #prb = hypergeom.cdf(x, M, n, N)
+
+
+        return
 
 
 ###MAIN####
@@ -1286,7 +1387,6 @@ main = main()
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim_mouse_gene_zebrafish_gene.txt')
 #print('Done processing mouse genes vs zebrafish genes')
 
-#print()
 
 
 #TODO: Data assembly
@@ -1305,14 +1405,14 @@ main = main()
 
 ####### FDR CALCULATION #######
 
-main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
-main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
+#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
+#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
 
-main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
-main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
+#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
+#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
 
-main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
-main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
+#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
+#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
 
 
 #decimal.Decimal()
