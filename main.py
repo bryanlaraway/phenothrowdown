@@ -11,6 +11,7 @@ import os
 import re
 import csv
 import pickle
+from decimal import Decimal, getcontext
 from numpy import *
 from scipy.stats import hypergeom
 import math
@@ -21,7 +22,8 @@ start_time = time.time()
 hu_disease_to_phenotype_hash = {'disease_id': {}}
 mouse_genotype_to_phenotype_hash = {'genotype_id': {}}
 zfin_genotype_to_phenotype_hash = {'genotype_id': {}}
-
+getcontext().prec = 320
+#print(getcontext())
 #Selected distinct PANTHER IDs from the NIF/DISCO tables.
 #TODO: See about getting these numbers from the Panther table to allow for dynamic updating with file updates.
 total_human_mouse_orthologs = 5625
@@ -985,10 +987,45 @@ class main():
                         output_line_counter += 1
                         csvwriter.writerow(output_row)
 
+
         print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
 
         return
 
+    def get_common_orthologs(self, inter, taxons):
+        print('INFO: Getting common orthologs between species.')
+        line_counter = 0
+        ortholog_counter = 0
+        raw = 'raw/panther/dvp.pr_nlx_84521_1'
+        common_orthologs = []
+        #inter = 'inter/panther/common_orthologs_'+species_a+'_vs_'+species_b+'.txt'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' PANTHER rows to process.')
+
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
+                e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
+                    if panther_id not in common_orthologs:
+                        common_orthologs.append(panther_id)
+                        ortholog_counter += 1
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(common_orthologs, handle)
+
+        print(str(ortholog_counter)+' common orthologs found.')
+
+        return
 
     def get_ortholog(self, query_gene_id, panther):
 
@@ -998,7 +1035,9 @@ class main():
             print('query= '+query_gene_id)
             for row in filereader:
                 #print(row)
-                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id) = row
+                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina,
+                 panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb,
+                 orthology_class, orthology_class_label, panther_id) = row
                 #print(panther_speciesa)
                 #print(panther_id)
 
@@ -1074,19 +1113,21 @@ class main():
         print('Total non-matches: '+str(total_ortholog_nonmatches))
         #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
         #print(prb)
-        #prb = hypergeom.cdf(1, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(2, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(3, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(2, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(4, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(3, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(5, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(6, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
         #print(prb)
-        #prb = hypergeom.cdf(7, 5000, 7, 12)
+        #prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
+        #print(prb)
+        #prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
         #print(prb)
             # After the number of matching orthologs has been tallied, perform the
             # hypergeometric probability calculation for the phenotype-gene data objects,
@@ -1178,6 +1219,10 @@ main = main()
 #main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
 #main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 
+main.get_common_orthologs('inter/panther/common_orthologs_human_zebrafish.txt', ['NCBITaxon:9606', 'NCBITaxon:7955'])
+main.get_common_orthologs('inter/panther/common_orthologs_human_mouse.txt', ['NCBITaxon:9606', 'NCBITaxon:10090'])
+main.get_common_orthologs('inter/panther/common_orthologs_mouse_zebrafish.txt', ['NCBITaxon:10090', 'NCBITaxon:7955'])
+
 ### Data assembly via SciGraph ###
 #main._assemble_human_disease_to_phenotype(limit)
 #main._assemble_mouse_genotype_to_phenotype(limit)
@@ -1251,9 +1296,30 @@ main = main()
 
 ####### FDR CALCULATION #######
 
-main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/random/mgi/')
-main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/random/hpo/')
-main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/random/zfin/')
+#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/random/mgi/')
+#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/random/hpo/')
+#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/random/zfin/')
+
+#decimal.Decimal()
+prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
+print(prb)
+prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
+print(prb)
+prb = 1- hypergeom.cdf(2, 5000, 7, 12)
+print(prb)
+prb = 1- hypergeom.cdf(3, 5000, 7, 12)
+print(prb)
+prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
+print(prb)
+prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
+print(prb)
+prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
+print(prb)
+prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
+#prb = 1- hypergeom.cdf(Decimal(7), Decimal(5000), Decimal(7), Decimal(12))
+print(prb)
+
+
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
