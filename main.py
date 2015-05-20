@@ -308,7 +308,7 @@ class main():
                     print(phenotype_id)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
                     #TODO: Need to handle phenotypes with no associated genes.
-                    genes = implicated_gene_ids.split()
+                    genes = implicated_gene_ids.split(',')
                     print(genes)
                     if phenotype_id not in zfin_phenotype_to_gene_hash:
                         zfin_phenotype_to_gene_hash[phenotype_id] = genes
@@ -385,7 +385,7 @@ class main():
                     continue
 
                 #print(phenotype_id)
-                genes = implicated_gene_ids.split()
+                genes = implicated_gene_ids.split(',')
                 #print(genes)
                 if phenotype_id not in mgi_phenotype_to_gene_hash:
                     mgi_phenotype_to_gene_hash[phenotype_id] = genes
