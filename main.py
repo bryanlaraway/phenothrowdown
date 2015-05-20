@@ -1111,7 +1111,8 @@ class main():
                             c = float(ortholog_matches)
                             prb = float(hypergeom.pmf(c, N, m, n))
                             #print(prb)
-                            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                            # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
+                            sequence = (species_a_phenotype_id, phenotype_a_ortholog_count, species_b_phenotype_id, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb)
                             json.dump(sequence, outfile)
                             outfile.write('\n')
 
@@ -1119,11 +1120,9 @@ class main():
             print('Total Matches: '+str(total_ortholog_matches))
             print('Total non-matches: '+str(total_ortholog_nonmatches))
 
-            # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
 
-            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-            json.dump(sequence, outfile)
-            outfile.write('\n')
+
+
 
             #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
             #print(prb)
@@ -1441,34 +1440,34 @@ main = main()
 ####### OWLSIM COMPARISONS #######
 
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
-#print('OWLSim processing human diseases vs mouse genotypes')
+#print('INFO: OWLSim processing human diseases vs mouse genotypes')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim/human_disease_mouse_genotype.txt')
-#print('Done processing human diseases vs mouse genotypes')
+#print('INFO: Done processing human diseases vs mouse genotypes')
 
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#print('OWLSim processing human disease vs zebrafish genotype')
+#print('INFO: OWLSim processing human disease vs zebrafish genotype')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_genotype.txt')
-#print('Done processing human disease vs zebrafish genotype')
+#print('INFO: Done processing human disease vs zebrafish genotype')
 
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#print('OWLSim processing mouse genotype vs zebrafish genotypes')
+#print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
 #main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/mouse_genotype_zebrafish_genotype.txt')
-#print('Done processing mouse genotype vs zebrafish genotypes')
+#print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
-#print('OWLSim processing human disease vs mouse genes')
+#print('INFO: OWLSim processing human disease vs mouse genes')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim/human_disease_mouse_gene.txt')
-#print('Done processing human disease vs mouse genes')
+#print('INFO: Done processing human disease vs mouse genes')
 
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
-#print('OWLSim processing human disease vs zebrafish genes')
+#print('INFO: OWLSim processing human disease vs zebrafish genes')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
-#print('Done processing human disease vs zebrafish genes')
+#print('INFO: Done processing human disease vs zebrafish genes')
 
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
-#print('OWLSim processing mouse genes vs zebrafish genes')
+#print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
-#print('Done processing mouse genes vs zebrafish genes')
+#print('INFO: Done processing mouse genes vs zebrafish genes')
 
 
 
@@ -1479,7 +1478,7 @@ main = main()
 ####### PHENOLOG COMPARISONS #######
 
 #initial testing of phenolog algorithm - mouse vs zebrafish
-#main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
 
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
 
