@@ -29,6 +29,7 @@ getcontext().prec = 500
 #total_human_mouse_orthologs = 5625
 #total_human_zebrafish_orthologs = 5212
 #total_mouse_zebrafish_orthologs = 5210
+#TODO: Need to pass phenotype/gene labels for identification, or look them up upon final output.
 
 class main():
 
@@ -1072,84 +1073,96 @@ class main():
         #print(species_b_pheno_gene_hash)
         with open(shared_orthologs, 'rb') as handle:
             num_shared_orthologs = len(pickle.load(handle))
+        with open(out, 'w', newline='') as outfile:
+            for i in species_a_pheno_gene_hash:
+                species_a_phenotype_id = i
+                species_a_orthologs = species_a_pheno_gene_hash[i]
+                #print(species_a_orthologs)
+                phenotype_a_ortholog_count = len(species_a_orthologs)
 
-        for i in species_a_pheno_gene_hash:
-            species_a_phenotype_id = i
-            species_a_orthologs = species_a_pheno_gene_hash[i]
-            #print(species_a_orthologs)
-            phenotype_a_ortholog_count = len(species_a_orthologs)
+                for j in species_b_pheno_gene_hash:
+                    species_b_phenotype_id = j
+                    species_b_orthologs = species_b_pheno_gene_hash[j]
+                    #print(species_b_orthologs)
+                    ortholog_matches = 0
+                    ortholog_non_matches = 0
 
-            for j in species_b_pheno_gene_hash:
-                species_b_phenotype_id = j
-                species_b_orthologs = species_b_pheno_gene_hash[j]
-                #print(species_b_orthologs)
-                ortholog_matches = 0
-                ortholog_non_matches = 0
+                    phenotype_b_ortholog_count = len(species_b_orthologs)
+                    for k in species_a_orthologs:
 
-                phenotype_b_ortholog_count = len(species_b_orthologs)
-                for k in species_a_orthologs:
+                        species_a_ortholog = k
+                        for l in species_b_orthologs:
+                            species_b_ortholog = l
+                            if species_a_ortholog == species_b_ortholog:
+                                #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                                ortholog_matches += 1
+                                total_ortholog_matches += 1
+                            else:
+                                #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                                ortholog_non_matches += 1
+                                total_ortholog_nonmatches += 1
 
-                    species_a_ortholog = k
-                    for l in species_b_orthologs:
-                        species_b_ortholog = l
-                        if species_a_ortholog == species_b_ortholog:
-                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
-                            ortholog_matches += 1
-                            total_ortholog_matches += 1
-                        else:
-                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
-                            ortholog_non_matches += 1
-                            total_ortholog_nonmatches += 1
+                        if ortholog_matches > 0:
+                            #print('Matches: '+str(ortholog_matches))
+                            #print('Non-matches: '+str(ortholog_non_matches))
+                            m = float(phenotype_b_ortholog_count)
+                            n = float(phenotype_a_ortholog_count)
+                            N = float(num_shared_orthologs)
+                            c = float(ortholog_matches)
+                            prb = float(hypergeom.pmf(c, N, m, n))
+                            #print(prb)
+                            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                            json.dump(sequence, outfile)
+                            outfile.write('\n')
 
-                    if ortholog_matches > 0:
-                        #print('Matches: '+str(ortholog_matches))
-                        #print('Non-matches: '+str(ortholog_non_matches))
-                        m = float(phenotype_b_ortholog_count)
-                        n = float(phenotype_a_ortholog_count)
-                        N = float(num_shared_orthologs)
-                        c = float(ortholog_matches)
-                        prb = float(hypergeom.pmf(c, N, m, n))
-                        #print(prb)
-        print('Total Matches: '+str(total_ortholog_matches))
-        print('Total non-matches: '+str(total_ortholog_nonmatches))
-        #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(2, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(3, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
-        #print(prb)
-        #prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
-        #print(prb)
-            # After the number of matching orthologs has been tallied, perform the
-            # hypergeometric probability calculation for the phenotype-gene data objects,
-            # then write the results to the output file.
 
-            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
-            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
-            # given that the ortholog lists for species a and species b may be of different sizes?
-            #TODO: Consult the phenolog paper on the question above.
-            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+            print('Total Matches: '+str(total_ortholog_matches))
+            print('Total non-matches: '+str(total_ortholog_nonmatches))
 
-            # N = total number of orthologs shared between species
-            # n = nummber of orthologs in species A phenotype
-            # m = nummber of orthologs in species B phenotype
-            # c = number of common orthologs between phenotypes (ortholog matches)
+            # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
 
-            # c =
-            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
-            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
-            # N = Number of type I objects drawn. (Number of matching orhtologs.)
-            #prb = hypergeom.cdf(x, M, n, N)
+            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+            json.dump(sequence, outfile)
+            outfile.write('\n')
+
+            #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(2, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(3, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
+            #print(prb)
+            #prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
+            #print(prb)
+                # After the number of matching orthologs has been tallied, perform the
+                # hypergeometric probability calculation for the phenotype-gene data objects,
+                # then write the results to the output file.
+
+                # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
+                # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
+                # given that the ortholog lists for species a and species b may be of different sizes?
+                #TODO: Consult the phenolog paper on the question above.
+                # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+
+                # N = total number of orthologs shared between species
+                # n = nummber of orthologs in species A phenotype
+                # m = nummber of orthologs in species B phenotype
+                # c = number of common orthologs between phenotypes (ortholog matches)
+
+                # c =
+                # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
+                # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
+                # N = Number of type I objects drawn. (Number of matching orhtologs.)
+                #prb = hypergeom.cdf(x, M, n, N)
 
 
         return
@@ -1429,32 +1442,32 @@ main = main()
 
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
 #print('OWLSim processing human diseases vs mouse genotypes')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim_human_disease_mouse_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim/human_disease_mouse_genotype.txt')
 #print('Done processing human diseases vs mouse genotypes')
 
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('OWLSim processing human disease vs zebrafish genotype')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_genotype.txt')
 #print('Done processing human disease vs zebrafish genotype')
 
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('OWLSim processing mouse genotype vs zebrafish genotypes')
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim_mouse_genotype_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/mouse_genotype_zebrafish_genotype.txt')
 #print('Done processing mouse genotype vs zebrafish genotypes')
 
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('OWLSim processing human disease vs mouse genes')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim_human_disease_mouse_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim/human_disease_mouse_gene.txt')
 #print('Done processing human disease vs mouse genes')
 
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('OWLSim processing human disease vs zebrafish genes')
-#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim_human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('Done processing human disease vs zebrafish genes')
 
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('OWLSim processing mouse genes vs zebrafish genes')
-#main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim_mouse_gene_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
 #print('Done processing mouse genes vs zebrafish genes')
 
 
@@ -1466,7 +1479,7 @@ main = main()
 ####### PHENOLOG COMPARISONS #######
 
 #initial testing of phenolog algorithm - mouse vs zebrafish
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
+#main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
 
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
 
