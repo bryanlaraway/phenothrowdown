@@ -1070,6 +1070,8 @@ class main():
         with open(inter2, 'rb') as handle:
             species_b_pheno_gene_hash = pickle.load(handle)
         #print(species_b_pheno_gene_hash)
+        with open(shared_orthologs, 'rb') as handle:
+            num_shared_orthologs = len(pickle.load(handle))
 
         for i in species_a_pheno_gene_hash:
             species_a_phenotype_id = i
@@ -1095,7 +1097,6 @@ class main():
                             ortholog_matches += 1
                             total_ortholog_matches += 1
                         else:
-                            monkey = 1
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                             ortholog_non_matches += 1
                             total_ortholog_nonmatches += 1
@@ -1105,10 +1106,10 @@ class main():
                         #print('Non-matches: '+str(ortholog_non_matches))
                         m = float(phenotype_b_ortholog_count)
                         n = float(phenotype_a_ortholog_count)
-                        N = float(shared_orthologs)
+                        N = float(num_shared_orthologs)
                         c = float(ortholog_matches)
-                        prb = 1 - float(hypergeom.cdf(c, N, m, n))
-                        print(prb)
+                        prb = float(hypergeom.pmf(c, N, m, n))
+                        #print(prb)
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
         #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
@@ -1288,7 +1289,7 @@ class main():
         global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
         print('The emprical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
-        return
+        return fdr_global_p_value_list[global_cutoff_position]
 
 
     def perform_phenolog_calculations_for_FDR(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
@@ -1356,8 +1357,8 @@ class main():
                     N = float(shared_orthologs)
                     c = float(ortholog_matches)
                     prb = float(hypergeom.pmf(c, N, m, n))
-                    print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
-                    print(prb)
+                    #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+                    #print(prb)
                     phenolog_p_value_list.append(prb)
                     total_hyp_calcs += 1
         print('Total Matches: '+str(total_ortholog_matches))
@@ -1384,7 +1385,6 @@ class main():
             # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
             # N = Number of type I objects drawn. (Number of matching orhtologs.)
             #prb = hypergeom.cdf(x, M, n, N)
-
 
         return phenolog_p_value_list
 
@@ -1466,7 +1466,7 @@ main = main()
 ####### PHENOLOG COMPARISONS #######
 
 #initial testing of phenolog algorithm - mouse vs zebrafish
-#main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', total_mouse_zebrafish_orthologs)
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
 
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
 
@@ -1484,27 +1484,9 @@ main = main()
 #main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
 
-main.set_stage_for_FDR_calculation()
+#main.set_stage_for_FDR_calculation()
 
 
-#decimal.Decimal()
-prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
-#print(prb)
-prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
-#print(prb)
-prb = 1- hypergeom.cdf(2, 5000, 7, 12)
-#print(prb)
-prb = 1- hypergeom.cdf(3, 5000, 7, 12)
-#print(prb)
-prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
-#print(prb)
-prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
-#print(prb)
-prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
-#print(prb)
-prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
-#prb = 1- hypergeom.cdf(Decimal(7), Decimal(5000), Decimal(7), Decimal(12))
-#print(prb)
 
 
 
