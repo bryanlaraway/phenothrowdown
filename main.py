@@ -317,7 +317,7 @@ class main():
                                 print('found ortholog')
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                                else:
+                                elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                             elif panther_id == 'fail':
                                 print('No ortholog found.')
@@ -332,7 +332,7 @@ class main():
                                 print('found ortholog')
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                                else:
+                                elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                             elif panther_id == 'fail':
                                 print('No ortholog found.')
@@ -389,7 +389,7 @@ class main():
                             print('found ortholog')
                             if phenotype_id not in mgi_phenotype_to_ortholog_hash:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                            else:
+                            elif panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                         elif panther_id == 'fail':
                             print('No ortholog found.')
@@ -404,7 +404,7 @@ class main():
                             print('found ortholog')
                             if phenotype_id not in mgi_phenotype_to_ortholog_hash:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
-                            else:
+                            elif panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                         elif panther_id == 'fail':
                             print('No ortholog found.')
@@ -469,7 +469,7 @@ class main():
                         print('found ortholog')
                         if phenotype_id not in hpo_phenotype_to_ortholog_hash:
                             hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                        else:
+                        elif panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
                             hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                     elif panther_id == 'fail':
                         print('No ortholog found.')
