@@ -1093,6 +1093,7 @@ class main():
                         species_a_ortholog = k
                         for l in species_b_orthologs:
                             species_b_ortholog = l
+
                             if species_a_ortholog == species_b_ortholog:
                                 #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                                 ortholog_matches += 1
@@ -1112,7 +1113,7 @@ class main():
                             prb = float(hypergeom.pmf(c, N, m, n))
                             #print(prb)
                             # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
-                            sequence = (species_a_phenotype_id, phenotype_a_ortholog_count, species_b_phenotype_id, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb)
+                            sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb)
                             json.dump(sequence, outfile)
                             outfile.write('\n')
 
