@@ -281,6 +281,7 @@ class main():
             print(str(row_count)+' zebrafish phenotype rows to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.' )
+            row_count = limit
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -299,6 +300,7 @@ class main():
                  affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
 
                 if phenotype_id == '' or phenotype_id is None:
                     continue
@@ -316,13 +318,13 @@ class main():
                         for gene in genes:
                             panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
                             if panther_id != 'fail':
-                                print('found ortholog')
+                                #print('found ortholog')
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
                                 elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                            elif panther_id == 'fail':
-                                print('No ortholog found.')
+                            #elif panther_id == 'fail':
+                                #print('No ortholog found.')
                     else:
                         for gene in genes:
                             zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
@@ -331,13 +333,12 @@ class main():
                             print('Repeat phenotype: '+phenotype_id)
                             panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
                             if panther_id != 'fail':
-                                print('found ortholog')
+                                #print('found ortholog')
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
                                 elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                            elif panther_id == 'fail':
-                                print('No ortholog found.')
+
                 if limit is not None and line_counter > limit:
                     break
         with open(inter1, 'wb') as handle:
@@ -363,7 +364,8 @@ class main():
             row_count = row_count - 1
             print(str(row_count)+' mouse phenotype rows to process.')
         if limit is not None:
-            print('Only parsing first '+str(limit)+' rows.' )
+            print('Only parsing first '+str(limit)+' rows.')
+            row_count = limit
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -378,6 +380,7 @@ class main():
                  phenotype_modifier, evidence_code_id, evidence_code_symbol, evidence_code_label, environment_id,
                  environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
                  e_uid, v_uid, v_uuid, v_lastmodified) = row
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
 
                 if phenotype_id == '' or phenotype_id is None:
                     continue
@@ -393,13 +396,11 @@ class main():
                     for gene in genes:
                         panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
                         if panther_id != 'fail':
-                            print('found ortholog')
+                            #print('found ortholog')
                             if phenotype_id not in mgi_phenotype_to_ortholog_hash:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
                             elif panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                        elif panther_id == 'fail':
-                            print('No ortholog found.')
                 else:
                     for gene in genes:
                         mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
@@ -408,13 +409,11 @@ class main():
                         #print('Repeat phenotype: '+phenotype_id)
                         panther_id = self.get_ortholog(gene, 'inter/panther/panther_mouse.txt')
                         if panther_id != 'fail':
-                            print('found ortholog')
+                            #print('found ortholog')
                             if phenotype_id not in mgi_phenotype_to_ortholog_hash:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
                             elif panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
                                 mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                        elif panther_id == 'fail':
-                            print('No ortholog found.')
 
                 if limit is not None and line_counter > limit:
                     break
@@ -427,7 +426,6 @@ class main():
             pickle.dump(mgi_phenotype_to_ortholog_hash, handle)
         print('INFO: Done assembling mouse phenotype to ortholog data.')
         return
-
 
     def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling mouse genotype to phenotype data.')
@@ -444,7 +442,8 @@ class main():
             row_count = row_count - 1
             print(str(row_count)+' human phenotype rows to process.')
         if limit is not None:
-            print('Only parsing first '+str(limit)+' rows.' )
+            print('Only parsing first '+str(limit)+' rows.')
+            row_count = limit
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -452,6 +451,8 @@ class main():
                 line_counter += 1
                 (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
                  gene_label, v_uid, v_uuid, v_lastmodified) = row
+
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
 
                 if phenotype_id == '' or phenotype_id is None:
                     continue
@@ -461,17 +462,16 @@ class main():
                 gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
                 print(phenotype_id)
 
-
                 #print(genes)
                 if phenotype_id not in hpo_phenotype_to_gene_hash:
                     hpo_phenotype_to_gene_hash[phenotype_id] = [gene_id]
                     #print(hpo_phenotype_to_gene_hash[genotype_id])
                     panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
                     if panther_id != 'fail':
-                        print('found ortholog')
+                        #print('found ortholog')
                         hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                    elif panther_id == 'fail':
-                        print('No ortholog found.')
+                    #elif panther_id == 'fail':
+                        #print('No ortholog found.')
                 else:
                     hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
                     #print(hpo_phenotype_to_gene_hash[genotype_id])
@@ -479,13 +479,13 @@ class main():
                     print('Repeat phenotype: '+phenotype_id)
                     panther_id = self.get_ortholog(gene_id, 'inter/panther/panther_mouse.txt')
                     if panther_id != 'fail':
-                        print('found ortholog')
+                        #print('found ortholog')
                         if phenotype_id not in hpo_phenotype_to_ortholog_hash:
                             hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
                         elif panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
                             hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                    elif panther_id == 'fail':
-                        print('No ortholog found.')
+                    #elif panther_id == 'fail':
+                        #print('No ortholog found.')
                 if limit is not None and line_counter > limit:
                     break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
@@ -511,7 +511,8 @@ class main():
             row_count = row_count - 1
             print(str(row_count)+' human phenotype rows to process.')
         if limit is not None:
-            print('Only parsing first '+str(limit)+' rows.' )
+            print('Only parsing first '+str(limit)+' rows.')
+            row_count = limit
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
@@ -525,6 +526,8 @@ class main():
                  flankmarkers, flankmark_a1, flankmark_a2, flankmark_b1, flankmark_b2, peak_mark, publication_num,
                  publication_url, publication_id, p_value, variance, bayes_value, f_statistics, lod_score,
                  additive_effect, dominance_effect, likelihood_ratio, ls_means, v_uid, v_uuid, v_lastmodified) = row
+
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
 
                 if trait_id == '' or trait_id is None:
                     continue
@@ -1062,10 +1065,10 @@ class main():
 
                 if query_gene_id in [genea, gene_id_a, geneb, gene_id_b]:
                     result_panther_id = panther_id
-                    print('found ortholog')
+                    print('found ortholog for '+query_gene_id+'.')
                     return(result_panther_id)
 
-        print('no ortholog found for '+query_gene_id)
+        print('no ortholog found for '+query_gene_id+'.')
         return('fail')
 
 
@@ -1441,7 +1444,7 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-main.assemble_nif_zfin_phenotype_to_gene(limit)
+#main.assemble_nif_zfin_phenotype_to_gene(limit)
 main.assemble_nif_mgi_phenotype_to_gene(limit)
 main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
