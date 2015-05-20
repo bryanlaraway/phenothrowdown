@@ -1219,7 +1219,7 @@ class main():
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
-        fdr_p_value_list = []
+        fdr_global_p_value_list = []
 
         hvm_human_dir = 'inter/random/human_vs_mouse/human/'
         hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
@@ -1240,7 +1240,8 @@ class main():
 
         random_counter = 0
         # Switch to 'while' when ready for full set testing.
-        if random_counter < 1000:
+        while random_counter < 1000:
+            fdr_p_value_list = []
             hvm_human_file = hvm_human_dir+'random_'+str(random_counter)+'.txt'
             hvm_mouse_file = hvm_mouse_dir+'random_'+str(random_counter)+'.txt'
             hvz_human_file = hvz_human_dir+'random_'+str(random_counter)+'.txt'
@@ -1262,16 +1263,30 @@ class main():
                 mvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
 
             #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
-            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs))
-            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs))
-            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs))
+            hvm_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
+            print(hvm_phenolog_p_values)
+            fdr_p_value_list.extend(hvm_phenolog_p_values)
+            hvz_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
+            print(hvz_phenolog_p_values)
+            fdr_p_value_list.extend(hvz_phenolog_p_values)
+            mvz_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
+            print(mvz_phenolog_p_values)
+            fdr_p_value_list.extend(mvz_phenolog_p_values)
 
             # After grabbing the p-values from each function, assemble and sort.
             # Select the p-value that resides at the 0.05 percentile and add it to a list.
 
             random_counter += 1
-            print('fdr p value list:'+str(len(fdr_p_value_list)))
+            print('fdr p value list: '+str(len(fdr_p_value_list)))
+            fdr_p_value_list.sort()
             print(fdr_p_value_list)
+            cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
+            print(fdr_p_value_list[cutoff_position])
+            fdr_global_p_value_list.append(fdr_p_value_list[cutoff_position])
+
+        fdr_global_p_value_list.sort()
+        global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+        print('The emprical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return
 
@@ -1289,51 +1304,65 @@ class main():
         ortholog_non_matches = 0
         phenotype_a_ortholog_count = 0
         phenotype_b_ortholog_count = 0
+        total_hyp_calcs = 0
         phenolog_p_value_list = []
 
         species_a_pheno_gene_hash = species_a_po_hash
         species_b_pheno_gene_hash = species_b_po_hash
 
         for i in species_a_pheno_gene_hash:
+            # Phenotype for species A
             species_a_phenotype_id = i
             species_a_orthologs = species_a_pheno_gene_hash[i]
             #print(species_a_orthologs)
             phenotype_a_ortholog_count = len(species_a_orthologs)
 
             for j in species_b_pheno_gene_hash:
+                # Phenotype for species B
                 species_b_phenotype_id = j
                 species_b_orthologs = species_b_pheno_gene_hash[j]
                 #print(species_b_orthologs)
+                #ortholog_matches = 0
+                #ortholog_non_matches = 0
+
                 ortholog_matches = 0
                 ortholog_non_matches = 0
 
                 phenotype_b_ortholog_count = len(species_b_orthologs)
                 for k in species_a_orthologs:
+                    # Orthologs for species A
+                    #ortholog_matches = 0
+                    #ortholog_non_matches = 0
 
                     species_a_ortholog = k
                     for l in species_b_orthologs:
+                        # Orthologs for species B
                         species_b_ortholog = l
                         if species_a_ortholog == species_b_ortholog:
                             #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                             ortholog_matches += 1
+                            print(species_a_ortholog+' == '+species_b_ortholog)
                             total_ortholog_matches += 1
                         else:
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                             ortholog_non_matches += 1
                             total_ortholog_nonmatches += 1
 
-                    if ortholog_matches > 0:
-                        #print('Matches: '+str(ortholog_matches))
-                        #print('Non-matches: '+str(ortholog_non_matches))
-                        m = float(phenotype_b_ortholog_count)
-                        n = float(phenotype_a_ortholog_count)
-                        N = float(shared_orthologs)
-                        c = float(ortholog_matches)
-                        prb = 1 - float(hypergeom.cdf(c, N, m, n))
-                        print(prb)
-                        phenolog_p_value_list.append(prb)
+                if ortholog_matches > 0:
+                    #print('Matches: '+str(ortholog_matches))
+                    #print('Non-matches: '+str(ortholog_non_matches))
+                    m = float(phenotype_b_ortholog_count)
+                    n = float(phenotype_a_ortholog_count)
+                    N = float(shared_orthologs)
+                    c = float(ortholog_matches)
+                    prb = float(hypergeom.pmf(c, N, m, n))
+                    print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+                    print(prb)
+                    phenolog_p_value_list.append(prb)
+                    total_hyp_calcs += 1
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
+        print('Total phenolog calculations: '+str(total_hyp_calcs))
 
             # After the number of matching orthologs has been tallied, perform the
             # hypergeometric probability calculation for the phenotype-gene data objects,
