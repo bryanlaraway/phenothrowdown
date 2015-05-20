@@ -26,9 +26,9 @@ getcontext().prec = 500
 #print(getcontext())
 #Selected distinct PANTHER IDs from the NIF/DISCO tables.
 #TODO: See about getting these numbers from the Panther table to allow for dynamic updating with file updates.
-total_human_mouse_orthologs = 5625
-total_human_zebrafish_orthologs = 5212
-total_mouse_zebrafish_orthologs = 5210
+#total_human_mouse_orthologs = 5625
+#total_human_zebrafish_orthologs = 5212
+#total_mouse_zebrafish_orthologs = 5210
 
 class main():
 
@@ -1215,9 +1215,11 @@ class main():
         return
 
     def set_stage_for_FDR_calculation(self):
-        print('INFO: Performing phenolog calculations for FDR estimation.')
+        print('INFO: Setting stage for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
+
+        fdr_p_value_list = []
 
         hvm_human_dir = 'inter/random/human_vs_mouse/human/'
         hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
@@ -1232,9 +1234,9 @@ class main():
             hvz_common_orthologs = len(pickle.load(handle))
         with open('inter/panther/common_orthologs_mouse_zebrafish.txt', 'rb') as handle:
             mvz_common_orthologs = len(pickle.load(handle))
-        print(hvm_common_orthologs)
-        print(hvz_common_orthologs)
-        print(mvz_common_orthologs)
+        #print(hvm_common_orthologs)
+        #print(hvz_common_orthologs)
+        #print(mvz_common_orthologs)
 
         random_counter = 0
         # Switch to 'while' when ready for full set testing.
@@ -1260,11 +1262,16 @@ class main():
                 mvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
 
             #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
-            #main.perform_phenolog_calculations_for_FDR(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
-            #main.perform_phenolog_calculations_for_FDR(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
-            #main.perform_phenolog_calculations_for_FDR(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
+            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs))
+            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs))
+            fdr_p_value_list.extend(main.perform_phenolog_calculations_for_FDR(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs))
+
+            # After grabbing the p-values from each function, assemble and sort.
+            # Select the p-value that resides at the 0.05 percentile and add it to a list.
 
             random_counter += 1
+            print('fdr p value list:'+str(len(fdr_p_value_list)))
+            print(fdr_p_value_list)
 
         return
 
@@ -1282,6 +1289,7 @@ class main():
         ortholog_non_matches = 0
         phenotype_a_ortholog_count = 0
         phenotype_b_ortholog_count = 0
+        phenolog_p_value_list = []
 
         species_a_pheno_gene_hash = species_a_po_hash
         species_b_pheno_gene_hash = species_b_po_hash
@@ -1310,7 +1318,6 @@ class main():
                             ortholog_matches += 1
                             total_ortholog_matches += 1
                         else:
-                            monkey = 1
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                             ortholog_non_matches += 1
                             total_ortholog_nonmatches += 1
@@ -1324,6 +1331,7 @@ class main():
                         c = float(ortholog_matches)
                         prb = 1 - float(hypergeom.cdf(c, N, m, n))
                         print(prb)
+                        phenolog_p_value_list.append(prb)
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
 
@@ -1349,7 +1357,7 @@ class main():
             #prb = hypergeom.cdf(x, M, n, N)
 
 
-        return
+        return phenolog_p_value_list
 
 ###MAIN####
 
@@ -1452,22 +1460,22 @@ main.set_stage_for_FDR_calculation()
 
 #decimal.Decimal()
 prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1- hypergeom.cdf(2, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1- hypergeom.cdf(3, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
-print(prb)
+#print(prb)
 prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
 #prb = 1- hypergeom.cdf(Decimal(7), Decimal(5000), Decimal(7), Decimal(12))
-print(prb)
+#print(prb)
 
 
 
