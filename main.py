@@ -302,6 +302,8 @@ class main():
 
                 if phenotype_id == '' or phenotype_id is None:
                     continue
+                elif implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
                 else:
                     print(phenotype_id)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
@@ -377,6 +379,11 @@ class main():
                  environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
                  e_uid, v_uid, v_uuid, v_lastmodified) = row
 
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                elif implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
+
                 #print(phenotype_id)
                 genes = implicated_gene_ids.split()
                 #print(genes)
@@ -445,6 +452,12 @@ class main():
                 line_counter += 1
                 (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
                  gene_label, v_uid, v_uuid, v_lastmodified) = row
+
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                elif gene_id == '' or gene_id is None:
+                    continue
+
                 gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
                 print(phenotype_id)
 
@@ -512,6 +525,11 @@ class main():
                  flankmarkers, flankmark_a1, flankmark_a2, flankmark_b1, flankmark_b2, peak_mark, publication_num,
                  publication_url, publication_id, p_value, variance, bayes_value, f_statistics, lod_score,
                  additive_effect, dominance_effect, likelihood_ratio, ls_means, v_uid, v_uuid, v_lastmodified) = row
+
+                if trait_id == '' or trait_id is None:
+                    continue
+                elif gene_id == '' or gene_id is None:
+                    continue
 
                 print(trait_id)
                 #TODO: Separate by species.
@@ -1423,9 +1441,9 @@ main = main()
 #main.assemble_zebrafish_genotype_to_phenotype(500)
 
 ### Data assembly via NIF/DISCO ###
-#main.assemble_nif_zfin_phenotype_to_gene(limit)
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
-#main.assemble_nif_hpo_phenotype_to_gene(limit)
+main.assemble_nif_zfin_phenotype_to_gene(limit)
+main.assemble_nif_mgi_phenotype_to_gene(limit)
+main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
