@@ -872,9 +872,11 @@ class main():
     def perform_owlsim_queries(self, raw1, raw2, out, limit=None):
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
+        comparison_count = 0
         failure_counter = 0
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
+            comparison_count = limit
         #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
         #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         data1 = open(raw1, 'rb')
@@ -883,6 +885,9 @@ class main():
         data2 = open(raw2, 'rb')
         organism_b_hash = pickle.load(data2)
         data2.close()
+        if limit is None:
+            comparison_count = len(organism_a_hash) * len(organism_b_hash)
+            print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
         #data2 = open(raw2,'r', encoding="iso-8859-1")
         #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
             #organism_a_hash = pickle.loads(handle1.read())
@@ -907,6 +912,8 @@ class main():
                     phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
                     #print(query_url)
+                    line_counter += 1
+                    print('INFO: Processing phenotypic profile comparison '+str(line_counter)+' out of '+str(comparison_count)+'.')
                     try:
                         response = urllib.request.urlopen(query_url, timeout=5)
                         reader = codecs.getreader("utf-8")
@@ -928,7 +935,6 @@ class main():
                         sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
                         json.dump(sequence, outfile)
                         outfile.write('\n')
-
 
                         #print(sequence)
                         #print('failed here')
@@ -952,8 +958,6 @@ class main():
                         json.dump(sequence, outfile)
                         outfile.write('\n')
                         continue
-
-
 
         #entity_a = 'entity_1'
         #entity_a_attributes = ['attr1','attr2','attr3']
