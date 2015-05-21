@@ -31,6 +31,7 @@ getcontext().prec = 500
 #total_mouse_zebrafish_orthologs = 5210
 #TODO: Need to pass phenotype/gene labels for identification, or look them up upon final output.
 
+
 class main():
 
     # NOTE: Could either include the fetch code to retrieve the data from the resources,
@@ -591,8 +592,12 @@ class main():
                  affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
-                if extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
+
+                #FIXME: IS THIS CORRECT OR BACKWARDS???
+                if extrinsic_genotype_id != '' or extrinsic_genotype_id is not None:
                     print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
+                    continue
+                elif extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
                     #print(phenotype_id)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
                     #genes = implicated_gene_ids.split()
@@ -645,7 +650,6 @@ class main():
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                 #print(phenotype_id)
-                #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
                 #genes = implicated_gene_ids.split()
                 #print(genes)
                 if effective_genotype_id not in mgi_genotype_to_phenotype_hash:
@@ -1075,10 +1079,6 @@ class main():
         print('no ortholog found for '+query_gene_id+'.')
         return('fail')
 
-
-
-
-
     def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs):
         print('INFO: Performing phenolog calculations.')
         line_counter = 0
@@ -1188,8 +1188,6 @@ class main():
                 # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
                 # N = Number of type I objects drawn. (Number of matching orhtologs.)
                 #prb = hypergeom.cdf(x, M, n, N)
-
-
         return
 
     def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir):
@@ -1249,8 +1247,6 @@ class main():
             with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
                 pickle.dump(test_pheno_ortholog_hash, handle)
                 counter += 1
-
-
         return
 
     def set_stage_for_FDR_calculation(self):
@@ -1449,8 +1445,8 @@ main = main()
 
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)
-main.assemble_nif_mgi_phenotype_to_gene(limit)
-main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)
+#main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
@@ -1459,8 +1455,6 @@ main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
-
-
 
 
 ####### OWLSIM COMPARISONS #######
