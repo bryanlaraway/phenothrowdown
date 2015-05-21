@@ -429,7 +429,7 @@ class main():
         return
 
     def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
-        print('INFO:Assembling mouse genotype to phenotype data.')
+        print('INFO:Assembling human phenotype to gene data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_2'
@@ -453,7 +453,7 @@ class main():
                 (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
                  gene_label, v_uid, v_uuid, v_lastmodified) = row
 
-                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
+                print('INFO: Processing human phenotype row '+str(line_counter)+' out of '+str(row_count)+'.')
 
                 if phenotype_id == '' or phenotype_id is None:
                     continue
@@ -496,11 +496,11 @@ class main():
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
         with open(inter2, 'wb') as handle:
             pickle.dump(hpo_phenotype_to_ortholog_hash, handle)
-        print('INFO: Done assembling mouse phenotype to ortholog data.')
+        print('INFO: Done assembling human phenotype to ortholog data.')
         return
 
     def assemble_nif_animalqtl_phenotype_to_gene(self, limit=None):
-        print('INFO:Assembling mouse genotype to phenotype data.')
+        print('INFO:Assembling animalQTLdb phenotype to gene data.')
         line_counter = 0
         failure_counter = 0
         raw = 'raw/animalqtldb/dvp.pr_nif_0000_02550_3'
@@ -510,7 +510,7 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
             row_count = row_count - 1
-            print(str(row_count)+' human phenotype rows to process.')
+            print(str(row_count)+' AQTL phenotype rows to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.')
             row_count = limit
@@ -593,13 +593,11 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                #FIXME: IS THIS CORRECT OR BACKWARDS???
                 if extrinsic_genotype_id != '' or extrinsic_genotype_id is not None:
                     print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
                     continue
                 elif extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
                     #print(phenotype_id)
-                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
                     #genes = implicated_gene_ids.split()
                     #print(genes)
                     if effective_genotype_id not in zfin_genotype_to_phenotype_hash:
@@ -690,7 +688,6 @@ class main():
                 (e_uid, disease_id, disorder_name, disorder_database_link, gene_id,
                  gene_num, gene_label, v_uid, v_uuid, v_lastmodified) = row
                 print(disease_id)
-                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
 
                 #print(genes)
                 if disease_id not in hpo_disease_to_gene_hash:
@@ -735,7 +732,6 @@ class main():
                  synonyms, v_uid, v_uuid, v_lastmodified) = row
 
                 print(disorder_id)
-                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
 
                 #print(genes)
                 if disorder_id not in hpo_disease_to_phenotype_hash:
@@ -785,7 +781,6 @@ class main():
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                 #print(implicated_gene_ids)
-                #FIXME: Going to need to convert the MGI Gene IDs to NCBIGene IDs.
 
                 if not re.match('.*,.*',implicated_gene_ids):
                     print(implicated_gene_labels)
@@ -1079,7 +1074,7 @@ class main():
         print('no ortholog found for '+query_gene_id+'.')
         return('fail')
 
-    def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs):
+    def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs, fdr_cutoff):
         print('INFO: Performing phenolog calculations.')
         line_counter = 0
         failure_counter = 0
@@ -1136,19 +1131,18 @@ class main():
                             N = float(num_shared_orthologs)
                             c = float(ortholog_matches)
                             prb = float(hypergeom.pmf(c, N, m, n))
+                            if prb <= fdr_cutoff:
+                                significance = 'Significant'
+                            else:
+                                significance = 'Not Significant'
                             #print(prb)
                             # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
-                            sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb)
+                            sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
                             json.dump(sequence, outfile)
                             outfile.write('\n')
 
-
             print('Total Matches: '+str(total_ortholog_matches))
             print('Total non-matches: '+str(total_ortholog_nonmatches))
-
-
-
-
 
             #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
             #print(prb)
@@ -1190,7 +1184,8 @@ class main():
                 #prb = hypergeom.cdf(x, M, n, N)
         return
 
-    def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir):
+    def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
+        print('INFO: Creating random data sets.')
         #Take the phenotype-ortholog hashes I have created.
         #Remove all orthologs and place in a list, replace with 0s or 1s or something.
         #Randomly shuffle the ortholog list
@@ -1204,8 +1199,9 @@ class main():
         # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
         # would it make more sense to populate from the total orthologs shared between two species?
         # What about getting random.sample from the total list of orthologs, with replacement?
-        counter = 0
-        while counter < 1000:
+        counter = 1
+        while counter <= limit:
+            #print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
             test_pheno_ortholog_hash = {}
 
             orthologs = []
@@ -1243,17 +1239,26 @@ class main():
                             #random.shuffle(orthologs)
                         #test_pheno_ortholog_hash[i].append(orthologs.pop())
                     #if orthologs.pop
-            print('Completed randomization successfully!')
+            #print('Completed randomization successfully!')
             with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
                 pickle.dump(test_pheno_ortholog_hash, handle)
-                counter += 1
+            counter += 1
         return
 
-    def set_stage_for_FDR_calculation(self):
+    def set_stage_for_FDR_calculation(self, limit=1000):
         print('INFO: Setting stage for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
+        main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
+        main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
+
+        main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
+        main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
+
+        main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
+        main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
+        print('INFO: Done with random data generation.')
         fdr_global_p_value_list = []
 
         hvm_human_dir = 'inter/random/human_vs_mouse/human/'
@@ -1273,9 +1278,11 @@ class main():
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
 
-        random_counter = 0
+        random_counter = 1
         # Switch to 'while' when ready for full set testing.
-        while random_counter < 1000:
+        while random_counter < limit:
+            random_counter += 1
+            print('INFO: Performing phenolog calculation on random data set '+str(random_counter)+' out of '+str(limit)+'.')
             fdr_p_value_list = []
             hvm_human_file = hvm_human_dir+'random_'+str(random_counter)+'.txt'
             hvm_mouse_file = hvm_mouse_dir+'random_'+str(random_counter)+'.txt'
@@ -1299,35 +1306,35 @@ class main():
 
             #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
             hvm_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
-            print(hvm_phenolog_p_values)
+            #print(hvm_phenolog_p_values)
             fdr_p_value_list.extend(hvm_phenolog_p_values)
             hvz_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
-            print(hvz_phenolog_p_values)
+            #print(hvz_phenolog_p_values)
             fdr_p_value_list.extend(hvz_phenolog_p_values)
             mvz_phenolog_p_values = main.perform_phenolog_calculations_for_FDR(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
-            print(mvz_phenolog_p_values)
+            #print(mvz_phenolog_p_values)
             fdr_p_value_list.extend(mvz_phenolog_p_values)
 
             # After grabbing the p-values from each function, assemble and sort.
             # Select the p-value that resides at the 0.05 percentile and add it to a list.
 
-            random_counter += 1
-            print('fdr p value list: '+str(len(fdr_p_value_list)))
+
+            #print('fdr p value list: '+str(len(fdr_p_value_list)))
             fdr_p_value_list.sort()
-            print(fdr_p_value_list)
+            #print(fdr_p_value_list)
             cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
-            print(fdr_p_value_list[cutoff_position])
+            #print(fdr_p_value_list[cutoff_position])
             fdr_global_p_value_list.append(fdr_p_value_list[cutoff_position])
 
         fdr_global_p_value_list.sort()
         global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
-        print('The emprical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
+        print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return fdr_global_p_value_list[global_cutoff_position]
 
 
     def perform_phenolog_calculations_for_FDR(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
-        print('INFO: Performing phenolog calculations for FDR estimation.')
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
@@ -1376,7 +1383,7 @@ class main():
                         if species_a_ortholog == species_b_ortholog:
                             #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                             ortholog_matches += 1
-                            print(species_a_ortholog+' == '+species_b_ortholog)
+                            #print(species_a_ortholog+' == '+species_b_ortholog)
                             total_ortholog_matches += 1
                         else:
                             #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
@@ -1495,30 +1502,16 @@ main = main()
 # Would it be easier/more efficient to add the phenolog data to the OWLSim output table,
 # or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
-####### PHENOLOG COMPARISONS #######
-
-#initial testing of phenolog algorithm - mouse vs zebrafish
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_mouse.txt')
-
-#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', total_human_mouse_orthologs)
-
-#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', total_human_zebrafish_orthologs)
-
 
 ####### FDR CALCULATION #######
+fdr_cutoff = main.set_stage_for_FDR_calculation()
 
-#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
-#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
-
-#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
-#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
-
-#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
-#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
-
-#main.set_stage_for_FDR_calculation()
-
-
+####### PHENOLOG COMPARISONS #######
+# NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
+#fdr_cutoff = 0.000229
+main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
+main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
+main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
 
 
 
