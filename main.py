@@ -1443,11 +1443,12 @@ class main():
                     for line in handle:
                         json_line = line.rstrip()
                         phenolog_data = json.loads(json_line)
-                        print(phenolog_data[10])
                         if phenolog_data[10] == 'Significant':
                             phenotype_a = phenolog_data[0]
                             phenotype_b = phenolog_data[3]
-                            output_row = (phenotype_a, phenotype_b)
+                            combo_ab = phenotype_a+'_'+phenotype_b
+                            combo_ba = phenotype_b+'_'+phenotype_a
+                            output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
                             #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
@@ -1460,7 +1461,9 @@ class main():
                         if phenolog_data[10] == 'Significant':
                             phenotype_a = phenolog_data[0]
                             phenotype_b = phenolog_data[3]
-                            output_row = (phenotype_a, phenotype_b)
+                            combo_ab = phenotype_a+'_'+phenotype_b
+                            combo_ba = phenotype_b+'_'+phenotype_a
+                            output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
                             #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
@@ -1473,33 +1476,12 @@ class main():
                         if phenolog_data[10] == 'Significant':
                             phenotype_a = phenolog_data[0]
                             phenotype_b = phenolog_data[3]
-                            output_row = (phenotype_a, phenotype_b)
+                            combo_ab = phenotype_a+'_'+phenotype_b
+                            combo_ba = phenotype_b+'_'+phenotype_a
+                            output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
                             #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
-
-
-
-
-
-                #print(phenolog_data[8])
-                #print(trim_line)
-                #print(json_line[0])
-
-
-                #json_lines.append(trim_line)
-            #print(json_lines)
-                #lines = [line] + list(itertools.islice(handle,))
-            #data = data_file.readlines()
-            #print(data)
-            #clean_data = json.load(data)
-            #for line in handle:
-                #human_mouse_phenologs = json.load(line)
-        #with open('out/phenolog/human_vs_zebrafish.txt', 'r') as handle:
-                #human_zebrafish_phenologs = json.load(handle)
-        #with open('out/phenolog/mouse_vs_zebrafish.txt', 'r') as handle:
-                #mouse_zebrafish_phenologs = json.load(handle)
-
 
         return
 
