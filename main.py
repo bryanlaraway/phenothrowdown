@@ -1131,6 +1131,7 @@ class main():
                             N = float(num_shared_orthologs)
                             c = float(ortholog_matches)
                             prb = float(hypergeom.pmf(c, N, m, n))
+                            #FIXME: less than or equal or just less than?
                             if prb <= fdr_cutoff:
                                 significance = 'Significant'
                             else:
@@ -1429,7 +1430,42 @@ class main():
 
         return phenolog_p_value_list
 
-###MAIN####
+
+    def assemble_significant_phenologs(self):
+        #json = open('out/phenolog/human_vs_mouse.txt')
+        #data = json.loads(json)
+
+
+        #json_lines = []
+        with open('out/phenolog/human_vs_mouse.txt', 'r') as handle:
+            for line in handle:
+                json_line = line.rstrip()
+                phenolog_data = json.loads(json_line)
+                print(phenolog_data[8])
+                #print(trim_line)
+                #print(json_line[0])
+
+
+                #json_lines.append(trim_line)
+            #print(json_lines)
+                #lines = [line] + list(itertools.islice(handle,))
+            #data = data_file.readlines()
+            #print(data)
+            #clean_data = json.load(data)
+            #for line in handle:
+                #human_mouse_phenologs = json.load(line)
+        #with open('out/phenolog/human_vs_zebrafish.txt', 'r') as handle:
+                #human_zebrafish_phenologs = json.load(handle)
+        #with open('out/phenolog/mouse_vs_zebrafish.txt', 'r') as handle:
+                #mouse_zebrafish_phenologs = json.load(handle)
+
+
+        return
+
+
+
+
+####### MAIN #######
 
 limit = 500
 main = main()
@@ -1504,16 +1540,16 @@ main = main()
 
 
 ####### FDR CALCULATION #######
-fdr_cutoff = main.set_stage_for_FDR_calculation()
+#fdr_cutoff = main.set_stage_for_FDR_calculation()
 
 ####### PHENOLOG COMPARISONS #######
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
-#fdr_cutoff = 0.000229
-main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
-main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
-main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
+#fdr_cutoff = 0.00022089684117479534
+#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
+#main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
+#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
 
-
+main.assemble_significant_phenologs()
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
