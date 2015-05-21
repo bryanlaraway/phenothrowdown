@@ -1434,14 +1434,55 @@ class main():
     def assemble_significant_phenologs(self):
         #json = open('out/phenolog/human_vs_mouse.txt')
         #data = json.loads(json)
-
-
         #json_lines = []
-        with open('out/phenolog/human_vs_mouse.txt', 'r') as handle:
-            for line in handle:
-                json_line = line.rstrip()
-                phenolog_data = json.loads(json_line)
-                print(phenolog_data[8])
+        with open('inter/phenolog/all_significant_phenologs.txt', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            with open('inter/phenolog/hvm_significant_phenologs.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/human_vs_mouse.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        print(phenolog_data[10])
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_b = phenolog_data[3]
+                            output_row = (phenotype_a, phenotype_b)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+            with open('inter/phenolog/hvz_significant_phenologs.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/human_vs_zebrafish.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_b = phenolog_data[3]
+                            output_row = (phenotype_a, phenotype_b)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+            with open('inter/phenolog/mvz_significant_phenologs.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/mouse_vs_zebrafish.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_b = phenolog_data[3]
+                            output_row = (phenotype_a, phenotype_b)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+
+
+
+
+
+                #print(phenolog_data[8])
                 #print(trim_line)
                 #print(json_line[0])
 
