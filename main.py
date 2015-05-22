@@ -1428,7 +1428,6 @@ class main():
 
         return phenolog_p_value_list
 
-
     def assemble_significant_phenologs(self):
         #json = open('out/phenolog/human_vs_mouse.txt')
         #data = json.loads(json)
@@ -1654,10 +1653,38 @@ class main():
         return
 
 
+    def parse_zp(self, raw, inter):
+        zp_hash = {}
+        line_counter = 0
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                line_counter += 1
+                (zp_id, zp_label, extra_1, extra_2, extra_3, extra_4, extra_5, extra_6) = row
+
+                if zp_id not in zp_hash:
+                    zp_hash[zp_id] = zp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(zp_hash, handle)
+
+
+
+        return
+
+    def parse_mp(self):
+
+        return
+
+    def parse_hp(self):
+
+        return
+
 
 ####### MAIN #######
 
 limit = None
+
 main = main()
 
 #Trim the PANTHER data set for each taxon.
@@ -1688,6 +1715,8 @@ main = main()
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
+
+main.parse_zp('ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
 
 ####### OWLSIM COMPARISONS #######
@@ -1742,9 +1771,10 @@ main = main()
 #main.assemble_significant_phenologs()
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
-fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
 
-####### PHENOLOG COMPARISONS #######
+
+#fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
+
 
 
 elapsed_time = time.time() - start_time
