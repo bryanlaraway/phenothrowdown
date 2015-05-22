@@ -1672,11 +1672,49 @@ class main():
 
         return
 
-    def parse_mp(self):
+    def parse_mp(self, raw, inter):
+        mp_hash = {}
+        with open(raw, 'r') as handle:
+            for line in handle:
+                #print(line)
+                if re.match('id:.*', line.rstrip()):
+                    mp_id = line.rstrip()
+                    mp_id = re.sub('id: ', '', mp_id)
+                    #print(mp_id)
+                    next_line = next(handle)
+                    if re.match('name:.*', next_line.rstrip()):
+                        mp_label = next_line.rstrip()
+                        mp_label = re.sub('name: ', '', mp_label)
+                        #print(mp_label)
+
+                        if mp_id not in mp_hash:
+                            mp_hash[mp_id] = mp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(mp_hash, handle)
 
         return
 
-    def parse_hp(self):
+    def parse_hp(self, raw, inter):
+        hp_hash = {}
+        with open(raw, 'r') as handle:
+            for line in handle:
+                #print(line)
+                if re.match('id:.*', line.rstrip()):
+                    hp_id = line.rstrip()
+                    hp_id = re.sub('id: ', '', hp_id)
+                    #print(hp_id)
+                    next_line = next(handle)
+                    if re.match('name:.*', next_line.rstrip()):
+                        hp_label = next_line.rstrip()
+                        hp_label = re.sub('name: ', '', hp_label)
+                        #print(hp_label)
+
+                        if hp_id not in hp_hash:
+                            hp_hash[hp_id] = hp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(hp_hash, handle)
 
         return
 
@@ -1716,7 +1754,9 @@ main = main()
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
-main.parse_zp('ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
+#main.parse_hp('raw/ontologies/hp.obo', 'inter/ontologies/hp_hash.txt')
+#main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
+#main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
 
 ####### OWLSIM COMPARISONS #######
