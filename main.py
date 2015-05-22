@@ -1496,12 +1496,18 @@ class main():
         mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
         mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
 
-        hvm_phenolog_file = 'hvm_significant_phenologs.txt'
-        hvz_phenolog_file = 'hvz_significant_phenologs.txt'
-        mvz_phenolog_file = 'mvz_significant_phenologs.txt'
+        hvm_phenolog_file = 'inter/phenolog/hvm_significant_phenologs.txt'
+        hvz_phenolog_file = 'inter/phenolog/hvz_significant_phenologs.txt'
+        mvz_phenolog_file = 'inter/phenolog/mvz_significant_phenologs.txt'
 
-        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvm_phenolog_file, hvm_human_dir)
-        main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', hvm_phenolog_file, hvm_mouse_dir)
+        human_phenotypes = []
+
+
+        mouse_phenotypes = []
+        zebrafish_phenotypes = []
+
+        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvm_phenolog_file, hvm_human_dir)
+        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', hvm_phenolog_file, hvm_mouse_dir)
 
         main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
         main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', hvz_phenolog_file, hvz_zebrafish_dir)
@@ -1577,11 +1583,11 @@ class main():
         '''
         return #fdr_global_p_value_list[global_cutoff_position]
 
-    def generate_random_ext_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
-        '''print('INFO: Creating random data sets.')
-        #Take the phenotype-ortholog hashes I have created.
-        #Remove all orthologs and place in a list, replace with 0s or 1s or something.
-        #Randomly shuffle the ortholog list
+    def generate_random_ext_data(self, geno_pheno_hash, common_phenologs, out_dir, limit=1000):
+        print('INFO: Creating random data sets.')
+        #Take the disease/genotype-phenotype hashes I have created.
+        #Remove all phenotypes and place in a list, replace with 0s or 1s or something.
+        #Randomly shuffle the phenotype list
         #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
 
         #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
@@ -1597,19 +1603,28 @@ class main():
             #print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
             test_pheno_ortholog_hash = {}
 
-            orthologs = []
+            phenologs = []
             list_length = 0
-            with open(pheno_gene_hash, 'rb') as handle:
-                pheno_ortholog_hash = pickle.load(handle)
-            with open(common_orthologs, 'rb') as handle:
-                orthologs = pickle.load(handle)
+            with open(geno_pheno_hash, 'rb') as handle:
+                geno_pheno_hash = pickle.load(handle)
+            with open(common_phenologs, 'r', encoding="iso-8859-1") as csvfile:
+                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+                for row in filereader:
+                    (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+                    if combo_ab not in phenologs:
+                        phenologs.append(combo_ab)
+
+
+
+            #with open(common_phenologs, 'rb') as handle:
+                #phenologs = pickle.load(handle)
             # Adjusting this to instead call from the full pool of common orthologs.
             #for i in pheno_ortholog_hash:
                 #for j in pheno_ortholog_hash[i]:
                     #orthologs.append(j)
-            #FIXME: How random is this? Is it sufficiently random?
-            random.shuffle(orthologs)
 
+            random.shuffle(orthologs)
+            '''
             for i in pheno_ortholog_hash:
                 test_pheno_ortholog_hash[i] = []
                 ortholog_list_length = len(pheno_ortholog_hash[i])
