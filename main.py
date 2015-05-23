@@ -1511,13 +1511,11 @@ class main():
         mouse_phenotypes = []
         zebrafish_phenotypes = []
 
-        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, human_dir)
-        main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mouse_phenotype_file, mouse_dir)
-        main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', zebrafish_phenotype_file, zebrafish_dir)
+        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, human_dir)
+        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mouse_phenotype_file, mouse_dir)
+        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', zebrafish_phenotype_file, zebrafish_dir)
 
-        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
-        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_zebrafish_dir)
-        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_mouse_dir)
+
 
         print('INFO: Done with second random data generation.')
         fdr_global_p_value_list = []
@@ -1561,41 +1559,32 @@ class main():
         #print(hvm_common_orthologs)
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
-        '''
+
         random_counter = 1
         # Switch to 'while' when ready for full set testing.
         if random_counter < limit:
-            random_counter += 1
             print('INFO: Performing phenolog extension calculation on random data set '+str(random_counter)+' out of '+str(limit)+'.')
+            random_counter += 1
             fdr_p_value_list = []
-            hvm_human_file = hvm_human_dir+'random_ext_'+str(random_counter)+'.txt'
-            hvm_mouse_file = hvm_mouse_dir+'random_ext_'+str(random_counter)+'.txt'
-            hvz_human_file = hvz_human_dir+'random_ext_'+str(random_counter)+'.txt'
-            hvz_zebrafish_file = hvz_zebrafish_dir+'random_ext_'+str(random_counter)+'.txt'
-            mvz_mouse_file = mvz_mouse_dir+'random_ext_'+str(random_counter)+'.txt'
-            mvz_zebrafish_file = mvz_zebrafish_dir+'random_ext_'+str(random_counter)+'.txt'
+            human_file = human_dir+'random_ext_'+str(random_counter)+'.txt'
+            mouse_file = mouse_dir+'random_ext_'+str(random_counter)+'.txt'
+            zebrafish_file = zebrafish_dir+'random_ext_'+str(random_counter)+'.txt'
 
-            with open(hvm_human_file, 'rb') as handle:
-                hvm_human_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvm_mouse_file, 'rb') as handle:
-                hvm_mouse_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvz_human_file, 'rb') as handle:
-                hvz_human_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvz_zebrafish_file, 'rb') as handle:
-                hvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
-            with open(mvz_mouse_file, 'rb') as handle:
-                mvz_mouse_pheno_ortholog_hash = pickle.load(handle)
-            with open(mvz_zebrafish_file, 'rb') as handle:
-                mvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
+            with open(human_file, 'rb') as handle:
+                human_geno_pheno_hash = pickle.load(handle)
+            with open(mouse_file, 'rb') as handle:
+                mouse_geno_pheno_hash = pickle.load(handle)
+            with open(zebrafish_file, 'rb') as handle:
+                zebrafish_geno_pheno_hash = pickle.load(handle)
 
             #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
-            hvm_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
+            hvm_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, mouse_geno_pheno_hash, hvm_phenologs)
             #print(hvm_phenolog_p_values)
             fdr_p_value_list.extend(hvm_phenolog_p_values)
-            hvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
+            hvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, zebrafish_geno_pheno_hash, hvz_phenologs)
             #print(hvz_phenolog_p_values)
             fdr_p_value_list.extend(hvz_phenolog_p_values)
-            mvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
+            mvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(mouse_geno_pheno_hash, zebrafish_geno_pheno_hash, mvz_phenologs)
             #print(mvz_phenolog_p_values)
             fdr_p_value_list.extend(mvz_phenolog_p_values)
 
@@ -1612,8 +1601,10 @@ class main():
 
         fdr_global_p_value_list.sort()
         global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+        if global_cutoff_position < 0:
+            global_cutoff_position = 0
         print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
-        '''
+
         return #fdr_global_p_value_list[global_cutoff_position]
 
     def generate_random_ext_data(self, geno_pheno_hash_file, phenotype_file, out_dir, limit=10):
@@ -1697,6 +1688,107 @@ class main():
             print('Completed random data set '+str(counter)+' out of '+str(limit)+'.')
             counter += 1
         return
+
+
+    def perform_phenolog_calculations_for_ext_fdr(self, species_a_gp_hash, species_b_gp_hash, shared_phenologs):
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
+
+        line_counter = 0
+        failure_counter = 0
+        total_phenotype_matches = 0
+        total_phenotype_nonmatches = 0
+        phenotype_matches = 0
+        phenotype_non_matches = 0
+        genotype_a_phenotype_count = 0
+        genotype_b_phenotype_count = 0
+        total_hyp_calcs = 0
+        phenolog_ext_p_value_list = []
+
+        species_a_geno_pheno_hash = species_a_gp_hash
+        species_b_geno_pheno_hash = species_b_gp_hash
+
+        for i in species_a_geno_pheno_hash:
+            # Genotype for species A
+            species_a_genotype_id = i
+            species_a_phenotypes = species_a_geno_pheno_hash[i]
+            #print(species_a_phenotypes)
+            genotype_a_phenotype_count = len(species_a_phenotypes)
+
+            for j in species_b_geno_pheno_hash:
+                # Genotype for species B
+                species_b_genotype_id = j
+                species_b_phenotypes = species_b_geno_pheno_hash[j]
+                #print(species_b_phenotypes)
+                #phenotype_matches = 0
+                #phenotype_non_matches = 0
+
+                phenotype_matches = 0
+                phenotype_non_matches = 0
+
+                genotype_b_phenotype_count = len(species_b_phenotypes)
+                for k in species_a_phenotypes:
+                    # Orthologs for species A
+                    #ortholog_matches = 0
+                    #ortholog_non_matches = 0
+
+                    species_a_phenotype = k
+                    for l in species_b_phenotypes:
+                        # Orthologs for species B
+                        species_b_phenotype = l
+
+                        ab_combo = species_a_phenotype+'_'+species_b_phenotype
+                        ba_combo = species_b_phenotype+'_'+species_a_phenotype
+                        if ab_combo in shared_phenologs or ba_combo in shared_phenologs:
+                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                            phenotype_matches += 1
+                            #print(species_a_ortholog+' == '+species_b_ortholog)
+                            total_phenotype_matches += 1
+                        else:
+                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                            phenotype_non_matches += 1
+                            total_phenotype_nonmatches += 1
+
+                if phenotype_matches > 0:
+                    #print('Matches: '+str(ortholog_matches))
+                    #print('Non-matches: '+str(ortholog_non_matches))
+                    m = float(genotype_b_phenotype_count)
+                    n = float(genotype_a_phenotype_count)
+                    N = float(len(shared_phenologs))
+                    c = float(phenotype_matches)
+                    prb = float(hypergeom.pmf(c, N, m, n))
+                    #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+                    #print(prb)
+                    phenolog_ext_p_value_list.append(prb)
+                    total_hyp_calcs += 1
+        print('Total Matches: '+str(total_phenotype_matches))
+        print('Total non-matches: '+str(total_phenotype_nonmatches))
+        print('Total phenolog calculations: '+str(total_hyp_calcs))
+
+            # After the number of matching orthologs has been tallied, perform the
+            # hypergeometric probability calculation for the phenotype-gene data objects,
+            # then write the results to the output file.
+
+            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
+            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
+            # given that the ortholog lists for species a and species b may be of different sizes?
+            #TODO: Consult the phenolog paper on the question above.
+            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+
+            # N = total number of orthologs shared between species
+            # n = nummber of orthologs in species A phenotype
+            # m = nummber of orthologs in species B phenotype
+            # c = number of common orthologs between phenotypes (ortholog matches)
+
+            # c =
+            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
+            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
+            # N = Number of type I objects drawn. (Number of matching orhtologs.)
+            #prb = hypergeom.cdf(x, M, n, N)
+
+        return phenolog_ext_p_value_list
+
 
 
     def parse_zp(self, raw, inter):
