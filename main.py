@@ -1505,14 +1505,14 @@ class main():
         mouse_phenotypes = []
         zebrafish_phenotypes = []
 
-        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvm_phenolog_file, hvm_human_dir)
+        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvm_phenolog_file, hvm_human_dir)
         #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', hvm_phenolog_file, hvm_mouse_dir)
 
-        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
-        main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', hvz_phenolog_file, hvz_zebrafish_dir)
+        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
+        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', hvz_phenolog_file, hvz_zebrafish_dir)
 
-        main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_zebrafish_dir)
-        main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_mouse_dir)
+        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_zebrafish_dir)
+        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_mouse_dir)
 
         print('INFO: Done with second random data generation.')
         fdr_global_p_value_list = []
@@ -1606,12 +1606,14 @@ class main():
             list_length = 0
             with open(geno_pheno_hash, 'rb') as handle:
                 geno_pheno_hash = pickle.load(handle)
+            '''
             with open(common_phenologs, 'r', encoding="iso-8859-1") as csvfile:
                 filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
                 for row in filereader:
                     (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
                     if combo_ab not in phenologs:
                         phenologs.append(combo_ab)
+                        print('success!')'''
 
 
 
@@ -1622,7 +1624,7 @@ class main():
                 #for j in pheno_ortholog_hash[i]:
                     #orthologs.append(j)
 
-            random.shuffle(orthologs)
+            #random.shuffle(orthologs)
             '''
             for i in pheno_ortholog_hash:
                 test_pheno_ortholog_hash[i] = []
@@ -1648,8 +1650,8 @@ class main():
                     #if orthologs.pop
             #print('Completed randomization successfully!')
             with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
-                pickle.dump(test_pheno_ortholog_hash, handle)
-            counter += 1'''
+                pickle.dump(test_pheno_ortholog_hash, handle)'''
+            counter += 1
         return
 
 
@@ -1813,7 +1815,7 @@ main = main()
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
 
 
-#fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
+fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
 
 
 
