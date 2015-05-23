@@ -1951,7 +1951,7 @@ class main():
 
 ####### MAIN #######
 
-limit = 500
+limit = None
 
 main = main()
 
