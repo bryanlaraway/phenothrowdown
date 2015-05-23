@@ -1495,6 +1495,10 @@ class main():
         mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
         mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
 
+        human_dir = 'inter/random/human/'
+        mouse_dir = 'inter/random/mouse/'
+        zebrafish_dir = 'inter/random/zebrafish/'
+
         hvm_phenolog_file = 'inter/phenolog/hvm_significant_phenologs.txt'
         hvz_phenolog_file = 'inter/phenolog/hvz_significant_phenologs.txt'
         mvz_phenolog_file = 'inter/phenolog/mvz_significant_phenologs.txt'
@@ -1507,32 +1511,60 @@ class main():
         mouse_phenotypes = []
         zebrafish_phenotypes = []
 
-        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, hvm_human_dir)
-        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', hvm_phenolog_file, hvm_mouse_dir)
+        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, human_dir)
+        main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mouse_phenotype_file, mouse_dir)
+        main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', zebrafish_phenotype_file, zebrafish_dir)
 
         #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
-        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', hvz_phenolog_file, hvz_zebrafish_dir)
-
         #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_zebrafish_dir)
         #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mvz_phenolog_file, mvz_mouse_dir)
 
         print('INFO: Done with second random data generation.')
         fdr_global_p_value_list = []
+        hvm_phenologs = []
+        hvz_phenologs = []
+        mvz_phenologs = []
 
-        '''
-        with open('inter/panther/common_orthologs_human_mouse.txt', 'rb') as handle:
-            hvm_common_orthologs = len(pickle.load(handle))
-        with open('inter/panther/common_orthologs_human_zebrafish.txt', 'rb') as handle:
-            hvz_common_orthologs = len(pickle.load(handle))
-        with open('inter/panther/common_orthologs_mouse_zebrafish.txt', 'rb') as handle:
-            mvz_common_orthologs = len(pickle.load(handle))
+        #FIXME: Change to hvm_significant_phenologs.txt when running full data.
+        with open('inter/phenolog/all_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+
+                if combo_ab not in hvm_phenologs:
+                    hvm_phenologs.append(combo_ab)
+
+        with open('inter/phenolog/hvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+
+                if combo_ab not in hvz_phenologs:
+                    hvz_phenologs.append(combo_ab)
+
+        with open('inter/phenolog/mvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+
+                if combo_ab not in mvz_phenologs:
+                    mvz_phenologs.append(combo_ab)
+
+
+
+        #with open('inter/phenolog/all_significant_phenologs.txt', 'rb') as handle:
+            #hvm_phenologs = len(pickle.load(handle))
+        #with open('inter/phenolog/hvz_significant_phenologs.txt', 'rb') as handle:
+            #hvz_phenologs = len(pickle.load(handle))
+        #with open('inter/phenolog/mvz_significant_phenologs.txt', 'rb') as handle:
+            #mvz_phenologs = len(pickle.load(handle))
         #print(hvm_common_orthologs)
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
-
+        '''
         random_counter = 1
         # Switch to 'while' when ready for full set testing.
-        while random_counter < limit:
+        if random_counter < limit:
             random_counter += 1
             print('INFO: Performing phenolog extension calculation on random data set '+str(random_counter)+' out of '+str(limit)+'.')
             fdr_p_value_list = []
@@ -1584,7 +1616,7 @@ class main():
         '''
         return #fdr_global_p_value_list[global_cutoff_position]
 
-    def generate_random_ext_data(self, geno_pheno_hash_file, phenotype_file, out_dir, limit=1000):
+    def generate_random_ext_data(self, geno_pheno_hash_file, phenotype_file, out_dir, limit=10):
         print('INFO: Creating random data sets.')
         #Take the phenotype-ortholog hashes I have created.
         #Remove all orthologs and place in a list, replace with 0s or 1s or something.
