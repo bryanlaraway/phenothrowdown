@@ -207,7 +207,7 @@ class main():
         with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
-        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
+        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash))+' zebrafish genotypes present.')
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
@@ -746,7 +746,7 @@ class main():
         with open(inter, 'wb') as handle:
             pickle.dump(hpo_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
-        print('INFO: '+str(len(hpo_disease_to_phenotype_hash.keys()))+' human diseases present.')
+        print('INFO: '+str(len(hpo_disease_to_phenotype_hash))+' human diseases present.')
         return
 
     def assemble_nif_mgi_gene_to_phenotype(self, limit=None):
@@ -1226,8 +1226,8 @@ class main():
                 #test_pheno_ortholog_hash[i].append(random_orthologs)
 
                 for j in pheno_ortholog_hash[i]:
-                    test_pheno_ortholog_hash[i].append(ortholog_draw.pop())
                     random.shuffle(ortholog_draw)
+                    test_pheno_ortholog_hash[i].append(ortholog_draw[0])
                     #list_length = len(orthologs)
                     #print(list_length)
 
@@ -1499,13 +1499,15 @@ class main():
         hvz_phenolog_file = 'inter/phenolog/hvz_significant_phenologs.txt'
         mvz_phenolog_file = 'inter/phenolog/mvz_significant_phenologs.txt'
 
+        human_phenotype_file = 'inter/ontologies/hp_hash.txt'
+        mouse_phenotype_file = 'inter/ontologies/mp_hash.txt'
+        zebrafish_phenotype_file = 'inter/ontologies/zp_hash.txt'
+
         human_phenotypes = []
-
-
         mouse_phenotypes = []
         zebrafish_phenotypes = []
 
-        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvm_phenolog_file, hvm_human_dir)
+        main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, hvm_human_dir)
         #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', hvm_phenolog_file, hvm_mouse_dir)
 
         #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', hvz_phenolog_file, hvz_human_dir)
@@ -1582,11 +1584,11 @@ class main():
         '''
         return #fdr_global_p_value_list[global_cutoff_position]
 
-    def generate_random_ext_data(self, geno_pheno_hash, common_phenologs, out_dir, limit=1000):
+    def generate_random_ext_data(self, geno_pheno_hash_file, phenotype_file, out_dir, limit=1000):
         print('INFO: Creating random data sets.')
-        #Take the disease/genotype-phenotype hashes I have created.
-        #Remove all phenotypes and place in a list, replace with 0s or 1s or something.
-        #Randomly shuffle the phenotype list
+        #Take the phenotype-ortholog hashes I have created.
+        #Remove all orthologs and place in a list, replace with 0s or 1s or something.
+        #Randomly shuffle the ortholog list
         #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
 
         #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
@@ -1600,44 +1602,53 @@ class main():
         counter = 1
         while counter <= limit:
             #print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
-            test_pheno_ortholog_hash = {}
+            test_geno_pheno_hash = {}
 
             phenologs = []
+            phenotypes = []
             list_length = 0
-            with open(geno_pheno_hash, 'rb') as handle:
+
+            with open(phenotype_file, 'rb') as handle:
+                phenotype_hash = pickle.load(handle)
+            for i in phenotype_hash:
+                if i not in phenotypes:
+                    phenotypes.append(i)
+            with open(geno_pheno_hash_file, 'rb') as handle:
                 geno_pheno_hash = pickle.load(handle)
-            '''
-            with open(common_phenologs, 'r', encoding="iso-8859-1") as csvfile:
-                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-                for row in filereader:
-                    (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-                    if combo_ab not in phenologs:
-                        phenologs.append(combo_ab)
-                        print('success!')'''
+            #with open(geno_pheno_hash, 'rb') as handle:
+                #pheno_ortholog_hash = pickle.load(handle)
+
+            #with open(common_phenologs, 'r', encoding="iso-8859-1") as csvfile:
+                #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+                #for row in filereader:
+                    #(phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+                    #if combo_ab not in phenologs:
+                        #phenologs.append(combo_ab)
 
 
 
             #with open(common_phenologs, 'rb') as handle:
-                #phenologs = pickle.load(handle)
+                #orthologs = pickle.load(handle)
             # Adjusting this to instead call from the full pool of common orthologs.
             #for i in pheno_ortholog_hash:
                 #for j in pheno_ortholog_hash[i]:
                     #orthologs.append(j)
+            #FIXME: How random is this? Is it sufficiently random?
+            random.shuffle(phenotypes)
 
-            #random.shuffle(orthologs)
-            '''
-            for i in pheno_ortholog_hash:
-                test_pheno_ortholog_hash[i] = []
-                ortholog_list_length = len(pheno_ortholog_hash[i])
+            for i in geno_pheno_hash:
+                test_geno_pheno_hash[i] = []
+                ortholog_list_length = len(geno_pheno_hash[i])
                 #print(ortholog_list_length)
-                ortholog_draw = orthologs
-                random.shuffle(ortholog_draw)
+                phenotype_draw = phenotypes
+                random.shuffle(phenotype_draw)
                 #random_orthologs = random.sample(orthologs)
                 #test_pheno_ortholog_hash[i].append(random_orthologs)
 
-                for j in pheno_ortholog_hash[i]:
-                    test_pheno_ortholog_hash[i].append(ortholog_draw.pop())
-                    random.shuffle(ortholog_draw)
+                for j in geno_pheno_hash[i]:
+                    random.shuffle(phenotype_draw)
+                    test_geno_pheno_hash[i].append(phenotype_draw[0])
+
                     #list_length = len(orthologs)
                     #print(list_length)
 
@@ -1649,8 +1660,9 @@ class main():
                         #test_pheno_ortholog_hash[i].append(orthologs.pop())
                     #if orthologs.pop
             #print('Completed randomization successfully!')
-            with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
-                pickle.dump(test_pheno_ortholog_hash, handle)'''
+            with open((out_dir+'random_ext_'+str(counter)+'.txt'), 'wb') as handle:
+                pickle.dump(test_geno_pheno_hash, handle)
+            print('Completed random data set '+str(counter)+' out of '+str(limit)+'.')
             counter += 1
         return
 
@@ -1723,7 +1735,7 @@ class main():
 
 ####### MAIN #######
 
-limit = None
+limit = 500
 
 main = main()
 
