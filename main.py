@@ -558,8 +558,13 @@ class main():
 
     ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES #######
 
-    def assemble_zebrafish_ortholog_phenotype_matrix(self, raw, inter):
+    def assemble_ortholog_phenotype_matrix(self, inter_in, inter_out):
+        # To speed things up, going to assemble from already assembled phenotype-ortholog hash
+
+        print('INFO: Assembling phenotype-ortholog matrix.')
         #How to do this?
+
+
 
         # Create gene list
         # Convert to ortholog list (unique)
@@ -570,130 +575,13 @@ class main():
         # Create phenotype list
         # Cycle through
 
-        line_counter = 0
-        phenotype_ortholog_hash = {}
-
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' phenotype rows to process.')
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
-                 gene_label, v_uid, v_uuid, v_lastmodified) = row
-
-                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
-
-                if phenotype_id not in phenotype_ortholog_hash:
-
-                if phenotype_id == '' or phenotype_id is None:
-                    continue
-                elif gene_id == '' or gene_id is None:
-                    continue
-
-                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
-                print(phenotype_id)
-
-                #print(genes)
-                if phenotype_id not in phenotype_gene_hash:
-                    hpo_phenotype_to_gene_hash[phenotype_id] = [gene_id]
-                    #print(hpo_phenotype_to_gene_hash[genotype_id])
-                    panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
-                    if panther_id != 'fail':
-                        #print('found ortholog')
-                        hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                    #elif panther_id == 'fail':
-                        #print('No ortholog found.')
-                else:
-                    hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
-                    #print(hpo_phenotype_to_gene_hash[genotype_id])
-                    #print(len(hpo_phenotype_to_gene_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
-                    panther_id = self.get_ortholog(gene_id, 'inter/panther/panther_human.txt')
-                    if panther_id != 'fail':
-                        #print('found ortholog')
-                        if phenotype_id not in hpo_phenotype_to_ortholog_hash:
-                            hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                        elif panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
-                            hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                    #elif panther_id == 'fail':
-                        #print('No ortholog found.')
+        with open(inter_in, 'rb') as handle:
+            pheno_ortholog_hash = pickle.load(handle)
+        #print(species_a_pheno_gene_hash)
 
 
         return
 
-
-    def assemble_human_ortholog_phenotype_matrix(self, raw, inter):
-        #How to do this?
-
-        # Create gene list
-        # Convert to ortholog list (unique)
-        # Create phenotype-ortholog matrix filled with zeroes
-        # Cycle through table, set the phenotype-ortholog matrix
-
-        # Create gene-ortholog hash (Create list of genes, update with ortholog as value)
-        # Create phenotype list
-        # Cycle through
-
-        line_counter = 0
-        phenotype_ortholog_hash = {}
-
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' phenotype rows to process.')
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
-                 gene_label, v_uid, v_uuid, v_lastmodified) = row
-
-                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
-
-                if phenotype_id not in phenotype_ortholog_hash:
-
-                if phenotype_id == '' or phenotype_id is None:
-                    continue
-                elif gene_id == '' or gene_id is None:
-                    continue
-
-                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
-                print(phenotype_id)
-
-                #print(genes)
-                if phenotype_id not in phenotype_gene_hash:
-                    hpo_phenotype_to_gene_hash[phenotype_id] = [gene_id]
-                    #print(hpo_phenotype_to_gene_hash[genotype_id])
-                    panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
-                    if panther_id != 'fail':
-                        #print('found ortholog')
-                        hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                    #elif panther_id == 'fail':
-                        #print('No ortholog found.')
-                else:
-                    hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
-                    #print(hpo_phenotype_to_gene_hash[genotype_id])
-                    #print(len(hpo_phenotype_to_gene_hash.keys()))
-                    print('Repeat phenotype: '+phenotype_id)
-                    panther_id = self.get_ortholog(gene_id, 'inter/panther/panther_human.txt')
-                    if panther_id != 'fail':
-                        #print('found ortholog')
-                        if phenotype_id not in hpo_phenotype_to_ortholog_hash:
-                            hpo_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
-                        elif panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
-                            hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                    #elif panther_id == 'fail':
-                        #print('No ortholog found.')
-
-
-        return
 
     ####### OWLSIM GENOTYPE TO PHENOTYPE #######
 
@@ -2129,26 +2017,33 @@ main = main()
 #main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
 #main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
-main.assemble_zebrafish_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_gene_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
+#NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
+#main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
+#main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
+main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
 
 
 ####### OWLSIM COMPARISONS #######
 
+#Processing completed in  hours,  comparisons.
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human diseases vs mouse genotypes')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim/human_disease_mouse_genotype.txt')
 #print('INFO: Done processing human diseases vs mouse genotypes')
 
+#Processing completed in 6.3 hours, 196305 comparisons.
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genotype')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_genotype.txt')
 #print('INFO: Done processing human disease vs zebrafish genotype')
 
+#Processing completed in  hours,  comparisons.
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
 #main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/mouse_genotype_zebrafish_genotype.txt')
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
+#Processing completed in  hours,  comparisons.
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim/human_disease_mouse_gene.txt')
@@ -2160,6 +2055,7 @@ main.assemble_zebrafish_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ge
 #main.perform_owlsim_queries('inter/hpo/nif_human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
+#Processing completed in  hours,  comparisons.
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
