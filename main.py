@@ -12,7 +12,7 @@ import re
 import csv
 import pickle
 from decimal import Decimal, getcontext
-from numpy import *
+import numpy
 from scipy.stats import hypergeom
 import math
 import matplotlib.pyplot as plt
@@ -579,6 +579,21 @@ class main():
             pheno_ortholog_hash = pickle.load(handle)
         #print(species_a_pheno_gene_hash)
 
+        phenotype_list = []
+        ortholog_list = []
+        for i in pheno_ortholog_hash:
+            if i not in phenotype_list:
+                phenotype_list.append(i)
+            for j in pheno_ortholog_hash[i]:
+                if j not in ortholog_list:
+                    ortholog_list.append(j)
+        total_phenotype = len(phenotype_list)
+        total_orthologs = len(ortholog_list)
+
+
+        phenotype_ortholog_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
+        print(phenotype_ortholog_matrix)
+        #a = numpy.matrix(phenotype_list, ortholog_list)
 
         return
 
