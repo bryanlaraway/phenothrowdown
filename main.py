@@ -587,15 +587,29 @@ class main():
             for j in pheno_ortholog_hash[i]:
                 if j not in ortholog_list:
                     ortholog_list.append(j)
-        total_phenotype = len(phenotype_list)
+        phenotype_list.sort()
+        ortholog_list.sort()
+        total_phenotypes = len(phenotype_list)
+        print(total_phenotypes)
         total_orthologs = len(ortholog_list)
-
-
+        print(total_orthologs)
+        #print(phenotype_list[5])
+        #print(phenotype_list.index('ZP:0000007'))
+        #print(phenotype_list[5])
         phenotype_ortholog_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
-        print(phenotype_ortholog_matrix)
-        #a = numpy.matrix(phenotype_list, ortholog_list)
+        for i in pheno_ortholog_hash:
+            phenotype_index = phenotype_list.index(i)
+            for j in pheno_ortholog_hash[i]:
+                ortholog_index = ortholog_list.index(j)
+                phenotype_ortholog_matrix[phenotype_index][ortholog_index] = 1
 
-        return
+
+        print(phenotype_ortholog_matrix)
+        print(len(phenotype_ortholog_matrix))
+        #a = numpy.matrix(phenotype_list, ortholog_list)
+        print(str(numpy.sum(phenotype_ortholog_matrix)))
+
+        return (phenotype_ortholog_matrix, phenotype_list, ortholog_list)
 
 
     ####### OWLSIM GENOTYPE TO PHENOTYPE #######
@@ -2034,9 +2048,9 @@ main = main()
 #main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
 #NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
-#main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
-#main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
-#main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
+#(human_ortholog_phenotype_matrix, human_phenotype_list, human_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
+#(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
+(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
 
 
 ####### OWLSIM COMPARISONS #######
@@ -2127,6 +2141,9 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/all_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_zebrafish.txt', 'inter/phenolog/hvz_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
+
+
+
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
