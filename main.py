@@ -2030,6 +2030,15 @@ class main():
         # for all pair-wise phenotype combinations. So need a similarity score matrix in addition to the weight matrix.
         # Use the hypergeometric CDF to provide scores for the weight matrix.
 
+        #Creating a small test matrix for testing.
+        test_matrix = numpy.random.randint(2, size=(10,10))
+        ortholog_phenotype_matrix = test_matrix
+        test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
+        phenotype_list = test_phenotype_list
+        test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
+        ortholog_list = test_ortholog_list
+
+
         print(phenotype_list[0])
         distance_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
         weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
