@@ -1990,9 +1990,9 @@ class main():
         phenotype_list.sort()
         ortholog_list.sort()
         total_phenotypes = len(phenotype_list)
-        print(total_phenotypes)
+        print('INFO: Total number of phenotypes: '+str(total_phenotypes))
         total_orthologs = len(ortholog_list)
-        print(total_orthologs)
+        print('INFO: Total number of orthologs: '+str(total_orthologs))
         #print(phenotype_list[5])
         #print(phenotype_list.index('ZP:0000007'))
         #print(phenotype_list[5])
@@ -2037,6 +2037,7 @@ class main():
         phenotype_list = test_phenotype_list
         test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
         ortholog_list = test_ortholog_list
+        total_phenotypes = len(phenotype_list)
 
 
         print(phenotype_list[0])
@@ -2047,20 +2048,42 @@ class main():
         weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
         weight_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
         weight_matrix_counter = 0
+        total_orthologs = len(ortholog_list)
 
         print('INFO: '+str(distance_matrix_comparisons)+' distance matrix comparisons to process.')
         for i in phenotype_list:
             phenotype_index_i = phenotype_list.index(i)
             for j in phenotype_list:
+                ortholog_counter = 0
+                ortholog_match = 0
+
+
                 phenotype_index_j = phenotype_list.index(j)
                 (coeffecient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
                 #print(str(coeffecient)+'_'+str(p_value))
                 distance_matrix[phenotype_index_i][phenotype_index_j] = coeffecient
                 distance_matrix_counter += 1
                 print('INFO: Completed distance matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
-        print(distance_matrix)
+
+                phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
+                print('Phenotype I draws = '+ str(phenotype_i_draws))
+                phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
+                print('Phenotype J draws = '+ str(phenotype_j_draws))
+                while ortholog_counter < len(ortholog_list):
+                    if ortholog_phenotype_matrix[phenotype_index_i][ortholog_counter] == 1 and ortholog_phenotype_matrix[phenotype_index_j][ortholog_counter] == 1:
+                        ortholog_match += 1
+                    ortholog_counter += 1
+
+                #hyp_prob = (hypergeom.cdf(c, N, m, n))
+
+
+        print(test_matrix)
+        #print(distance_matrix)
         numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
         numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+
+        # weight matrix calculations - Need to perform hypergeometric cdf.
+        # Need total number of matches, total number of possibles matches, total number of draws, and length of ortholog list?
 
         # This will give the Pearson correlation for a pair of phenotypes. First number is coeffecient, second number is p-value.
         #sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
