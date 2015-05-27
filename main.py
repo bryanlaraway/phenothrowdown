@@ -1997,7 +1997,7 @@ class main():
         #print(phenotype_list.index('ZP:0000007'))
         #print(phenotype_list[5])
         phenotype_ortholog_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
-        for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt']:
+        for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt']: # Add mouse 'inter/mgi/mouse_pheno_ortholog_hash.txt'
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
             for i in pheno_ortholog_hash:
@@ -2006,11 +2006,11 @@ class main():
                     ortholog_index = ortholog_list.index(j)
                     phenotype_ortholog_matrix[phenotype_index][ortholog_index] = 1
 
-
+        print(phenotype_list[0])
         print(phenotype_ortholog_matrix)
-        print(len(phenotype_ortholog_matrix))
+        #print(len(phenotype_ortholog_matrix))
         #a = numpy.matrix(phenotype_list, ortholog_list)
-        print(str(numpy.sum(phenotype_ortholog_matrix)))
+        #print(str(numpy.sum(phenotype_ortholog_matrix)))
 
         return (phenotype_ortholog_matrix, phenotype_list, ortholog_list)
 
@@ -2025,11 +2025,28 @@ class main():
 
         (ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
 
+        #Have the matrix, need to get the sum of the k (10) nearest neighbors, weight by the pearson correlation coefficient.
+        # Pearson correlation to determine the k nearest neighbors. So I need to calculate the similarity of phenotypes
+        # for all pair-wise phenotype combinations. So need a similarity score matrix in addition to the weight matrix.
+        # Use the hypergeometric CDF to provide scores for the weight matrix.
+
+        print(phenotype_list[0])
+        distance_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        for i in phenotype_list:
+            phenotype_index_i = phenotype_list.index(i)
+            for j in phenotype_list:
+                phenotype_index_j = phenotype_list.index(j)
+                (coeffecient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
+                #print(str(coeffecient)+'_'+str(p_value))
+                distance_matrix[phenotype_index_i][phenotype_index_j] = coeffecient
+        print(distance_matrix)
         # This will give the Pearson correlation for a pair of phenotypes. First number is coeffecient, second number is p-value.
-        sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
-        print(ortholog_phenotype_matrix[0])
-        print(ortholog_phenotype_matrix[1])
-        print(sig)
+        #sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
+        #print(ortholog_phenotype_matrix[0])
+        #print(ortholog_phenotype_matrix[1])
+        #print(ortholog_phenotype_matrix[2])
+        #print(sig)
         sig = pearsonr(ortholog_phenotype_matrix[15], ortholog_phenotype_matrix[1])
 
         #print(sig)
