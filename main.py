@@ -2059,6 +2059,8 @@ class main():
                 distance_matrix_counter += 1
                 print('INFO: Completed distance matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
         print(distance_matrix)
+        numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
+        numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
 
         # This will give the Pearson correlation for a pair of phenotypes. First number is coeffecient, second number is p-value.
         #sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
