@@ -2041,7 +2041,14 @@ class main():
 
         print(phenotype_list[0])
         distance_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        distance_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
+        distance_matrix_counter = 0
+        print()
         weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        weight_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
+        weight_matrix_counter = 0
+
+        print('INFO: '+str(distance_matrix_comparisons)+' distance matrix comparisons to process.')
         for i in phenotype_list:
             phenotype_index_i = phenotype_list.index(i)
             for j in phenotype_list:
@@ -2049,14 +2056,17 @@ class main():
                 (coeffecient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
                 #print(str(coeffecient)+'_'+str(p_value))
                 distance_matrix[phenotype_index_i][phenotype_index_j] = coeffecient
+                distance_matrix_counter += 1
+                print('INFO: Completed distance matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
         print(distance_matrix)
+
         # This will give the Pearson correlation for a pair of phenotypes. First number is coeffecient, second number is p-value.
         #sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
         #print(ortholog_phenotype_matrix[0])
         #print(ortholog_phenotype_matrix[1])
         #print(ortholog_phenotype_matrix[2])
         #print(sig)
-        sig = pearsonr(ortholog_phenotype_matrix[15], ortholog_phenotype_matrix[1])
+        #sig = pearsonr(ortholog_phenotype_matrix[15], ortholog_phenotype_matrix[1])
 
         #print(sig)
 
