@@ -2074,11 +2074,24 @@ class main():
                         ortholog_match += 1
                     ortholog_counter += 1
 
-                #hyp_prob = (hypergeom.cdf(c, N, m, n))
 
+                # N = total number of orthologs shared between species
+                # n = nummber of orthologs in species A phenotype
+                # m = nummber of orthologs in species B phenotype
+                # c = number of common orthologs between phenotypes (ortholog matches)
+                m = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_i]))
+                n = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_j]))
+                N = float(len(ortholog_list)) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
+                c = float(ortholog_match)
+                hyp_prob = (hypergeom.cdf(c, N, m, n))
+                weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
 
+        print('Test Matrix')
         print(test_matrix)
-        #print(distance_matrix)
+        print('Distance Matrix')
+        print(distance_matrix)
+        print('Weight Matrix')
+        print(weight_matrix)
         numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
         numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
 
