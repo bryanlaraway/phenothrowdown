@@ -15,6 +15,7 @@ from decimal import Decimal, getcontext
 import numpy
 from scipy.stats import hypergeom, pearsonr
 import math
+import heapq
 import matplotlib.pyplot as plt
 
 start_time = time.time()
@@ -2022,6 +2023,8 @@ class main():
 
         #Testing - read in the matrix, compare matrix columns
 
+        # Set the number of nearest neighbor phenotypes to consider for predictions.
+        k = 6
 
         (ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
 
@@ -2079,6 +2082,7 @@ class main():
                 # n = nummber of orthologs in species A phenotype
                 # m = nummber of orthologs in species B phenotype
                 # c = number of common orthologs between phenotypes (ortholog matches)
+                #FIXME: May want to add a step where m/n can be switched if one is larger to avoid errors from the hypergeometric calculation.
                 m = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_i]))
                 n = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_j]))
                 N = float(len(ortholog_list)) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
@@ -2095,6 +2099,35 @@ class main():
         numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
         numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
 
+
+        # Want to get the 10 nearest neighbors for a given phenotype.
+        # Pass in phenotype indice
+        # Get the slice for the phenotype indice.
+        # Create a clone of the slice, sort, and get the value of the top k entries.
+        #
+
+        #Test phenotype indice choose 0
+        y = 0
+
+        test_phenotype = ortholog_phenotype_matrix[y]
+        test_distance_slice = distance_matrix[y]
+        nearest_neghbors = heapq.nlargest(6, range(len(test_distance_slice)), test_distance_slice.take)
+
+        #test_distance_slice[0] = 'X'
+        test_weight_slice = weight_matrix[0]
+        #test_weight_slice[0] = 'X'
+
+        print(test_phenotype)
+        print(distance_matrix[y])
+        print(nearest_neghbors)
+        print(weight_matrix[y])
+
+        for z in nearest_neghbors:
+            if z != y:
+
+
+        #print(neighbors)
+
         # weight matrix calculations - Need to perform hypergeometric cdf.
         # Need total number of matches, total number of possibles matches, total number of draws, and length of ortholog list?
 
@@ -2109,6 +2142,10 @@ class main():
         #print(sig)
 
         return
+
+
+
+
 
 ####### MAIN #######
 
