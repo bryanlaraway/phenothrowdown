@@ -2019,7 +2019,7 @@ class main():
     # Multiple things to do here.
     #
 
-    def calculate_phenolog_gene_candidates(self):
+    def create_phenolog_gene_candidate_matrices(self):
 
         #Testing - read in the matrix, compare matrix columns
 
@@ -2098,9 +2098,23 @@ class main():
         print(weight_matrix)
         numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
         numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+        numpy.save('out/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
+        numpy.savetxt('out/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
 
 
-        # Want to get the 10 nearest neighbors for a given phenotype.
+
+
+        return
+
+
+    def identify_phenolog_gene_candidates(self):
+        distance_matrix = 'out/phenolog_gene_cand/distance_matrix.npy'
+        weight_matrix = 'out/phenolog_gene_cand/weight_matrix.npy'
+
+
+
+
+                # Want to get the 10 nearest neighbors for a given phenotype.
         # Pass in phenotype indice
         # Get the slice for the phenotype indice.
         # Create a clone of the slice, sort, and get the value of the top k entries.
@@ -2111,7 +2125,7 @@ class main():
 
         test_phenotype = ortholog_phenotype_matrix[y]
         test_distance_slice = distance_matrix[y]
-        nearest_neghbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
+        intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
 
         #test_distance_slice[0] = 'X'
         test_weight_slice = weight_matrix[0]
@@ -2119,14 +2133,14 @@ class main():
 
         print(test_phenotype)
         print(distance_matrix[y])
-        print(nearest_neghbors)
+
         print(weight_matrix[y])
-
-        for z in nearest_neghbors:
+        nearest_neighbors = []
+        for z in intermediate_nearest_neighbors:
             if z != y:
-                monkey = 1
-
-
+                 nearest_neighbors.append(z)
+        print(intermediate_nearest_neighbors)
+        print(nearest_neighbors)
         #print(neighbors)
 
         # weight matrix calculations - Need to perform hypergeometric cdf.
@@ -2142,11 +2156,9 @@ class main():
 
         #print(sig)
 
+
+
         return
-
-
-
-
 
 ####### MAIN #######
 
@@ -2282,7 +2294,8 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_zebrafish.txt', 'inter/phenolog/hvz_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
-main.calculate_phenolog_gene_candidates()
+main.create_phenolog_gene_candidate_matrices()
+
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
