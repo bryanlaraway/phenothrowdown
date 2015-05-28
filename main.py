@@ -2118,12 +2118,17 @@ class main():
         weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
         ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 
+
         with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
             phenotype_list = pickle.load(handle)
         with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
             ortholog_list = pickle.load(handle)
         print(phenotype_list[0])
         print(ortholog_list[0])
+
+        phenotype_ortholog_prediction_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
+
+
         # Want to get the 10 nearest neighbors for a given phenotype.
         # Pass in phenotype indice
         # Get the slice for the phenotype indice.
@@ -2131,7 +2136,7 @@ class main():
         #
 
         #Test phenotype index choose 0
-        y = 0
+        y = 7
 
         test_phenotype = ortholog_phenotype_matrix[y]
         test_distance_slice = distance_matrix[y]
@@ -2146,13 +2151,33 @@ class main():
 
         print(weight_matrix[y])
         nearest_neighbors = []
+        # This will print out the phenotype IDs for the k nearest neighbors
         for z in intermediate_nearest_neighbors:
             if z != y:
                  nearest_neighbors.append(z)
         print(intermediate_nearest_neighbors)
         print(nearest_neighbors)
+        print('Input phenotype: '+phenotype_list[y])
+        print(ortholog_phenotype_matrix[y])
+        for m in nearest_neighbors:
+            print('Nearest neighbor phenotype: '+phenotype_list[m])
+            print(ortholog_phenotype_matrix[m])
         #print(neighbors)
 
+
+        # Next I need to take those k nearest neighbor phenotypes, and calculate the probability that
+        # ortholog i is associated with phenotype j based on those k phenotypes,
+        # using the phenotype matrix and weight matrix.
+        # Take the sum
+
+        # i in nearest neighbors is the phenotype index
+        for i in nearest_neighbors:
+            nearby_phenotype = ortholog_phenotype_matrix[i]
+            for j in range(0, (len(nearby_phenotype) - 1)):
+                if ortholog_phenotype_matrix[i][j] != 0:
+                    phenotype_ortholog_prediction_matrix[y][j] += weight_matrix[i][j]*ortholog_phenotype_matrix[i][j]
+
+        print(phenotype_ortholog_prediction_matrix[y])
         # weight matrix calculations - Need to perform hypergeometric cdf.
         # Need total number of matches, total number of possibles matches, total number of draws, and length of ortholog list?
 
