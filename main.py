@@ -2053,7 +2053,7 @@ class main():
         weight_matrix_counter = 0
         total_orthologs = len(ortholog_list)
 
-        print('INFO: '+str(distance_matrix_comparisons)+' distance matrix comparisons to process.')
+        print('INFO: '+str(distance_matrix_comparisons)+' matrix comparisons to process.')
         for i in phenotype_list:
             phenotype_index_i = phenotype_list.index(i)
             for j in phenotype_list:
@@ -2066,7 +2066,7 @@ class main():
                 #print(str(coeffecient)+'_'+str(p_value))
                 distance_matrix[phenotype_index_i][phenotype_index_j] = coeffecient
                 distance_matrix_counter += 1
-                print('INFO: Completed distance matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
+                print('INFO: Completed matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
                 #FIXME: phenotype I draws are large (several hundred) which can't be right. Perhaps an error in matrix creation?
                 phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
                 print('Phenotype I draws = '+ str(phenotype_i_draws))
@@ -2090,37 +2090,47 @@ class main():
                 hyp_prob = (hypergeom.cdf(c, N, m, n))
                 weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
 
-        print('Test Matrix')
-        print(test_matrix)
-        print('Distance Matrix')
-        print(distance_matrix)
-        print('Weight Matrix')
-        print(weight_matrix)
-        numpy.save('out/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
-        numpy.savetxt('out/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
-        numpy.save('out/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
-        numpy.savetxt('out/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
+        #print('Test Matrix')
+        #print(test_matrix)
+        #print('Distance Matrix')
+        #print(distance_matrix)
+        #print('Weight Matrix')
+        #print(weight_matrix)
 
-
-
-
+        # Dump all of the files to disk.
+        numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
+        numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
+        numpy.save('inter/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
+        numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+        numpy.save('inter/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
+        numpy.savetxt('inter/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
+        with open('inter/phenolog_gene_cand/phenotype_list.txt', 'wb') as handle:
+            pickle.dump(phenotype_list, handle)
+        print(phenotype_list[0])
+        with open('inter/phenolog_gene_cand/ortholog_list.txt', 'wb') as handle:
+            pickle.dump(ortholog_list, handle)
+        print(ortholog_list[0])
         return
 
 
     def identify_phenolog_gene_candidates(self):
-        distance_matrix = 'out/phenolog_gene_cand/distance_matrix.npy'
-        weight_matrix = 'out/phenolog_gene_cand/weight_matrix.npy'
+        distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
+        weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
+        ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 
-
-
-
-                # Want to get the 10 nearest neighbors for a given phenotype.
+        with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
+            phenotype_list = pickle.load(handle)
+        with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+            ortholog_list = pickle.load(handle)
+        print(phenotype_list[0])
+        print(ortholog_list[0])
+        # Want to get the 10 nearest neighbors for a given phenotype.
         # Pass in phenotype indice
         # Get the slice for the phenotype indice.
         # Create a clone of the slice, sort, and get the value of the top k entries.
         #
 
-        #Test phenotype indice choose 0
+        #Test phenotype index choose 0
         y = 0
 
         test_phenotype = ortholog_phenotype_matrix[y]
@@ -2294,8 +2304,8 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_zebrafish.txt', 'inter/phenolog/hvz_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
-main.create_phenolog_gene_candidate_matrices()
-
+#main.create_phenolog_gene_candidate_matrices()
+main.identify_phenolog_gene_candidates()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
