@@ -2024,7 +2024,7 @@ class main():
         #Testing - read in the matrix, compare matrix columns
 
         # Set the number of nearest neighbor phenotypes to consider for predictions.
-        k = 6
+        k = 11
 
         (ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
 
@@ -2035,11 +2035,11 @@ class main():
 
         #Creating a small test matrix for testing.
         test_matrix = numpy.random.randint(2, size=(10,10))
-        ortholog_phenotype_matrix = test_matrix
+        #ortholog_phenotype_matrix = test_matrix
         test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
-        phenotype_list = test_phenotype_list
+        #phenotype_list = test_phenotype_list
         test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
-        ortholog_list = test_ortholog_list
+        #ortholog_list = test_ortholog_list
         total_phenotypes = len(phenotype_list)
 
 
@@ -2067,7 +2067,7 @@ class main():
                 distance_matrix[phenotype_index_i][phenotype_index_j] = coeffecient
                 distance_matrix_counter += 1
                 print('INFO: Completed distance matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
-
+                #FIXME: phenotype I draws are large (several hundred) which can't be right. Perhaps an error in matrix creation?
                 phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
                 print('Phenotype I draws = '+ str(phenotype_i_draws))
                 phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
@@ -2111,7 +2111,7 @@ class main():
 
         test_phenotype = ortholog_phenotype_matrix[y]
         test_distance_slice = distance_matrix[y]
-        nearest_neghbors = heapq.nlargest(6, range(len(test_distance_slice)), test_distance_slice.take)
+        nearest_neghbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
 
         #test_distance_slice[0] = 'X'
         test_weight_slice = weight_matrix[0]
@@ -2124,6 +2124,7 @@ class main():
 
         for z in nearest_neghbors:
             if z != y:
+                monkey = 1
 
 
         #print(neighbors)
