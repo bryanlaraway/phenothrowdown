@@ -2181,8 +2181,8 @@ class main():
             print(phenotype_ortholog_prediction_matrix[y])
 
 
-        numpy.save('out/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
-        numpy.savetxt('out/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.txt', phenotype_ortholog_prediction_matrix)
+        numpy.save('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
+        numpy.savetxt('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.txt', phenotype_ortholog_prediction_matrix)
 
 
 
@@ -2194,7 +2194,7 @@ class main():
         #Have ortholog predictions in matrix for each phenotype, now need to take the matrix data and output to a table
         # that is human readable for each phenotype for comparison with OWLSim output.
 
-
+        phenotype_ortholog_prediction_matrix = numpy.load('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy')
         return
 
 
