@@ -2113,7 +2113,7 @@ class main():
         return
 
 
-    def identify_phenolog_gene_candidates(self):
+    def create_phenolog_gene_candidate_prediction_matrix(self):
         distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
         weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
         ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
@@ -2183,22 +2183,21 @@ class main():
 
         numpy.save('out/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
         numpy.savetxt('out/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.txt', phenotype_ortholog_prediction_matrix)
-        # weight matrix calculations - Need to perform hypergeometric cdf.
-        # Need total number of matches, total number of possibles matches, total number of draws, and length of ortholog list?
-
-        # This will give the Pearson correlation for a pair of phenotypes. First number is coeffecient, second number is p-value.
-        #sig = pearsonr(ortholog_phenotype_matrix[0], ortholog_phenotype_matrix[1])
-        #print(ortholog_phenotype_matrix[0])
-        #print(ortholog_phenotype_matrix[1])
-        #print(ortholog_phenotype_matrix[2])
-        #print(sig)
-        #sig = pearsonr(ortholog_phenotype_matrix[15], ortholog_phenotype_matrix[1])
-
-        #print(sig)
 
 
 
         return
+
+
+
+    def assemble_phenolog_gene_candidate_predictions(self):
+        #Have ortholog predictions in matrix for each phenotype, now need to take the matrix data and output to a table
+        # that is human readable for each phenotype for comparison with OWLSim output.
+
+
+        return
+
+
 
 ####### MAIN #######
 
@@ -2335,7 +2334,7 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
 #main.create_phenolog_gene_candidate_matrices()
-main.identify_phenolog_gene_candidates()
+main.create_phenolog_gene_candidate_prediction_matrix()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
