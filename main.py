@@ -265,7 +265,7 @@ class main():
 
     ####### PHENOLOG PHENOTYPE TO GENE #######
 
-    #Completed on full data set in 77.4 hours.
+    # Completed on full data set in 77.4 hours.
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling zebrafish phenotype to ortholog data.')
         line_counter = 0
@@ -350,6 +350,8 @@ class main():
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
         return
 
+
+    # Completed on full data set in 175.3 hours (7.3 days)
     def assemble_nif_mgi_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling mouse phenotype to gene ortholog data.')
         line_counter = 0
@@ -428,7 +430,7 @@ class main():
         print('INFO: Done assembling mouse phenotype to ortholog data.')
         return
 
-    #Completed on full data set in 75.5 hours.
+    # Completed on full data set in 75.5 hours.
     def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling human phenotype to gene data.')
         line_counter = 0
