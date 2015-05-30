@@ -2204,25 +2204,34 @@ class main():
         with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
             ortholog_list = pickle.load(handle)
 
+        phenotype_ortholog_candidate_hash = {}
         # For each phenotype, grab the corresponding slice from the prediction matrix. If an ortholog entry is not == 0,
         # then assemble the PANTHER IDs in an output table/file.
+        test_phenotype_index = 5
         ortholog_predictions = []
-        test_phenotype = phenotype_ortholog_prediction_matrix[5]
+        test_phenotype_array = phenotype_ortholog_prediction_matrix[test_phenotype_index]
         index_counter = 0
-        print(test_phenotype)
-        for i in test_phenotype:
-            if i != 0:
-                #ortholog_index = phenotype_list.index(i)
-                ortholog_predictions.append(ortholog_list[index_counter])
+        print(test_phenotype_array)
+        phenotype_id = phenotype_list[test_phenotype_index]
+        phenotype_ortholog_candidate_hash[phenotype_id] = {}
+        for additive_probability in test_phenotype_array:
+            #if phenotype_ortholog_candidate_hash[phenotype_id] not in phenotype_ortholog_candidate_hash:
+
+            if additive_probability != 0:
+                #ortholog_index = phenotype_list.index(additive_probability)
+                ortholog = ortholog_list[index_counter]
+                ortholog_predictions.append(ortholog)
+                phenotype_ortholog_candidate_hash[phenotype_id][ortholog] = additive_probability
             index_counter += 1
+        print(phenotype_list[test_phenotype_index])
         print(ortholog_predictions)
+        print(phenotype_ortholog_candidate_hash)
 
 
 
         with open('out/phenolog_gene_cand/phenolog_gene_candidate_predictions.txt', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             output_row = ('empty')
-            #print('found one')
             csvwriter.writerow(output_row)
 
 
