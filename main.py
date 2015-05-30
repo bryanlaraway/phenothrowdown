@@ -2207,27 +2207,28 @@ class main():
         phenotype_ortholog_candidate_hash = {}
         # For each phenotype, grab the corresponding slice from the prediction matrix. If an ortholog entry is not == 0,
         # then assemble the PANTHER IDs in an output table/file.
-        test_phenotype_index = 5
-        ortholog_predictions = []
-        test_phenotype_array = phenotype_ortholog_prediction_matrix[test_phenotype_index]
-        index_counter = 0
-        print(test_phenotype_array)
-        phenotype_id = phenotype_list[test_phenotype_index]
-        phenotype_ortholog_candidate_hash[phenotype_id] = {}
-        for additive_probability in test_phenotype_array:
-            #if phenotype_ortholog_candidate_hash[phenotype_id] not in phenotype_ortholog_candidate_hash:
+        #test_phenotype_index = 5
+        phenotype_index_counter = 0
+        #test_phenotype_array = phenotype_ortholog_prediction_matrix[test_phenotype_index]
+        for phenotype_array in phenotype_ortholog_prediction_matrix:
+            ortholog_predictions = []
+            ortholog_index_counter = 0
+            #print(phenotype_array)
+            phenotype_id = phenotype_list[phenotype_index_counter]
+            phenotype_ortholog_candidate_hash[phenotype_id] = {}
+            for additive_probability in phenotype_array:
+                #if phenotype_ortholog_candidate_hash[phenotype_id] not in phenotype_ortholog_candidate_hash:
 
-            if additive_probability != 0:
-                #ortholog_index = phenotype_list.index(additive_probability)
-                ortholog = ortholog_list[index_counter]
-                ortholog_predictions.append(ortholog)
-                phenotype_ortholog_candidate_hash[phenotype_id][ortholog] = additive_probability
-            index_counter += 1
-        print(phenotype_list[test_phenotype_index])
-        print(ortholog_predictions)
-        print(phenotype_ortholog_candidate_hash)
-
-
+                if additive_probability != 0:
+                    #ortholog_index = phenotype_list.index(additive_probability)
+                    ortholog = ortholog_list[ortholog_index_counter]
+                    ortholog_predictions.append(ortholog)
+                    phenotype_ortholog_candidate_hash[phenotype_id][ortholog] = additive_probability
+                ortholog_index_counter += 1
+            print(phenotype_list[phenotype_index_counter])
+            print(ortholog_predictions)
+            phenotype_index_counter += 1
+        #print(phenotype_ortholog_candidate_hash)
 
         with open('out/phenolog_gene_cand/phenolog_ortholog_candidate_predictions.txt', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
