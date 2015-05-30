@@ -2229,12 +2229,13 @@ class main():
 
 
 
-        with open('out/phenolog_gene_cand/phenolog_gene_candidate_predictions.txt', 'w', newline='') as csvfile:
+        with open('out/phenolog_gene_cand/phenolog_ortholog_candidate_predictions.txt', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             output_row = ('empty')
             csvwriter.writerow(output_row)
 
-
+        with open('out/phenolog_gene_cand/phenolog_ortholog_candidate_prediction_hash.txt', 'wb') as handle:
+            pickle.dump(phenotype_ortholog_candidate_hash, handle)
 
         #with open('out/phenolog_gene_cand/mouse_genotype_zebrafish_genotype.txt', 'w', newline='') as outfile:
 
