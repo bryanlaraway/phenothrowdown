@@ -13,9 +13,11 @@ import csv
 import pickle
 from decimal import Decimal, getcontext
 import numpy
+from numpy import random
 from scipy.stats import hypergeom, pearsonr
 import math
 import heapq
+import multiprocessing
 import matplotlib.pyplot as plt
 
 start_time = time.time()
@@ -1210,7 +1212,7 @@ class main():
         # What about getting random.sample from the total list of orthologs, with replacement?
         counter = 1
         while counter <= limit:
-            #print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
+            print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
             test_pheno_ortholog_hash = {}
 
             orthologs = []
@@ -1259,15 +1261,7 @@ class main():
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
-        main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
-        main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
 
-        main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
-        main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
-
-        main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
-        main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
-        print('INFO: Done with random data generation.')
         fdr_global_p_value_list = []
 
         hvm_human_dir = 'inter/random/human_vs_mouse/human/'
@@ -1287,7 +1281,7 @@ class main():
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
 
-        random_counter = 1
+        random_counter = 0
         # Switch to 'while' when ready for full set testing.
         while random_counter < limit:
             random_counter += 1
@@ -2367,7 +2361,19 @@ main = main()
 
 
 ####### PHENOLOG FDR CALCULATION #######
-#fdr_cutoff = main.set_stage_for_fdr_calculation()
+
+# Each random data generation takes ~8-10 hours.
+#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
+#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
+
+#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/zebrafish/')
+#main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', 'inter/random/human_vs_zebrafish/human/')
+
+#main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
+#main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
+print('INFO: Done with random data generation.')
+fdr_cutoff = main.set_stage_for_fdr_calculation()
+print(fdr_cutoff)
 
 ####### PHENOLOG COMPARISONS #######
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
@@ -2390,7 +2396,7 @@ main = main()
 
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_phenolog_gene_candidate_prediction_matrix()
-main.assemble_phenolog_gene_candidate_predictions()
+#main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
