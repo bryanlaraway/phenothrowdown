@@ -958,12 +958,13 @@ class main():
                 #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
                 #phenotype_counter += 1
                 #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                print('Creating pool.')
                 results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
                 print('Processing results.')
                 comparison_list = []
                 for p in results:
-                    (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = p.get()
-                    sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                    sequence  = p.get()
+                    #sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
                     json.dump(sequence, outfile)
                     outfile.write('\n')
                 print('Done processing results.')
@@ -1021,14 +1022,16 @@ class main():
                     line_counter += 1
                     #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
                     comparison_id = entity_a+'_'+entity_b
+                    #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
                     comparison_list.append((comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes))
             print('INFO: Done assembling phenotypic profile comparison queries.')
 
             ###### MULTIPROCESSING INSERT ######
             if __name__ == '__main__':
 
-                print('INFO: Multiprocessing started')
-                cores = (multiprocessing.cpu_count()-1)
+
+                #cores = (multiprocessing.cpu_count()-1)
+                cores = 100
                 pool = Pool(processes=cores)
 
                 #multiprocessing.Semaphore(cores)
@@ -1039,7 +1042,10 @@ class main():
                 #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
                 #phenotype_counter += 1
                 #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                print('INFO: Multiprocessing started')
                 results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
+
+
                 print('Processing results.')
                 comparison_list = []
                 for p in results:
@@ -2383,10 +2389,10 @@ def multiprocess_matrix_comparisons(i, j):
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
 
-def multiprocess_owlsim_queries(tuple):
+def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes):
 
-    increment()
-    (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+    #increment()
+    #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
     try:
         response = urllib.request.urlopen(query_url, timeout=5)
         reader = codecs.getreader("utf-8")
@@ -2433,7 +2439,7 @@ def multiprocess_owlsim_queries(tuple):
 
 
 def multithread_owlsim_queries(tuple):
-
+    print('INFO: Performing an OWLSim query.')
     (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
     try:
         response = urllib.request.urlopen(query_url, timeout=5)
@@ -2481,7 +2487,7 @@ def multithread_owlsim_queries(tuple):
 
 ####### MAIN #######
 
-limit = None
+limit = 500
 
 main = main()
 
