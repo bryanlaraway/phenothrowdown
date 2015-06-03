@@ -884,6 +884,8 @@ class main():
         line_counter = 0
         comparison_count = 0
         failure_counter = 0
+        comparison_hash = {}
+        comparison_list = []
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
             comparison_count = limit
@@ -923,69 +925,38 @@ class main():
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
                     #print(query_url)
                     line_counter += 1
-                    print('INFO: Processing phenotypic profile comparison '+str(line_counter)+' out of '+str(comparison_count)+'.')
-                    try:
-                        response = urllib.request.urlopen(query_url, timeout=5)
-                        reader = codecs.getreader("utf-8")
-                        data = json.load(reader(response))
-                        #print(data)
-                        #print('#####')
-                        #print('query successful')
-                        results = data['results']
-                        maxIC = data['results'][0]['maxIC']
-                        simJ = data['results'][0]['simJ']
-                        #FIXME: Is this the correct variable to grab for the ICCS?
-                        ICCS = data['results'][0]['bmaSymIC']
-                        #FIXME: Is this the correct variable to grab for the simIC?
-                        simIC = data['results'][0]['simGIC']
-                        #print(results)
-                        #FIXME: Queries are working, need to adjust writing output to file.
+                    #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
+                    comparison_id = entity_a+'_'+entity_b
+                    comparison_list.append((comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes))
+            print('INFO: Done assembling phenotypic profile comparison queries.')
 
-                        query_flag = 'success'
-                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                        json.dump(sequence, outfile)
-                        outfile.write('\n')
+            ###### MULTIPROCESSING INSERT ######
+            if __name__ == '__main__':
 
-                        #print(sequence)
-                        #print('failed here')
-                        #row = str.join(sequence)
+                print('INFO: Multiprocessing started')
+                cores = (multiprocessing.cpu_count()-1)
+                pool = Pool(processes=cores)
 
-                        #print(row)
-                        #owlsimwriter.writerow(row)
-                        #print('query processing completed')
+                #multiprocessing.Semaphore(cores)
+                #jobs = []
+                #phenotype_iterable = []
+                #phenotype_counter = 0
 
-                    except Exception:
-                        #print('Processing of OWLSim query failed.')
-                        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
-                        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
-                        maxIC = 0
-                        simJ = 0
-                        ICCS = 0
-                        simIC = 0
-                        query_flag = 'fail'
+                #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+                #phenotype_counter += 1
+                #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
+                print('Processing results.')
+                comparison_list = []
+                for p in results:
+                    (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = p.get()
+                    sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                    json.dump(sequence, outfile)
+                    outfile.write('\n')
+                print('Done processing results.')
 
-                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                        json.dump(sequence, outfile)
-                        outfile.write('\n')
-                        continue
-
-        #entity_a = 'entity_1'
-        #entity_a_attributes = ['attr1','attr2','attr3']
-        #entity_b = 'genotype_id'
-        #entity_b_attributes = ['attrb1','attrb2','attrb3']
-        #print(str(row_count)+' human diseases to process.')
-
-
-        #FIXME: Need to adjust attribute handling for first attribute and all following attributes (a= vs &a=)
-
-        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878'
-        #phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
-        #phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
-        #combined_url = base_url+phenotypic_profile_a+phenotypic_profile_b
-        #print(combined_url)
-        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&b=HP:0000580'
-        #query_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0003731&a=MP:0000599&a=MP:0005331&b=HP:0000580&b=HP:0002240&b=HP:0000831'
-
+                print('INFO: Multiprocessing completed')
+                ###### END MULTIPROCESSING INSERT ######
 
         return
 
@@ -2310,6 +2281,53 @@ def multiprocess_matrix_comparisons(i, j):
     #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
+def multiprocess_owlsim_queries(tuple):
+
+    (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+    try:
+        response = urllib.request.urlopen(query_url, timeout=5)
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(response))
+        #print(data)
+        #print('#####')
+        #print('query successful')
+        results = data['results']
+        maxIC = data['results'][0]['maxIC']
+        simJ = data['results'][0]['simJ']
+        ICCS = data['results'][0]['bmaSymIC']
+        simIC = data['results'][0]['simGIC']
+        #print(results)
+        query_flag = 'success'
+        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #json.dump(sequence, outfile)
+        #outfile.write('\n')
+
+        #print(sequence)
+        #print('failed here')
+        #row = str.join(sequence)
+
+        #print(row)
+        #owlsimwriter.writerow(row)
+        #print('query processing completed')
+
+    except Exception:
+        #print('Processing of OWLSim query failed.')
+        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
+        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
+        maxIC = 0
+        simJ = 0
+        ICCS = 0
+        simIC = 0
+        query_flag = 'fail'
+
+        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #json.dump(sequence, outfile)
+        #outfile.write('\n')
+
+
+
+    return (sequence)
+
 ####### MAIN #######
 
 limit = None
@@ -2402,7 +2420,7 @@ main = main()
 #Total comparisons = 42,200,120
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
@@ -2458,7 +2476,7 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
-main.create_phenolog_gene_candidate_matrices()
+#main.create_phenolog_gene_candidate_matrices()
 
 
 
