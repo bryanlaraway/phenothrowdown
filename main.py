@@ -2058,6 +2058,7 @@ class main():
                 ortholog_counter = 0
                 ortholog_match = 0
 
+                #Edit
 
                 phenotype_index_j = phenotype_list.index(j)
                 (coeffecient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
