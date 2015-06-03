@@ -18,7 +18,10 @@ from scipy.stats import hypergeom, pearsonr
 import math
 import heapq
 import multiprocessing
-from multiprocessing import Pool, Process, Manager
+from multiprocessing import Pool, Process, Manager, Lock, Value
+from threading import Thread
+from ctypes import c_int
+from queue import Queue
 import matplotlib.pyplot as plt
 
 start_time = time.time()
@@ -878,6 +881,97 @@ class main():
         return
 
     ####### OWLSIM DATA PROCESSING #######
+
+    def perform_owlsim_queries_threaded(self, raw1, raw2, out, limit=None):
+        print('INFO: Performing OWLSim queries.')
+        line_counter = 0
+        comparison_count = 0
+        failure_counter = 0
+        comparison_hash = {}
+        comparison_list = []
+        if limit is not None:
+            print('Only querying first '+str(limit)+' phenotypic profile pairs.')
+            comparison_count = limit
+        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
+        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
+        data1 = open(raw1, 'rb')
+        organism_a_hash = pickle.load(data1)
+        data1.close()
+        data2 = open(raw2, 'rb')
+        organism_b_hash = pickle.load(data2)
+        data2.close()
+        if limit is None:
+            comparison_count = len(organism_a_hash) * len(organism_b_hash)
+            print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
+        #data2 = open(raw2,'r', encoding="iso-8859-1")
+        #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
+            #organism_a_hash = pickle.loads(handle1.read())
+        #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
+            #organism_b_hash = pickle.loads(handle2.read())
+        #print(organism_a_hash)
+        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #print(organism_a_hash)
+        #print(organism_b_hash)
+        with open(out, 'w', newline='') as outfile:
+            #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
+            for i in organism_a_hash:
+                entity_a = i
+                entity_a_attributes = organism_a_hash[i]
+                #print(attributes)
+                #print(entity_a_attributes)
+                phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+                for j in organism_b_hash:
+                    entity_b = j
+                    entity_b_attributes = organism_b_hash[j]
+                    #print(entity_b_attributes)
+                    phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+                    query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+                    #print(query_url)
+                    line_counter += 1
+                    #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
+                    comparison_id = entity_a+'_'+entity_b
+                    comparison_list.append((comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes))
+            print('INFO: Done assembling phenotypic profile comparison queries.')
+
+            ###### THREADING INSERT ######
+            q = Queue(maxsize=50)
+            num_threads = len(comparison_list)
+            for tuple in comparison_list:
+                worker = Thread(target=multithread_owlsim_queries, args=(tuple))
+
+
+
+
+
+
+            if __name__ == '__main__':
+
+                print('INFO: Multiprocessing started')
+                cores = (multiprocessing.cpu_count()-1)
+                pool = Pool(processes=cores)
+
+                #multiprocessing.Semaphore(cores)
+                #jobs = []
+                #phenotype_iterable = []
+                #phenotype_counter = 0
+
+                #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+                #phenotype_counter += 1
+                #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
+                print('Processing results.')
+                comparison_list = []
+                for p in results:
+                    (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = p.get()
+                    sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                    json.dump(sequence, outfile)
+                    outfile.write('\n')
+                print('Done processing results.')
+
+                print('INFO: Multiprocessing completed')
+                ###### END THREADING INSERT ######
+
+        return
 
     def perform_owlsim_queries(self, raw1, raw2, out, limit=None):
         print('INFO: Performing OWLSim queries.')
@@ -2234,6 +2328,13 @@ class main():
 
         return
 
+counter = Value(c_int)
+counter_lock = Lock()
+def increment():
+    with counter_lock:
+        counter.value += 1
+        print(counter.value)
+
 def multiprocess_matrix_comparisons(i, j):
     with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
         ortholog_list = pickle.load(handle)
@@ -2281,7 +2382,57 @@ def multiprocess_matrix_comparisons(i, j):
     #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
+
 def multiprocess_owlsim_queries(tuple):
+
+    increment()
+    (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+    try:
+        response = urllib.request.urlopen(query_url, timeout=5)
+        reader = codecs.getreader("utf-8")
+        data = json.load(reader(response))
+        #print(data)
+        #print('#####')
+        #print('query successful')
+        results = data['results']
+        maxIC = data['results'][0]['maxIC']
+        simJ = data['results'][0]['simJ']
+        ICCS = data['results'][0]['bmaSymIC']
+        simIC = data['results'][0]['simGIC']
+        #print(results)
+        query_flag = 'success'
+        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #json.dump(sequence, outfile)
+        #outfile.write('\n')
+
+        #print(sequence)
+        #print('failed here')
+        #row = str.join(sequence)
+
+        #print(row)
+        #owlsimwriter.writerow(row)
+        #print('query processing completed')
+
+    except Exception:
+        #print('Processing of OWLSim query failed.')
+        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
+        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
+        maxIC = 0
+        simJ = 0
+        ICCS = 0
+        simIC = 0
+        query_flag = 'fail'
+
+        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #json.dump(sequence, outfile)
+        #outfile.write('\n')
+
+
+
+    return (sequence)
+
+
+def multithread_owlsim_queries(tuple):
 
     (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
     try:
