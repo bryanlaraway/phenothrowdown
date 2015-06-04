@@ -1030,8 +1030,8 @@ class main():
             if __name__ == '__main__':
 
 
-                #cores = (multiprocessing.cpu_count()-1)
-                cores = 100
+                cores = (multiprocessing.cpu_count()-1)
+                #cores = 100
                 pool = Pool(processes=cores)
 
                 #multiprocessing.Semaphore(cores)
@@ -2391,7 +2391,7 @@ def multiprocess_matrix_comparisons(i, j):
 
 def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes):
 
-    #increment()
+    increment()
     #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
     try:
         response = urllib.request.urlopen(query_url, timeout=5)
@@ -2487,7 +2487,7 @@ def multithread_owlsim_queries(tuple):
 
 ####### MAIN #######
 
-limit = 500
+limit = None
 
 main = main()
 
