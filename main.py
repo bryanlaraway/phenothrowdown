@@ -1328,7 +1328,7 @@ class main():
             counter += 1
         return
 
-    def set_stage_for_fdr_calculation(self, limit=1000):
+    def set_stage_for_fdr_calculation(self):
         print('INFO: Setting stage for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -1336,74 +1336,50 @@ class main():
 
         fdr_global_p_value_list = []
 
-        hvm_human_dir = 'inter/random/human_vs_mouse/human/'
-        hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
-        hvz_human_dir = 'inter/random/human_vs_zebrafish/human/'
-        hvz_zebrafish_dir = 'inter/random/human_vs_zebrafish/zebrafish/'
-        mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
-        mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
-
-        with open('inter/panther/common_orthologs_human_mouse.txt', 'rb') as handle:
-            hvm_common_orthologs = len(pickle.load(handle))
-        with open('inter/panther/common_orthologs_human_zebrafish.txt', 'rb') as handle:
-            hvz_common_orthologs = len(pickle.load(handle))
-        with open('inter/panther/common_orthologs_mouse_zebrafish.txt', 'rb') as handle:
-            mvz_common_orthologs = len(pickle.load(handle))
         #print(hvm_common_orthologs)
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
 
-        random_counter = 0
-        # Switch to 'while' when ready for full set testing.
-        while random_counter < limit:
-            random_counter += 1
-            print('INFO: Performing phenolog calculation on random data set '+str(random_counter)+' out of '+str(limit)+'.')
-            fdr_p_value_list = []
-            hvm_human_file = hvm_human_dir+'random_'+str(random_counter)+'.txt'
-            hvm_mouse_file = hvm_mouse_dir+'random_'+str(random_counter)+'.txt'
-            hvz_human_file = hvz_human_dir+'random_'+str(random_counter)+'.txt'
-            hvz_zebrafish_file = hvz_zebrafish_dir+'random_'+str(random_counter)+'.txt'
-            mvz_mouse_file = mvz_mouse_dir+'random_'+str(random_counter)+'.txt'
-            mvz_zebrafish_file = mvz_zebrafish_dir+'random_'+str(random_counter)+'.txt'
-
-            with open(hvm_human_file, 'rb') as handle:
-                hvm_human_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvm_mouse_file, 'rb') as handle:
-                hvm_mouse_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvz_human_file, 'rb') as handle:
-                hvz_human_pheno_ortholog_hash = pickle.load(handle)
-            with open(hvz_zebrafish_file, 'rb') as handle:
-                hvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
-            with open(mvz_mouse_file, 'rb') as handle:
-                mvz_mouse_pheno_ortholog_hash = pickle.load(handle)
-            with open(mvz_zebrafish_file, 'rb') as handle:
-                mvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
-
-            #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
-            hvm_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
-            #print(hvm_phenolog_p_values)
-            fdr_p_value_list.extend(hvm_phenolog_p_values)
-            hvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
-            #print(hvz_phenolog_p_values)
-            fdr_p_value_list.extend(hvz_phenolog_p_values)
-            mvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
-            #print(mvz_phenolog_p_values)
-            fdr_p_value_list.extend(mvz_phenolog_p_values)
-
-            # After grabbing the p-values from each function, assemble and sort.
-            # Select the p-value that resides at the 0.05 percentile and add it to a list.
+        ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
 
 
-            #print('fdr p value list: '+str(len(fdr_p_value_list)))
-            fdr_p_value_list.sort()
-            #print(fdr_p_value_list)
-            cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
-            #print(fdr_p_value_list[cutoff_position])
-            fdr_global_p_value_list.append(fdr_p_value_list[cutoff_position])
+            cores = (multiprocessing.cpu_count()-1)
+            #cores = 100
+            pool = Pool(processes=11)
 
-        fdr_global_p_value_list.sort()
-        global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
-        print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
+            #multiprocessing.Semaphore(cores)
+            #jobs = []
+            #phenotype_iterable = []
+            #phenotype_counter = 0
+
+            #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+            #phenotype_counter += 1
+            #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+            print('INFO: Multiprocessing started')
+            #random_data_set_counter = []
+            #for i in range(1,5):
+                #random_data_set_counter.append(i)
+
+            results = [pool.map(multiprocess_fdr_calculation, range(1,20))]
+
+
+            print('Processing results.')
+            comparison_list = []
+            for p in results:
+                fdr_p_value = p.get()
+                fdr_global_p_value_list.append(fdr_p_value)
+
+            print('Done processing results.')
+
+            print('INFO: Multiprocessing completed')
+            ###### END MULTIPROCESSING INSERT ######
+            fdr_global_p_value_list.sort()
+            with open('inter/random/fdr/fdr_p_value_list.txt', 'wb') as handle:
+                pickle.dump(fdr_global_p_value_list, handle)
+
+            global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+            print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return fdr_global_p_value_list[global_cutoff_position]
 
@@ -2485,6 +2461,71 @@ def multithread_owlsim_queries(tuple):
 
     return (sequence)
 
+
+
+
+def multiprocess_fdr_calculation(i):
+
+    hvm_human_dir = 'inter/random/human_vs_mouse/human/'
+    hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
+    hvz_human_dir = 'inter/random/human_vs_zebrafish/human/'
+    hvz_zebrafish_dir = 'inter/random/human_vs_zebrafish/zebrafish/'
+    mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
+    mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
+
+    with open('inter/panther/common_orthologs_human_mouse.txt', 'rb') as handle:
+        hvm_common_orthologs = len(pickle.load(handle))
+    with open('inter/panther/common_orthologs_human_zebrafish.txt', 'rb') as handle:
+        hvz_common_orthologs = len(pickle.load(handle))
+    with open('inter/panther/common_orthologs_mouse_zebrafish.txt', 'rb') as handle:
+        mvz_common_orthologs = len(pickle.load(handle))
+
+    print('INFO: Performing phenolog calculation on random data set '+str(i)+' out of 1000.')
+    fdr_p_value_list = []
+    hvm_human_file = hvm_human_dir+'random_'+str(i)+'.txt'
+    hvm_mouse_file = hvm_mouse_dir+'random_'+str(i)+'.txt'
+    hvz_human_file = hvz_human_dir+'random_'+str(i)+'.txt'
+    hvz_zebrafish_file = hvz_zebrafish_dir+'random_'+str(i)+'.txt'
+    mvz_mouse_file = mvz_mouse_dir+'random_'+str(i)+'.txt'
+    mvz_zebrafish_file = mvz_zebrafish_dir+'random_'+str(i)+'.txt'
+
+    with open(hvm_human_file, 'rb') as handle:
+        hvm_human_pheno_ortholog_hash = pickle.load(handle)
+    with open(hvm_mouse_file, 'rb') as handle:
+        hvm_mouse_pheno_ortholog_hash = pickle.load(handle)
+    with open(hvz_human_file, 'rb') as handle:
+        hvz_human_pheno_ortholog_hash = pickle.load(handle)
+    with open(hvz_zebrafish_file, 'rb') as handle:
+        hvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
+    with open(mvz_mouse_file, 'rb') as handle:
+        mvz_mouse_pheno_ortholog_hash = pickle.load(handle)
+    with open(mvz_zebrafish_file, 'rb') as handle:
+        mvz_zebrafish_pheno_ortholog_hash = pickle.load(handle)
+
+    #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
+    hvm_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
+    #print(hvm_phenolog_p_values)
+    fdr_p_value_list.extend(hvm_phenolog_p_values)
+    hvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
+    #print(hvz_phenolog_p_values)
+    fdr_p_value_list.extend(hvz_phenolog_p_values)
+    mvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
+    #print(mvz_phenolog_p_values)
+    fdr_p_value_list.extend(mvz_phenolog_p_values)
+
+    # After grabbing the p-values from each function, assemble and sort.
+    # Select the p-value that resides at the 0.05 percentile and add it to a list.
+
+    #print('fdr p value list: '+str(len(fdr_p_value_list)))
+    fdr_p_value_list.sort()
+    #print(fdr_p_value_list)
+    cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
+    #print(fdr_p_value_list[cutoff_position])
+    fdr_cutoff_value = fdr_p_value_list[cutoff_position]
+
+    return fdr_cutoff_value
+
+
 ####### MAIN #######
 
 limit = None
@@ -2577,7 +2618,7 @@ main = main()
 #Total comparisons = 42,200,120
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
@@ -2610,6 +2651,8 @@ main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter
 #main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
 #print('INFO: Done with random data generation.')
+
+main.set_stage_for_fdr_calculation()
 #fdr_cutoff = main.set_stage_for_fdr_calculation()
 #print(fdr_cutoff)
 
