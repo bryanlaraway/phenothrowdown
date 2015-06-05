@@ -20,6 +20,7 @@ import heapq
 import multiprocessing
 from multiprocessing import Pool, Process, Manager, Lock, Value
 from threading import Thread
+#import threading
 from ctypes import c_int
 from queue import Queue
 import matplotlib.pyplot as plt
@@ -934,21 +935,18 @@ class main():
             print('INFO: Done assembling phenotypic profile comparison queries.')
 
             ###### THREADING INSERT ######
-            q = Queue(maxsize=50)
+            queue = Queue(maxsize=50)
             num_threads = len(comparison_list)
-            for tuple in comparison_list:
-                worker = Thread(target=multithread_owlsim_queries, args=(tuple))
+            for sequence in comparison_list:
+                queue.put(tuple)
 
-
-
-
+                worker = Thread(target=multithread_owlsim_queries, args=(sequence))
 
 
             if __name__ == '__main__':
 
-                print('INFO: Multiprocessing started')
-                cores = (multiprocessing.cpu_count()-1)
-                pool = Pool(processes=cores)
+                print('INFO: Multithreading started')
+
 
                 #multiprocessing.Semaphore(cores)
                 #jobs = []
@@ -2414,52 +2412,59 @@ def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_att
     return (sequence)
 
 
-def multithread_owlsim_queries(tuple):
-    print('INFO: Performing an OWLSim query.')
-    (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
-    try:
-        response = urllib.request.urlopen(query_url, timeout=5)
-        reader = codecs.getreader("utf-8")
-        data = json.load(reader(response))
-        #print(data)
-        #print('#####')
-        #print('query successful')
-        results = data['results']
-        maxIC = data['results'][0]['maxIC']
-        simJ = data['results'][0]['simJ']
-        ICCS = data['results'][0]['bmaSymIC']
-        simIC = data['results'][0]['simGIC']
-        #print(results)
-        query_flag = 'success'
-        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-        #json.dump(sequence, outfile)
-        #outfile.write('\n')
-
-        #print(sequence)
-        #print('failed here')
-        #row = str.join(sequence)
-
-        #print(row)
-        #owlsimwriter.writerow(row)
-        #print('query processing completed')
-
-    except Exception:
-        #print('Processing of OWLSim query failed.')
-        #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
-        #FIXME: May want to run a set with this and without this, as the 0s will effect averages.
-        maxIC = 0
-        simJ = 0
-        ICCS = 0
-        simIC = 0
-        query_flag = 'fail'
-
-        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-        #json.dump(sequence, outfile)
-        #outfile.write('\n')
+class multithread_owlsim_queries(Thread):
+    def __init__(self, url, name):
+        Thread.__init__(self)
+        self.name = name
+        self.url = url
 
 
+    def run(self):
 
-    return (sequence)
+        print('INFO: Performing an OWLSim query.')
+        (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+        try:
+            response = urllib.request.urlopen(query_url, timeout=5)
+            reader = codecs.getreader("utf-8")
+            data = json.load(reader(response))
+            #print(data)
+            #print('#####')
+            #print('query successful')
+            results = data['results']
+            maxIC = data['results'][0]['maxIC']
+            simJ = data['results'][0]['simJ']
+            ICCS = data['results'][0]['bmaSymIC']
+            simIC = data['results'][0]['simGIC']
+            #print(results)
+            query_flag = 'success'
+            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+            #json.dump(sequence, outfile)
+            #outfile.write('\n')
+
+            #print(sequence)
+            #print('failed here')
+            #row = str.join(sequence)
+
+            #print(row)
+            #owlsimwriter.writerow(row)
+            #print('query processing completed')
+
+        except Exception:
+            #print('Processing of OWLSim query failed.')
+            #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
+            maxIC = 0
+            simJ = 0
+            ICCS = 0
+            simIC = 0
+            query_flag = 'fail'
+
+            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+            #json.dump(sequence, outfile)
+            #outfile.write('\n')
+
+
+
+        return (sequence)
 
 
 
@@ -2619,6 +2624,8 @@ main = main()
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
