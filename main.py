@@ -1344,7 +1344,7 @@ class main():
 
             cores = (multiprocessing.cpu_count()-1)
             #cores = 100
-            pool = Pool(processes=11)
+            pool = Pool(processes=cores)
 
             #multiprocessing.Semaphore(cores)
             #jobs = []
@@ -1359,21 +1359,21 @@ class main():
             #for i in range(1,5):
                 #random_data_set_counter.append(i)
 
-            results = [pool.map(multiprocess_fdr_calculation, range(1,20))]
+            fdr_global_p_value_list = [pool.map(multiprocess_fdr_calculation, range(1,1000))]
 
 
-            print('Processing results.')
+            #print('Processing results.')
             comparison_list = []
-            for p in results:
-                fdr_p_value = p.get()
-                fdr_global_p_value_list.append(fdr_p_value)
+            #for p in results:
+                #fdr_p_value = p.get()
+                #fdr_global_p_value_list.append(fdr_p_value)
 
-            print('Done processing results.')
+            #print('Done processing results.')
 
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
             fdr_global_p_value_list.sort()
-            with open('inter/random/fdr/fdr_p_value_list.txt', 'wb') as handle:
+            with open('inter/random/fdr/fdr_global_p_value_list.txt', 'wb') as handle:
                 pickle.dump(fdr_global_p_value_list, handle)
 
             global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
@@ -2510,24 +2510,31 @@ def multiprocess_fdr_calculation(i):
     #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
     hvm_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvm_human_pheno_ortholog_hash, hvm_mouse_pheno_ortholog_hash, hvm_common_orthologs)
     #print(hvm_phenolog_p_values)
+    print('INFO: Completed human vs mouse calculations for random data set '+str(i)+'.')
     fdr_p_value_list.extend(hvm_phenolog_p_values)
     hvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(hvz_human_pheno_ortholog_hash, hvz_zebrafish_pheno_ortholog_hash, hvz_common_orthologs)
     #print(hvz_phenolog_p_values)
+    print('INFO: Completed human vs zebrafish calculations for random data set '+str(i)+'.')
     fdr_p_value_list.extend(hvz_phenolog_p_values)
     mvz_phenolog_p_values = main.perform_phenolog_calculations_for_fdr(mvz_mouse_pheno_ortholog_hash, mvz_zebrafish_pheno_ortholog_hash, mvz_common_orthologs)
     #print(mvz_phenolog_p_values)
     fdr_p_value_list.extend(mvz_phenolog_p_values)
+    print('INFO: Completed mouse vs zebrafish calculations for random data set '+str(i)+'.')
 
     # After grabbing the p-values from each function, assemble and sort.
     # Select the p-value that resides at the 0.05 percentile and add it to a list.
 
     #print('fdr p value list: '+str(len(fdr_p_value_list)))
+    print('INFO: Sorting p-values for random data set '+str(i)+'.')
     fdr_p_value_list.sort()
+    with open('inter/random/fdr/fdr_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
+        pickle.dump(fdr_p_value_list, handle)
     #print(fdr_p_value_list)
     cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
     #print(fdr_p_value_list[cutoff_position])
     fdr_cutoff_value = fdr_p_value_list[cutoff_position]
 
+    print('INFO: Processing for random data set '+str(i)+' completed.')
     return fdr_cutoff_value
 
 
