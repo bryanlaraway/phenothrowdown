@@ -712,8 +712,8 @@ class main():
         #TODO: Need to filter out phenotypes that don't have any associated genes.
         with open(inter, 'wb') as handle:
             pickle.dump(hpo_disease_to_gene_hash, handle)
-        print('INFO: Done assembling human phenotype to gene data.')
-        print('INFO: '+str(len(hpo_disease_to_gene_hash))+' human phenotypes present.')
+        print('INFO: Done assembling human disease to gene data.')
+        print('INFO: '+str(len(hpo_disease_to_gene_hash))+' human diseases present.')
         return
 
     def assemble_nif_hpo_disease_to_phenotype(self, limit=None):
@@ -791,27 +791,27 @@ class main():
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                 #print(implicated_gene_ids)
-
-                if not re.match('.*,.*',implicated_gene_ids):
-                    print(implicated_gene_labels)
-                    #print(genes)
-                    if implicated_gene_ids not in mgi_gene_to_phenotype_hash:
-                        mgi_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
-                    #print(mgi_gene_to_phenotype_hash[gene_id])
-                    else:
-                        mgi_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                if implicated_gene_ids != '' and implicated_gene_ids is not None:
+                    if not re.match('.*,.*',implicated_gene_ids):
+                        print(implicated_gene_labels)
+                        #print(genes)
+                        if implicated_gene_ids not in mgi_gene_to_phenotype_hash:
+                            mgi_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
                         #print(mgi_gene_to_phenotype_hash[gene_id])
-                        #print(len(mgi_gene_to_phenotype_hash.keys()))
-                        print('Repeat gene: '+implicated_gene_ids)
-                else:
-                    print('Skipping multi-gene genotype: '+effective_genotype_label)
-                if limit is not None and line_counter > limit:
-                    break
+                        else:
+                            mgi_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                            #print(mgi_gene_to_phenotype_hash[gene_id])
+                            #print(len(mgi_gene_to_phenotype_hash.keys()))
+                            print('Repeat gene: '+implicated_gene_ids)
+                    else:
+                        print('Skipping multi-gene genotype: '+effective_genotype_label)
+                    if limit is not None and line_counter > limit:
+                        break
         #TODO: Need to filter out phenotypes that don't have any associated genes.
         with open(inter, 'wb') as handle:
             pickle.dump(mgi_gene_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse gene to phenotype data.')
-        print('INFO: '+str(len(mgi_gene_to_phenotype_hash.keys()))+' human genes present.')
+        print('INFO: '+str(len(mgi_gene_to_phenotype_hash.keys()))+' mouse genes present.')
         return
 
     def assemble_nif_zfin_gene_to_phenotype(self, limit=None):
@@ -873,7 +873,7 @@ class main():
         with open(inter, 'wb') as handle:
             pickle.dump(zfin_gene_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish gene to phenotype data.')
-        print('INFO: '+str(len(zfin_gene_to_phenotype_hash.keys()))+' human phenotypes present.')
+        print('INFO: '+str(len(zfin_gene_to_phenotype_hash.keys()))+' zebrafish phenotypes present.')
         return
 
     ####### OWLSIM DATA PROCESSING #######
@@ -2279,7 +2279,7 @@ main = main()
 #main.assemble_nif_hpo_disease_to_gene(limit)
 #main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
-#main.assemble_nif_mgi_gene_to_phenotype(limit)
+main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
