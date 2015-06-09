@@ -2343,8 +2343,8 @@ main = main()
 #Expected to take 10 hours
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
-#zebrafish Genes = 4580
-#Total comparisons = 42,200,120
+#zebrafish Genes = 4579
+#Total comparisons = 42,190,906
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
@@ -2353,8 +2353,8 @@ main = main()
 #Expected to take 14 hours
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
 #Mouse Genes = 13102
-#zebrafish Genes = 4580
-#Total comparisons = 60,002,580
+#zebrafish Genes = 4579
+#Total comparisons = 59,989,479
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
