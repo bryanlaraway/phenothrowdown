@@ -877,7 +877,7 @@ class main():
         return
 
     ####### OWLSIM DATA PROCESSING #######
-
+    #Runs at ~1200 queries per second using local OWLSim.
     def perform_owlsim_queries(self, raw1, raw2, out, limit=None):
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
@@ -903,7 +903,8 @@ class main():
         #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
-        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        base_url = '0.0.0.0:9031/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
         with open(out, 'w', newline='') as outfile:
@@ -2296,7 +2297,9 @@ main = main()
 ####### OWLSIM COMPARISONS #######
 
 #OWLSim url calls take about 3 hours for 100,000 comparisons.
+#Runs at ~1200 queries per second using local OWLSim. (Or 12.96 million per 3 hours!)
 
+#Expected to take 120 hours
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #Mouse Genotypes = 56427
@@ -2306,6 +2309,7 @@ main = main()
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim/human_disease_mouse_genotype.txt')
 #print('INFO: Done processing human diseases vs mouse genotypes')
 
+#Expected to take 18 hours
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #zebrafish Genotype = 8535
@@ -2315,6 +2319,7 @@ main = main()
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_genotype.txt')
 #print('INFO: Done processing human disease vs zebrafish genotype')
 
+#Expected to take 112 hours
 #Processing completed in  hours,  comparisons. Estimated to take 669 days?
 #Mouse genotype = 56427
 #zebrafish genotype = 8535
@@ -2324,6 +2329,7 @@ main = main()
 #main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/mouse_genotype_zebrafish_genotype.txt')
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
+#Expected to take 28 hours
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #Mouse genes = 13102
@@ -2333,6 +2339,7 @@ main = main()
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim/human_disease_mouse_gene.txt')
 #print('INFO: Done processing human disease vs mouse genes')
 
+#Expected to take 10 hours
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #zebrafish Genes = 4580
@@ -2342,6 +2349,7 @@ main = main()
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
+#Expected to take 14 hours
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
 #Mouse Genes = 13102
 #zebrafish Genes = 4580
@@ -2371,9 +2379,9 @@ main = main()
 
 #main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
-print('INFO: Done with random data generation.')
-fdr_cutoff = main.set_stage_for_fdr_calculation()
-print(fdr_cutoff)
+#print('INFO: Done with random data generation.')
+#fdr_cutoff = main.set_stage_for_fdr_calculation()
+#print(fdr_cutoff)
 
 ####### PHENOLOG COMPARISONS #######
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
