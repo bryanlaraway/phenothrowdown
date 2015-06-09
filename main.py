@@ -847,24 +847,24 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                if phenotype_id == '' or phenotype_id == None:
+                if phenotype_id == '' or phenotype_id is None:
                     continue
                 else:
 
                     #print(implicated_gene_ids)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-
-                    if not re.match('.*,.*',implicated_gene_ids):
-                        print(implicated_gene_labels)
-                        #print(genes)
-                        if implicated_gene_ids not in zfin_gene_to_phenotype_hash:
-                            zfin_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
-                        #print(zfin_gene_to_phenotype_hash[gene_id])
-                        else:
-                            zfin_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                    if implicated_gene_ids != '' and implicated_gene_ids is not None:
+                        if not re.match('.*,.*',implicated_gene_ids):
+                            print(implicated_gene_labels)
+                            #print(genes)
+                            if implicated_gene_ids not in zfin_gene_to_phenotype_hash:
+                                zfin_gene_to_phenotype_hash[implicated_gene_ids] = [phenotype_id]
                             #print(zfin_gene_to_phenotype_hash[gene_id])
-                            #print(len(zfin_gene_to_phenotype_hash.keys()))
-                            print('Repeat gene: '+implicated_gene_ids)
+                            else:
+                                zfin_gene_to_phenotype_hash[implicated_gene_ids].append(phenotype_id)
+                                #print(zfin_gene_to_phenotype_hash[gene_id])
+                                #print(len(zfin_gene_to_phenotype_hash.keys()))
+                                print('Repeat gene: '+implicated_gene_ids)
                     else:
                         print('Skipping multi-gene genotype: '+effective_genotype_label)
                     if limit is not None and line_counter > limit:
@@ -904,7 +904,7 @@ class main():
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
         #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
-        base_url = '0.0.0.0:9031/compareAttributeSets?'
+        base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
         with open(out, 'w', newline='') as outfile:
@@ -923,7 +923,8 @@ class main():
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
                     #print(query_url)
                     line_counter += 1
-                    print('INFO: Processing phenotypic profile comparison '+str(line_counter)+' out of '+str(comparison_count)+'.')
+                    if re.match('.*00', str(line_counter)):
+                        print('INFO: Processing phenotypic profile comparison '+str(line_counter)+' out of '+str(comparison_count)+'.')
                     try:
                         response = urllib.request.urlopen(query_url, timeout=5)
                         reader = codecs.getreader("utf-8")
@@ -2279,7 +2280,7 @@ main = main()
 #main.assemble_nif_hpo_disease_to_gene(limit)
 #main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
-main.assemble_nif_mgi_gene_to_phenotype(limit)
+#main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
@@ -2297,7 +2298,7 @@ main.assemble_nif_mgi_gene_to_phenotype(limit)
 ####### OWLSIM COMPARISONS #######
 
 #OWLSim url calls take about 3 hours for 100,000 comparisons.
-#Runs at ~1200 queries per second using local OWLSim. (Or 12.96 million per 3 hours!)
+#Runs at ~27 queries per second using local OWLSim. (Or 300,000 per 3 hours!)
 
 #Expected to take 120 hours
 #Processing completed in  hours,  comparisons.
@@ -2353,7 +2354,7 @@ main.assemble_nif_mgi_gene_to_phenotype(limit)
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
 #Mouse Genes = 13102
 #zebrafish Genes = 4580
-#Total comparisons = 60,007,160
+#Total comparisons = 60,002,580
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
