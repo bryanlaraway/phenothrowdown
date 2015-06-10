@@ -18,7 +18,7 @@ from scipy.stats import hypergeom, pearsonr
 import math
 import heapq
 import multiprocessing
-from multiprocessing import Pool, Process, Manager, Lock, Value
+#from multiprocessing import Pool, Process, Manager, Lock, Value
 from threading import Thread
 #import threading
 from ctypes import c_int
@@ -910,7 +910,8 @@ class main():
         #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
-        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
         with open(out, 'w', newline='') as outfile:
@@ -999,7 +1000,8 @@ class main():
         #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
             #organism_b_hash = pickle.loads(handle2.read())
         #print(organism_a_hash)
-        base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
+        base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
         with open(out, 'w', newline='') as outfile:
@@ -1344,7 +1346,7 @@ class main():
 
             cores = (multiprocessing.cpu_count()-1)
             #cores = 100
-            pool = Pool(processes=cores)
+            pool = multiprocessing.Pool(processes=cores)
 
             #multiprocessing.Semaphore(cores)
             #jobs = []
@@ -2049,8 +2051,8 @@ class main():
                     ortholog_index = ortholog_list.index(j)
                     ortholog_phenotype_matrix[phenotype_index][ortholog_index] = 1
 
-        print(phenotype_list[0])
-        print(ortholog_phenotype_matrix)
+        #print(phenotype_list[0])
+        #print(ortholog_phenotype_matrix)
         #print(len(phenotype_ortholog_matrix))
         #a = numpy.matrix(phenotype_list, ortholog_list)
         #print(str(numpy.sum(phenotype_ortholog_matrix)))
@@ -2077,9 +2079,20 @@ class main():
 
         # Set the number of nearest neighbor phenotypes to consider for predictions.
         k = 11
+        #Added file dumps to main.assemble_ortholog_phenotype_matrix, so this function call is not necessary if already run.
+        #(ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
 
-        (ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
+        ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 
+        with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
+            phenotype_list = pickle.load(handle)
+        with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+            ortholog_list = pickle.load(handle)
+
+        total_phenotypes = len(phenotype_list)
+        print('INFO: Total number of phenotypes: '+str(total_phenotypes))
+        total_orthologs = len(ortholog_list)
+        print('INFO: Total number of orthologs: '+str(total_orthologs))
         #Have the matrix, need to get the sum of the k (10) nearest neighbors, weight by the pearson correlation coefficient.
         # Pearson correlation to determine the k nearest neighbors. So I need to calculate the similarity of phenotypes
         # for all pair-wise phenotype combinations. So need a similarity score matrix in addition to the weight matrix.
@@ -2095,11 +2108,10 @@ class main():
         total_phenotypes = len(phenotype_list)
 
 
-        print(phenotype_list[0])
+        #print(phenotype_list[0])
         distance_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
         distance_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
         distance_matrix_counter = 0
-        print()
         weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
         weight_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
         weight_matrix_counter = 0
@@ -2113,14 +2125,34 @@ class main():
         if __name__ == '__main__':
             #with Manager() as manager:
 
-            print('started')
+
             cores = (multiprocessing.cpu_count()-1)
-            pool = Pool(processes=cores)
+            pool = multiprocessing.Pool(processes=cores)
 
             #multiprocessing.Semaphore(cores)
             #jobs = []
             #phenotype_iterable = []
             phenotype_counter = 0
+
+            #Takes ~65 seconds to reach this point.
+            print('INFO: Assembling phenotype matrix coordinates.')
+
+            #for i in phenotype_list:
+            i = phenotype_list[0]
+            print('INFO: Processing phenotype '+str((phenotype_list.index(i))+1)+' out of '+str(len(phenotype_list))+'.')
+            matrix_coordinates = []
+
+            #for j in phenotype_list:
+            j = phenotype_list[1]
+            matrix_coordinates.append([i,j])
+
+            print('INFO: Starting multiprocessing.')
+            results = [pool.map(multiprocess_matrix_comparisons, matrix_coordinates)]
+            print(results)
+            #for p in results:
+                #print(p.get())
+
+            '''
             for i in phenotype_list:
                 phenotype_counter += 1
                 print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
@@ -2146,7 +2178,7 @@ class main():
                     #print((i, j))
 
 
-
+            '''
 
             #print('Test Matrix')
             #print(test_matrix)
@@ -2308,19 +2340,30 @@ class main():
 
         return
 
-counter = Value(c_int)
-counter_lock = Lock()
+counter = multiprocessing.Value(c_int)
+counter_lock = multiprocessing.Lock()
 def increment():
     with counter_lock:
         counter.value += 1
-        print(counter.value)
+        print('INFO: Processing matrix comparison '+str(counter.value))
 
-def multiprocess_matrix_comparisons(i, j):
+def multiprocess_matrix_comparisons(matrix_coordinates):
+    #increment()
     with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
         ortholog_list = pickle.load(handle)
     with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
         phenotype_list = pickle.load(handle)
-    phenotype_index_i = phenotype_list.index(i)
+
+    phenotype_i = matrix_coordinates[0]
+    phenotype_j = matrix_coordinates[1]
+
+    #Comment out when done testing.
+    #test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
+    #phenotype_list = test_phenotype_list
+    #test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
+    #ortholog_list = test_ortholog_list
+
+    phenotype_index_i = phenotype_list.index(phenotype_i)
     #distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
     #weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
     ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
@@ -2330,7 +2373,7 @@ def multiprocess_matrix_comparisons(i, j):
     ortholog_match = 0
     #print(len(ortholog_list))
 
-    phenotype_index_j = phenotype_list.index(j)
+    phenotype_index_j = phenotype_list.index(phenotype_j)
     #print(phenotype_index_i)
     #print(phenotype_index_j)
     (coefficient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
@@ -2573,16 +2616,6 @@ main = main()
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
-#main.parse_hp('raw/ontologies/hp.obo', 'inter/ontologies/hp_hash.txt')
-#main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
-#main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
-
-#NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
-#NOTE: These three functions are now combined and run in the create_phenolog_gene_candidate_matrices function.
-#(human_ortholog_phenotype_matrix, human_phenotype_list, human_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
-#(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
-#(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
-
 
 ####### OWLSIM COMPARISONS #######
 
@@ -2666,7 +2699,7 @@ main = main()
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
 #print('INFO: Done with random data generation.')
 
-main.set_stage_for_fdr_calculation()
+#main.set_stage_for_fdr_calculation()
 #fdr_cutoff = main.set_stage_for_fdr_calculation()
 #print(fdr_cutoff)
 
@@ -2681,6 +2714,16 @@ main.set_stage_for_fdr_calculation()
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
 
+#main.parse_hp('raw/ontologies/hp.obo', 'inter/ontologies/hp_hash.txt')
+#main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
+#main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
+
+#NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
+#NOTE: These three functions are now combined and run in the create_phenolog_gene_candidate_matrices function.
+#(human_ortholog_phenotype_matrix, human_phenotype_list, human_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
+#(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
+#(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
+
 
 #ext_fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
 #ext_fdr_cutoff = 0.00022089684117479534
@@ -2690,9 +2733,9 @@ main.set_stage_for_fdr_calculation()
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
-#main.create_phenolog_gene_candidate_matrices()
+main.create_phenolog_gene_candidate_matrices()
 
-
+####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
 
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
@@ -2709,3 +2752,5 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 #Format for mutliple:
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
+
+
