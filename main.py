@@ -298,15 +298,24 @@ class main():
                                 # If phenotype is in the phenotype to ortholog hash but the ortholog is not in the hash, add it to the hash.
                                 elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+
+                    # If phenotype is in the phenotype to gene hash, add genes not currently in hash.
                     else:
                         for gene in genes:
-                            zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
+                            if gene not in zfin_phenotype_to_gene_hash[phenotype_id]:
+                                zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
                             #print('Repeat phenotype: '+phenotype_id)
+
+                            # Convert genes to orthologs using zebrafish-trimmed PANTHER table as lookup.
                             panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
                             if panther_id != 'fail':
                                 #print('found ortholog')
+
+                                # If phenotype is not in the phenotype to ortholog hash, add phenotype and ortholog to hash.
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+
+                                # If phenotype is in the phenotype to ortholog hash but the ortholog is not in the hash, add it to the hash.
                                 elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
 
