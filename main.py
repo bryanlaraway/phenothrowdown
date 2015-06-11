@@ -1032,7 +1032,7 @@ class main():
 
                 cores = (multiprocessing.cpu_count()-1)
                 #cores = 100
-                pool = Pool(processes=cores)
+                pool = multiprocessing.Pool(processes=cores)
 
                 #multiprocessing.Semaphore(cores)
                 #jobs = []
@@ -2324,7 +2324,7 @@ def increment():
         print('INFO: Processing matrix comparison '+str(counter.value))
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
-    increment()
+    #increment()
     #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
         #ortholog_list = pickle.load(handle)
 
