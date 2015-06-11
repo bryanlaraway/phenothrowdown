@@ -12,6 +12,7 @@ import re
 import csv
 import pickle
 from decimal import Decimal, getcontext
+import cProfile
 import numpy
 from numpy import random
 from scipy.stats import hypergeom, pearsonr
@@ -23,7 +24,7 @@ from threading import Thread
 #import threading
 from ctypes import c_int
 from queue import Queue
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 start_time = time.time()
 
@@ -64,54 +65,54 @@ class main():
     }
 
     ####### SCIGRAPH DATA ASSEMBLY #######
+    #NOTE: While this code works, acquiring data via SciGraph is rate-limiting due to the URL calls.
+    #I have instead downloaded the flat files from NIF/DISCO
 
     def _assemble_human_disease_to_phenotype(self, limit=None):
+        """This function takes a list of diseases from HPO and retrieves the associated phenotypes from SciGraph."""
+
         print('INFO: Assembling human disease to phenotype data.')
+
+        # Set counters and open files for processing.
         line_counter = 0
         failure_counter = 0
         raw = 'raw/hpo/diseases.csv'
         inter = 'inter/hpo/human_disease_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
+            row_count = (sum(1 for row in filereader)) - 1
             print(str(row_count)+' human diseases to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
+            next(filereader, None)
             for row in filereader:
+
+                # Query SciGraph using the disease_id and retrieve the phenotypes in a JSON object.
                 line_counter += 1
-                #print(row)
                 disease_id = row[0]
-                #print(disease_id)
                 disease_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/diseases/'+disease_id+'/phenotypes/targets'
                 try:
                     response = urllib.request.urlopen(disease_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
-                    #print(data)
+
+                    # Parse the JSON object and add the disease-phenotype associations to the hash.
                     pheno_ids = data['nodes']
-                    #print(pheno_ids)
                     for rs in pheno_ids:
                         if disease_id not in hu_disease_to_phenotype_hash:
                             hu_disease_to_phenotype_hash[disease_id] = [rs['id']]
-                            #print(hu_disease_to_phenotype_hash[disease_id])
                         else:
                             hu_disease_to_phenotype_hash[disease_id].append(rs['id'])
-                            #print(hu_disease_to_phenotype_hash[disease_id])
                 except Exception:
                     print('Retrieval of '+disease_id+' failed.')
                     failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
                     break
-                    #
-                #print(len(hu_disease_to_phenotype_hash.keys()))
-        #print(hu_disease_to_phenotype_hash)
-                #if disease_id not in hu_disease_to_phenotype_hash:
-                    #hu_disease_to_phenotype_hash['disease_id'] =
+
+        # Dump data to file.
         with open(inter, 'wb') as handle:
             pickle.dump(hu_disease_to_phenotype_hash, handle)
         print('INFO: Done assembling human disease to phenotype data.')
@@ -120,15 +121,18 @@ class main():
         return
 
     def _assemble_mouse_genotype_to_phenotype(self, limit=None):
+        """This function takes a list of genotypes from MGI and retrieves the associated phenotypes from SciGraph."""
+
         print('INFO:Assembling mouse genotype to phenotype data.')
+
+        # Set counters and open files for processing.
         line_counter = 0
         failure_counter = 0
         raw = 'raw/mgi/genotypes.csv'
         inter = 'inter/mgi/mouse_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
+            row_count = (sum(1 for row in filereader)) - 1
             print(str(row_count)+' mouse genotypes to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.' )
@@ -136,6 +140,8 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
             for row in filereader:
+
+                # Query SciGraph using the genotype_id and retrieve the phenotypes in a JSON object.
                 line_counter += 1
                 genotype_id = row[0]
                 genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
@@ -143,20 +149,14 @@ class main():
                     response = urllib.request.urlopen(genotype_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
-                    #print(data)
-                    print(genotype_id)
+
+                    # Parse the JSON object and add the genotype-phenotype associations to the hash.
                     pheno_ids = data['nodes']
-                    #print(pheno_ids)
                     for rs in pheno_ids:
                         if genotype_id not in mouse_genotype_to_phenotype_hash:
                             mouse_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
-                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
                         else:
                             mouse_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
-                            #print(mouse_genotype_to_phenotype_hash[genotype_id])
-        #print(hu_disease_to_phenotype_hash)
-                #if disease_id not in hu_disease_to_phenotype_hash:
-                    #hu_disease_to_phenotype_hash['disease_id'] =
                 except Exception:
                     print('Retrieval of '+genotype_id+' failed.')
                     failure_counter += 1
@@ -164,6 +164,7 @@ class main():
                 if limit is not None and line_counter > limit:
                     break
 
+        # Dump data to file.
         with open(inter, 'wb') as handle:
             pickle.dump(mouse_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling mouse genotype to phenotype data.')
@@ -172,22 +173,27 @@ class main():
         return
 
     def assemble_zebrafish_genotype_to_phenotype(self, limit=None):
+        """This function takes a list of genotypes from ZFIN and retrieves the associated phenotypes from SciGraph."""
+
         print('INFO:Assembling zebrafish genotype to phenotype data.')
+
+        # Set counters and open files for processing.
         line_counter = 0
         failure_counter = 0
         raw = 'raw/zfin/genotypes.csv'
         inter = 'inter/zfin/zebrafish_geno_pheno_hash.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
+            row_count = (sum(1 for row in filereader)) - 1
             print(str(row_count)+' zebrafish genotypes to process.')
         if limit is not None:
             print('Only parsing first '+str(limit)+' rows.' )
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
+            next(filereader, None)
             for row in filereader:
+
+                # Query SciGraph using the genotype_id and retrieve the phenotypes in a JSON object.
                 line_counter += 1
                 genotype_id = row[0]
                 genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
@@ -195,23 +201,23 @@ class main():
                     response = urllib.request.urlopen(genotype_url, timeout=5)
                     reader = codecs.getreader("utf-8")
                     data = json.load(reader(response))
-                    #print(data)
+
+                    # Parse the JSON object and add the genotype-phenotype associations to the hash.
                     pheno_ids = data['nodes']
                     #print(pheno_ids)
                     for rs in pheno_ids:
                         if genotype_id not in zfin_genotype_to_phenotype_hash:
                             zfin_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
-                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
                         else:
                             zfin_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
-                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
                 except Exception:
                     print('Retrieval of '+genotype_id+' failed.')
                     failure_counter += 1
                     continue
                 if limit is not None and line_counter > limit:
                     break
+
+        # Dump data to file.
         with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
@@ -219,64 +225,17 @@ class main():
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
-    # Will require adjustment once the SciGraph REST call is operational again.
-    def assemble_phenotype_to_gene(self, limit=None):
-        print('INFO:Assembling zebrafish genotype to phenotype data.')
-        line_counter = 0
-        failure_counter = 0
-        raw = 'raw/zfin/genotypes.csv'
-        inter = 'inter/zfin/zebrafish_geno_pheno_hash.txt'
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' zebrafish genotypes to process.')
-        if limit is not None:
-            print('Only parsing first '+str(limit)+' rows.' )
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                genotype_id = row[0]
-                genotype_url = 'http://rosie.crbs.ucsd.edu:9000/scigraph/dynamic/features/'+genotype_id+'/phenotypes/targets'
-                try:
-                    response = urllib.request.urlopen(genotype_url, timeout=5)
-                    reader = codecs.getreader("utf-8")
-                    data = json.load(reader(response))
-                    #print(data)
-                    pheno_ids = data['nodes']
-                    #print(pheno_ids)
-                    for rs in pheno_ids:
-                        if genotype_id not in zfin_genotype_to_phenotype_hash:
-                            zfin_genotype_to_phenotype_hash[genotype_id] = [rs['id']]
-                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                        else:
-                            zfin_genotype_to_phenotype_hash[genotype_id].append(rs['id'])
-                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                    #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                except Exception:
-                    print('Retrieval of '+genotype_id+' failed.')
-                    failure_counter += 1
-                    continue
-                if limit is not None and line_counter > limit:
-                    break
-        with open(inter, 'wb') as handle:
-            pickle.dump(zfin_genotype_to_phenotype_hash, handle)
-        print('INFO: Done assembling zebrafish genotype to phenotype data.')
-        print('INFO: '+str(len(zfin_genotype_to_phenotype_hash.keys()))+' zebrafish genotypes present.')
-        print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
-        return
-
     ####### NIF DATA ASSEMBLY #######
 
     ####### PHENOLOG PHENOTYPE TO GENE #######
 
-    # Completed on full data set in 77.4 hours.
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
+        """This function assembles phenotype to gene associations from the NIF/DISCO flat data file"""
+
         print('INFO:Assembling zebrafish phenotype to ortholog data.')
+
+        # Set up counters and open required files.
         line_counter = 0
-        failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
         inter1 = 'inter/zfin/zebrafish_pheno_gene_hash.txt'
         inter2 = 'inter/zfin/zebrafish_pheno_ortholog_hash.txt'
@@ -294,6 +253,8 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             next(filereader,None)
             for row in filereader:
+
+                # Read in a row and split into individual variables.
                 line_counter += 1
                 (e_uid, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
                  intrinsic_genotype_id, intrinsic_genotype_num, intrinsic_genotype_label, intrinsic_genotype_label_html,
@@ -310,35 +271,37 @@ class main():
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
                 print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
 
+                # Skip phenotypes without IDs and phenotypes with no associated genes.
                 if phenotype_id == '' or phenotype_id is None:
                     continue
                 elif implicated_gene_ids == '' or implicated_gene_ids is None:
                     continue
                 else:
-                    print(phenotype_id)
-                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
-                    #TODO: Need to handle phenotypes with no associated genes.
+                    #print(phenotype_id)
                     genes = implicated_gene_ids.split(',')
-                    print(genes)
+                    #print(genes)
+
+                    # If phenotype is not in the phenotype to gene hash, add phenotype and genes to hash.
                     if phenotype_id not in zfin_phenotype_to_gene_hash:
                         zfin_phenotype_to_gene_hash[phenotype_id] = genes
-                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
                         for gene in genes:
+
+                            # Convert genes to orthologs using zebrafish-trimmed PANTHER table as lookup.
                             panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
                             if panther_id != 'fail':
                                 #print('found ortholog')
+
+                                # If phenotype is not in the phenotype to ortholog hash, add phenotype and ortholog to hash.
                                 if phenotype_id not in zfin_phenotype_to_ortholog_hash:
-                                    zfin_phenotype_to_ortholog_hash[phenotype_id]= [panther_id]
+                                    zfin_phenotype_to_ortholog_hash[phenotype_id] = [panther_id]
+
+                                # If phenotype is in the phenotype to ortholog hash but the ortholog is not in the hash, add it to the hash.
                                 elif panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
                                     zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
-                            #elif panther_id == 'fail':
-                                #print('No ortholog found.')
                     else:
                         for gene in genes:
                             zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
-                            #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                            #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                            print('Repeat phenotype: '+phenotype_id)
+                            #print('Repeat phenotype: '+phenotype_id)
                             panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
                             if panther_id != 'fail':
                                 #print('found ortholog')
@@ -349,6 +312,8 @@ class main():
 
                 if limit is not None and line_counter > limit:
                     break
+
+        # Dump data to files.
         with open(inter1, 'wb') as handle:
             pickle.dump(zfin_phenotype_to_gene_hash, handle)
         with open(inter2, 'wb') as handle:
@@ -2125,7 +2090,6 @@ class main():
         if __name__ == '__main__':
             #with Manager() as manager:
 
-
             cores = (multiprocessing.cpu_count()-1)
             pool = multiprocessing.Pool(processes=cores)
 
@@ -2137,27 +2101,27 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for i in phenotype_list:
-                #i = phenotype_list[0]
-                input_phenotype_index_i = phenotype_list.index(i)
+            #for i in phenotype_list:
+            i = phenotype_list[0]
+            input_phenotype_index_i = phenotype_list.index(i)
 
-                print('INFO: Processing phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
-                matrix_coordinates = []
-                for j in phenotype_list:
-                    input_phenotype_index_j = phenotype_list.index(j)
-                    matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
-                print('INFO: Done assembling phenotype matrix coordinates.')
-                print('INFO: Starting multiprocessing.')
-                results = pool.map(multiprocess_matrix_comparisons, matrix_coordinates)
-                #print(results)
-                print('INFO: Processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
-                for x in results:
-                    #print(x)
-                    (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = x
-                    distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
-                    weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
-                    #print(coefficient)
-                print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+            print('INFO: Processing phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+            matrix_coordinates = []
+            for j in phenotype_list:
+                input_phenotype_index_j = phenotype_list.index(j)
+                matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
+            print('INFO: Done assembling phenotype matrix coordinates.')
+            print('INFO: Starting multiprocessing.')
+            results = pool.map(multiprocess_matrix_comparisons, matrix_coordinates)
+            #print(results)
+            print('INFO: Processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+            for x in results:
+                #print(x)
+                (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = x
+                distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
+                weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
+                #print(coefficient)
+            print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
 
             # Dump all of the files to disk.
             #numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
@@ -2704,7 +2668,7 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
-main.create_phenolog_gene_candidate_matrices()
+cProfile.run('main.create_phenolog_gene_candidate_matrices()')
 
 ####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
 
