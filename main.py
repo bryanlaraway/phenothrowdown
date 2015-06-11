@@ -331,8 +331,6 @@ class main():
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
         return
 
-
-    # Completed on full data set in 175.3 hours (7.3 days)
     def assemble_nif_mgi_phenotype_to_gene(self, limit=None):
         print('INFO:Assembling mouse phenotype to gene ortholog data.')
         line_counter = 0
@@ -387,7 +385,8 @@ class main():
                                 mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
                 else:
                     for gene in genes:
-                        mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
+                        if gene not in mgi_phenotype_to_gene_hash[phenotype_id]:
+                            mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
                         #print(mgi_phenotype_to_gene_hash[phenotype_id])
                         #print(len(mgi_phenotype_to_gene_hash.keys()))
                         #print('Repeat phenotype: '+phenotype_id)
@@ -1976,7 +1975,7 @@ class main():
 
     ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES #######
 
-    def assemble_ortholog_phenotype_matrix(self):
+    def assemble_ortholog_phenotype_matrix(self, limit=None):
         # To speed things up, going to assemble from already assembled phenotype-ortholog hash
 
         print('INFO: Assembling phenotype-ortholog matrices.')
@@ -1994,18 +1993,23 @@ class main():
         # Cycle through
         phenotype_list = []
         ortholog_list = []
+        phenotype_limit = limit
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
             #print(species_a_pheno_gene_hash)
 
-
+            phenotype_counter = 0
             for i in pheno_ortholog_hash:
-                if i not in phenotype_list:
-                    phenotype_list.append(i)
-                for j in pheno_ortholog_hash[i]:
-                    if j not in ortholog_list:
-                        ortholog_list.append(j)
+                if phenotype_counter < phenotype_limit:
+                    phenotype_counter += 1
+                    if i not in phenotype_list:
+                        phenotype_list.append(i)
+                    for j in pheno_ortholog_hash[i]:
+                        if j not in ortholog_list:
+                            ortholog_list.append(j)
+                else:
+                    continue
         phenotype_list.sort()
         ortholog_list.sort()
         total_phenotypes = len(phenotype_list)
@@ -2019,11 +2023,16 @@ class main():
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
+            phenotype_counter = 0
             for i in pheno_ortholog_hash:
-                phenotype_index = phenotype_list.index(i)
-                for j in pheno_ortholog_hash[i]:
-                    ortholog_index = ortholog_list.index(j)
-                    ortholog_phenotype_matrix[phenotype_index][ortholog_index] = 1
+                if phenotype_counter < phenotype_limit:
+                    phenotype_counter += 1
+                    phenotype_index = phenotype_list.index(i)
+                    for j in pheno_ortholog_hash[i]:
+                        ortholog_index = ortholog_list.index(j)
+                        ortholog_phenotype_matrix[phenotype_index][ortholog_index] = 1
+                else:
+                    continue
 
         #print(phenotype_list[0])
         #print(ortholog_phenotype_matrix)
@@ -2053,8 +2062,10 @@ class main():
 
         # Set the number of nearest neighbor phenotypes to consider for predictions.
         k = 11
-        #Added file dumps to main.assemble_ortholog_phenotype_matrix, so this function call is not necessary if already run.
+        # Added file dumps to main.assemble_ortholog_phenotype_matrix, so this function call is not necessary if already run.
         #(ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
+        # If testing, set a limit to something reasonable like 100.
+        (ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix(500)
 
         ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 
@@ -2110,27 +2121,27 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            #for i in phenotype_list:
-            i = phenotype_list[0]
-            input_phenotype_index_i = phenotype_list.index(i)
+            for i in phenotype_list:
+                #i = phenotype_list[0]
+                input_phenotype_index_i = phenotype_list.index(i)
 
-            print('INFO: Processing phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
-            matrix_coordinates = []
-            for j in phenotype_list:
-                input_phenotype_index_j = phenotype_list.index(j)
-                matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
-            print('INFO: Done assembling phenotype matrix coordinates.')
-            print('INFO: Starting multiprocessing.')
-            results = pool.map(multiprocess_matrix_comparisons, matrix_coordinates)
-            #print(results)
-            print('INFO: Processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
-            for x in results:
-                #print(x)
-                (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = x
-                distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
-                weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
-                #print(coefficient)
-            print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+                print('INFO: Processing phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+                matrix_coordinates = []
+                for j in phenotype_list:
+                    input_phenotype_index_j = phenotype_list.index(j)
+                    matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
+                print('INFO: Done assembling phenotype matrix coordinates.')
+                print('INFO: Starting multiprocessing.')
+                results = pool.map(multiprocess_matrix_comparisons, matrix_coordinates)
+                #print(results)
+                print('INFO: Processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+                for x in results:
+                    #print(x)
+                    (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = x
+                    distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
+                    weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
+                    #print(coefficient)
+                print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
 
             # Dump all of the files to disk.
             #numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
@@ -2150,10 +2161,6 @@ class main():
             #print(ortholog_list[0])
             print('DONE!')
         return
-
-
-
-
 
     def create_phenolog_gene_candidate_prediction_matrix(self):
         distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
@@ -2302,7 +2309,11 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
         #ortholog_list = pickle.load(handle)
 
     #Total number of orthologs is 2905. Hard coding to remove multiple openings of the ortholog_list.txt file.
-    len_ortholog_list = 2905
+    #len_ortholog_list = 2905
+    # For testing with smaller phenotype sets, set number of orthologs from saved file
+    with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+            ortholog_list = pickle.load(handle)
+    len_ortholog_list = len(ortholog_list)
     #Comment out when done testing.
     #test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
     #phenotype_list = test_phenotype_list
@@ -2549,7 +2560,7 @@ main = main()
 
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
-#main.assemble_nif_mgi_phenotype_to_gene(limit)
+#main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
@@ -2676,13 +2687,13 @@ main = main()
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_zebrafish.txt', 'inter/phenolog/hvz_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
-#This process requires multi-processing due to the large number of comparisons that need to be performed.
-cProfile.run('main.create_phenolog_gene_candidate_matrices()')
 
 ####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
 
-#main.create_phenolog_gene_candidate_prediction_matrix()
-#main.assemble_phenolog_gene_candidate_predictions()
+#This process requires multi-processing due to the large number of comparisons that need to be performed.
+cProfile.run('main.create_phenolog_gene_candidate_matrices()')
+#cProfile.run('main.create_phenolog_gene_candidate_prediction_matrix()')
+#cProfile.run('main.assemble_phenolog_gene_candidate_predictions()')
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
