@@ -394,7 +394,7 @@ class main():
 
         return
 
-    # Completed on full data set in 75.5 hours.
+
     def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
         """This function assembles human phenotype to gene associations from the NIF/DISCO flat data file"""
 
@@ -467,6 +467,7 @@ class main():
         return
 
     def assemble_nif_animalqtl_phenotype_to_gene(self, limit=None):
+        """ Currently not used """
         print('INFO:Assembling animalQTLdb phenotype to gene data.')
         line_counter = 0
         failure_counter = 0
@@ -522,9 +523,6 @@ class main():
         print('INFO: Done assembling human phenotype to gene data.')
         print('INFO: '+str(len(aqtl_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
         return
-
-
-
 
 
     ####### OWLSIM GENOTYPE TO PHENOTYPE #######
@@ -1020,11 +1018,14 @@ class main():
     ####### PHENOLOG DATA PROCESSING #######
 
     def trim_panther_data(self, inter, taxons):
+        """ This function trims the PANTHER flat file from NIF/DISCO for a given taxon. """
+
         print('INFO: Trimming PANTHER data.')
+
+        # Set counters and open required files.
         line_counter = 0
         output_line_counter = 0
         raw = 'raw/panther/dvp.pr_nlx_84521_1'
-        #inter = 'inter/panther/panther.txt'
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -1036,6 +1037,8 @@ class main():
                 filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
                 next(filereader,None)
                 for row in filereader:
+
+                    #
                     line_counter += 1
                     (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                     proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
@@ -2545,7 +2548,7 @@ main = main()
 ### Data assembly via NIF/DISCO ###
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
 #main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
-main.assemble_nif_hpo_phenotype_to_gene(limit)
+#main.assemble_nif_hpo_phenotype_to_gene(limit)  # Completed on full data set in 75.5 hours.
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 #main.assemble_nif_hpo_disease_to_gene(limit)
