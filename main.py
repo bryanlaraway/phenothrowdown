@@ -959,6 +959,7 @@ class main():
         base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         #print(organism_a_hash)
         #print(organism_b_hash)
+        print('INFO: Assembling phenotypic profile comparison queries.')
         with open(out, 'w', newline='') as outfile:
             #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
             for i in organism_a_hash:
@@ -1321,7 +1322,7 @@ class main():
             #for i in range(1,5):
                 #random_data_set_counter.append(i)
 
-            fdr_global_p_value_list = [pool.map(multiprocess_fdr_calculation, range(1,1000))]
+            fdr_global_p_value_list = [pool.map(multiprocess_fdr_calculation, range(1,1001))]
 
 
             #print('Processing results.')
@@ -1342,6 +1343,34 @@ class main():
             print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return fdr_global_p_value_list[global_cutoff_position]
+
+    def assemble_partial_fdr(self):
+
+        with open('inter/random/fdr/fdr_999_global_p_value_list.txt', 'rb') as handle:
+            fdr_global_p_value_list = pickle.load(handle)
+        with open('inter/random/fdr/fdr_1_global_p_value_list.txt', 'rb') as handle:
+            fdr_extra_p_value = pickle.load(handle)
+
+        print(fdr_global_p_value_list[0])
+        print(fdr_extra_p_value[0])
+        fdr_global_p_value_list = fdr_global_p_value_list[0]
+        fdr_extra_p_value = fdr_extra_p_value[0]
+        fdr_global_p_value_list.append(fdr_extra_p_value[0])
+        print(fdr_global_p_value_list)
+        print(len(fdr_global_p_value_list))
+        #fdr_global_p_value_list.sort()
+        p_value_sum = float(0)
+        for x in range(0,1000):
+            print(fdr_global_p_value_list[x])
+            p_value_sum += fdr_global_p_value_list[x]
+        fdr_cutoff = float(p_value_sum)/float(len(fdr_global_p_value_list))
+        #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+        print('The empirical FDR adjustment cutoff is '+str(fdr_cutoff)+'.')
+
+        with open('inter/random/fdr/fdr_global_p_value_list.txt', 'wb') as handle:
+            pickle.dump(fdr_global_p_value_list, handle)
+
+        return
 
 
     def perform_phenolog_calculations_for_fdr(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
@@ -2605,7 +2634,7 @@ main = main()
 #Total comparisons = 42,200,120
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
@@ -2643,11 +2672,13 @@ main = main()
 
 #main.set_stage_for_fdr_calculation()
 #fdr_cutoff = main.set_stage_for_fdr_calculation()
+#main.assemble_partial_fdr()
 #print(fdr_cutoff)
 
 ####### PHENOLOG COMPARISONS #######
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
-#fdr_cutoff = 0.00022089684117479534
+# Cutoff below is the average from the 1000 random data sets.
+fdr_cutoff = 0.004426898733810069
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
