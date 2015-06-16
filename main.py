@@ -1166,24 +1166,25 @@ class main():
                                 ortholog_non_matches += 1
                                 total_ortholog_nonmatches += 1
 
-                        if ortholog_matches > 0:
-                            #print('Matches: '+str(ortholog_matches))
-                            #print('Non-matches: '+str(ortholog_non_matches))
-                            m = float(phenotype_b_ortholog_count)
-                            n = float(phenotype_a_ortholog_count)
-                            N = float(num_shared_orthologs)
-                            c = float(ortholog_matches)
-                            prb = float(hypergeom.pmf(c, N, m, n))
-                            #FIXME: less than or equal or just less than?
-                            if prb <= fdr_cutoff:
-                                significance = 'Significant'
-                            else:
-                                significance = 'Not Significant'
-                            #print(prb)
-                            # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
-                            sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
-                            json.dump(sequence, outfile)
-                            outfile.write('\n')
+                    if ortholog_matches > 0:
+                        #print('Matches: '+str(ortholog_matches))
+                        #print('Non-matches: '+str(ortholog_non_matches))
+                        m = float(phenotype_b_ortholog_count)
+                        n = float(phenotype_a_ortholog_count)
+                        N = float(num_shared_orthologs)
+                        c = float(ortholog_matches)
+                        prb = float(hypergeom.pmf(c, N, m, n))
+                        #FIXME: less than or equal or just less than?
+                        if prb <= fdr_cutoff:
+                            significance = 'Significant'
+                        else:
+                            significance = 'Not Significant'
+                        #print(prb)
+                        # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
+                        #sequence = (species_a_phenotype_id, phenotype_a_ortholog_count, species_b_phenotype_id, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
+                        sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
+                        json.dump(sequence, outfile)
+                        outfile.write('\n')
 
             print('Total Matches: '+str(total_ortholog_matches))
             print('Total non-matches: '+str(total_ortholog_nonmatches))
@@ -2634,7 +2635,7 @@ main = main()
 #Total comparisons = 42,200,120
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
@@ -2679,7 +2680,7 @@ main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
 # Cutoff below is the average from the 1000 random data sets.
 fdr_cutoff = 0.004426898733810069
-#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
+main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
 
