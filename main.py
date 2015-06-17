@@ -1524,7 +1524,117 @@ class main():
 
         return
 
-    def set_stage_for_extension_fdr_calculation(self, limit=10):
+
+    def assemble_significant_phenologs_with_scores(self):
+        #json = open('out/phenolog/human_vs_mouse.txt')
+        #data = json.loads(json)
+        #json_lines = []
+        with open('out/phenolog/all_significant_phenologs_scored.txt', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            with open('out/phenolog/hvm_significant_phenologs_scored.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/human_vs_mouse.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_a_ortholog_count = phenolog_data[2]
+                            phenotype_b = phenolog_data[3]
+                            phenotype_b_ortholog_count = phenolog_data[5]
+                            ortholog_matches = phenolog_data[7]
+                            probability = phenolog_data[8]
+                            output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+            print('INFO: Done assembling human-mouse phenologs.')
+            with open('out/phenolog/hvz_significant_phenologs_scored.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/human_vs_zebrafish.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_a_ortholog_count = phenolog_data[2]
+                            phenotype_b = phenolog_data[3]
+                            phenotype_b_ortholog_count = phenolog_data[5]
+                            ortholog_matches = phenolog_data[7]
+                            probability = phenolog_data[8]
+                            output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+            print('INFO: Done assembling human-zebrafish phenologs.')
+            with open('out/phenolog/mvz_significant_phenologs_scored.txt', 'w', newline='') as csvfile2:
+                csvwriter2 = csv.writer(csvfile2, delimiter='\t', quotechar='\"')
+                with open('out/phenolog/mouse_vs_zebrafish.txt', 'r') as handle:
+                    for line in handle:
+                        json_line = line.rstrip()
+                        phenolog_data = json.loads(json_line)
+                        if phenolog_data[10] == 'Significant':
+                            phenotype_a = phenolog_data[0]
+                            phenotype_a_ortholog_count = phenolog_data[2]
+                            phenotype_b = phenolog_data[3]
+                            phenotype_b_ortholog_count = phenolog_data[5]
+                            ortholog_matches = phenolog_data[7]
+                            probability = phenolog_data[8]
+                            output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
+                            #print('found one')
+                            csvwriter.writerow(output_row)
+                            csvwriter2.writerow(output_row)
+            print('INFO: Done assembling mouse-zebrafish phenologs.')
+
+        return
+
+
+    def assemble_hvm_phenologs(self):
+        print('INFO: Assembling human-mouse phenologs.')
+        hvm_phenologs = []
+        with open('inter/phenolog/hvm_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+                print(combo_ab)
+                if combo_ab not in hvm_phenologs:
+                    hvm_phenologs.append(combo_ab)
+        with open('inter/phenolog/hvm_phenolog_combo.txt', 'wb') as handle:
+            pickle.dump(hvm_phenologs, handle)
+        print('INFO: Assembled human-mouse phenologs.')
+        return
+
+    def assemble_hvz_phenologs(self):
+        print('INFO: Assembling human-zebrafish phenologs.')
+        hvz_phenologs = []
+        with open('inter/phenolog/hvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+
+                if combo_ab not in hvz_phenologs:
+                    hvz_phenologs.append(combo_ab)
+        with open('inter/phenolog/hvz_phenolog_combo.txt', 'wb') as handle:
+            pickle.dump(hvz_phenologs, handle)
+        print('INFO: Assembled human-zebrafish phenologs.')
+        return
+
+    def assemble_mvz_phenologs(self):
+        print('INFO: Assembling mouse-zebrafish phenologs.')
+        mvz_phenologs = []
+        with open('inter/phenolog/mvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
+
+                if combo_ab not in mvz_phenologs:
+                    mvz_phenologs.append(combo_ab)
+        with open('inter/phenolog/mvz_phenolog_combo.txt', 'wb') as handle:
+            pickle.dump(mvz_phenologs, handle)
+        print('INFO: Assembled mouse-zebrafish phenologs.')
+        return
+
+    def set_stage_for_extension_fdr_calculation(self, limit=1000):
         print('INFO: Setting stage for second FDR estimation.')
         # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
         # set of 'genologs' (?) for proper estimation of FDR.
@@ -1553,44 +1663,13 @@ class main():
         mouse_phenotypes = []
         zebrafish_phenotypes = []
 
-        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', human_phenotype_file, human_dir)
-        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', mouse_phenotype_file, mouse_dir)
-        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', zebrafish_phenotype_file, zebrafish_dir)
+        #NOTE: Moved random data generation to separate function calls outside of this function.
+        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', 'inter/ontologies/hp_hash.txt', 'inter/random/human/')
+        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/ontologies/mp_hash.txt', 'inter/random/mouse/')
+        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/ontologies/zp_hash.txt', 'inter/random/zebrafish/')
 
 
-
-        print('INFO: Done with second random data generation.')
         fdr_global_p_value_list = []
-        hvm_phenologs = []
-        hvz_phenologs = []
-        mvz_phenologs = []
-
-        #FIXME: Change to hvm_significant_phenologs.txt when running full data.
-        with open('inter/phenolog/all_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            for row in filereader:
-                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-
-                if combo_ab not in hvm_phenologs:
-                    hvm_phenologs.append(combo_ab)
-
-        with open('inter/phenolog/hvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            for row in filereader:
-                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-
-                if combo_ab not in hvz_phenologs:
-                    hvz_phenologs.append(combo_ab)
-
-        with open('inter/phenolog/mvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            for row in filereader:
-                (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-
-                if combo_ab not in mvz_phenologs:
-                    mvz_phenologs.append(combo_ab)
-
-
 
         #with open('inter/phenolog/all_significant_phenologs.txt', 'rb') as handle:
             #hvm_phenologs = len(pickle.load(handle))
@@ -1602,137 +1681,89 @@ class main():
         #print(hvz_common_orthologs)
         #print(mvz_common_orthologs)
 
-        random_counter = 1
-        # Switch to 'while' when ready for full set testing.
-        if random_counter < limit:
-            print('INFO: Performing phenolog extension calculation on random data set '+str(random_counter)+' out of '+str(limit)+'.')
-            random_counter += 1
-            fdr_p_value_list = []
-            #FIXME: Remove this on full data set running.
-            fdr_p_value_list.append(0.002222)
-            human_file = human_dir+'random_ext_'+str(random_counter)+'.txt'
-            mouse_file = mouse_dir+'random_ext_'+str(random_counter)+'.txt'
-            zebrafish_file = zebrafish_dir+'random_ext_'+str(random_counter)+'.txt'
-
-            with open(human_file, 'rb') as handle:
-                human_geno_pheno_hash = pickle.load(handle)
-            with open(mouse_file, 'rb') as handle:
-                mouse_geno_pheno_hash = pickle.load(handle)
-            with open(zebrafish_file, 'rb') as handle:
-                zebrafish_geno_pheno_hash = pickle.load(handle)
-
-            #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
-            hvm_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, mouse_geno_pheno_hash, hvm_phenologs)
-            #print(hvm_phenolog_p_values)
-            fdr_p_value_list.extend(hvm_phenolog_p_values)
-            hvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, zebrafish_geno_pheno_hash, hvz_phenologs)
-            #print(hvz_phenolog_p_values)
-            fdr_p_value_list.extend(hvz_phenolog_p_values)
-            mvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(mouse_geno_pheno_hash, zebrafish_geno_pheno_hash, mvz_phenologs)
-            #print(mvz_phenolog_p_values)
-            fdr_p_value_list.extend(mvz_phenolog_p_values)
-
-            # After grabbing the p-values from each function, assemble and sort.
-            # Select the p-value that resides at the 0.05 percentile and add it to a list.
+        ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
 
 
-            #print('fdr p value list: '+str(len(fdr_p_value_list)))
-            fdr_p_value_list.sort()
-            #print(fdr_p_value_list)
-            cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
-            #print(fdr_p_value_list[cutoff_position])
-            if cutoff_position < 0:
-                cutoff_position = 0
-            fdr_global_p_value_list.append(fdr_p_value_list[cutoff_position])
+            cores = (multiprocessing.cpu_count()-1)
+            #cores = 100
+            pool = multiprocessing.Pool(processes=cores)
 
-        fdr_global_p_value_list.sort()
-        global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
-        if global_cutoff_position < 0:
-            global_cutoff_position = 0
-        print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
+            print('INFO: Multiprocessing started')
+
+            fdr_global_p_value_list = [pool.map(multiprocess_ext_fdr_calculation, range(1,1001))]
+
+            print('INFO: Multiprocessing completed')
+            ###### END MULTIPROCESSING INSERT ######
+
+            p_value_sum = float(0)
+            for x in range(0,1000):
+                #print(fdr_global_p_value_list[x])
+                p_value_sum += fdr_global_p_value_list[x]
+            fdr_cutoff = float(p_value_sum)/float(len(fdr_global_p_value_list))
+            #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+            print('The empirical FDR adjustment cutoff is '+str(fdr_cutoff)+'.')
+
+            #fdr_global_p_value_list.sort()
+            #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
+            #if global_cutoff_position < 0:
+                #global_cutoff_position = 0
+            #print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return #fdr_global_p_value_list[global_cutoff_position]
 
-    def generate_random_ext_data(self, geno_pheno_hash_file, phenotype_file, out_dir, limit=10):
+    def generate_human_random_ext_data(self):
         print('INFO: Creating random data sets.')
-        #Take the phenotype-ortholog hashes I have created.
-        #Remove all orthologs and place in a list, replace with 0s or 1s or something.
-        #Randomly shuffle the ortholog list
-        #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
-
-        #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
-        # Should the random data set have the same presence of orthologs as the test set?
-        # Meaning, if ortholog X is present in the test data set Y times, should it also be present in the test data set Y times?
-        #Need to have a way to make the data set creation fail if we get to the end and can only put an ortholog with a phenotype that already has that ortholog with it.
-
-        # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
-        # would it make more sense to populate from the total orthologs shared between two species?
-        # What about getting random.sample from the total list of orthologs, with replacement?
-        counter = 1
-        while counter <= limit:
-            #print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
-            test_geno_pheno_hash = {}
-
-            phenologs = []
-            phenotypes = []
-            list_length = 0
-
-            with open(phenotype_file, 'rb') as handle:
-                phenotype_hash = pickle.load(handle)
-            for i in phenotype_hash:
-                if i not in phenotypes:
-                    phenotypes.append(i)
-            with open(geno_pheno_hash_file, 'rb') as handle:
-                geno_pheno_hash = pickle.load(handle)
-            #with open(geno_pheno_hash, 'rb') as handle:
-                #pheno_ortholog_hash = pickle.load(handle)
-
-            #with open(common_phenologs, 'r', encoding="iso-8859-1") as csvfile:
-                #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-                #for row in filereader:
-                    #(phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-                    #if combo_ab not in phenologs:
-                        #phenologs.append(combo_ab)
 
 
+            ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
 
-            #with open(common_phenologs, 'rb') as handle:
-                #orthologs = pickle.load(handle)
-            # Adjusting this to instead call from the full pool of common orthologs.
-            #for i in pheno_ortholog_hash:
-                #for j in pheno_ortholog_hash[i]:
-                    #orthologs.append(j)
-            #FIXME: How random is this? Is it sufficiently random?
-            random.shuffle(phenotypes)
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+            print('INFO: Multiprocessing started')
 
-            for i in geno_pheno_hash:
-                test_geno_pheno_hash[i] = []
-                ortholog_list_length = len(geno_pheno_hash[i])
-                #print(ortholog_list_length)
-                phenotype_draw = phenotypes
-                random.shuffle(phenotype_draw)
-                #random_orthologs = random.sample(orthologs)
-                #test_pheno_ortholog_hash[i].append(random_orthologs)
+            pool.map(multiprocess_generate_random_human_ext_data, range(1000,1001))
 
-                for j in geno_pheno_hash[i]:
-                    random.shuffle(phenotype_draw)
-                    test_geno_pheno_hash[i].append(phenotype_draw[0])
+            print('INFO: Multiprocessing completed')
+            ###### END MULTIPROCESSING INSERT ######
 
-                    #list_length = len(orthologs)
-                    #print(list_length)
+        return
 
-                    #if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
-                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
-                    #else:
-                        #while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
-                            #random.shuffle(orthologs)
-                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
-                    #if orthologs.pop
-            #print('Completed randomization successfully!')
-            with open((out_dir+'random_ext_'+str(counter)+'.txt'), 'wb') as handle:
-                pickle.dump(test_geno_pheno_hash, handle)
-            print('Completed random data set '+str(counter)+' out of '+str(limit)+'.')
-            counter += 1
+    def generate_mouse_random_ext_data(self):
+        print('INFO: Creating random data sets.')
+
+
+            ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+            print('INFO: Multiprocessing started')
+
+            pool.map(multiprocess_generate_random_mouse_ext_data, range(1000,1001))
+
+            print('INFO: Multiprocessing completed')
+            ###### END MULTIPROCESSING INSERT ######
+
+        return
+
+    def generate_zebrafish_random_ext_data(self):
+        print('INFO: Creating random data sets.')
+
+
+            ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+            print('INFO: Multiprocessing started')
+
+            pool.map(multiprocess_generate_random_zebrafish_ext_data, range(1000,1001))
+
+            print('INFO: Multiprocessing completed')
+            ###### END MULTIPROCESSING INSERT ######
+
         return
 
 
@@ -2553,6 +2584,179 @@ def multiprocess_fdr_calculation(i):
     return fdr_cutoff_value
 
 
+
+def multiprocess_generate_random_human_ext_data(x):
+
+    random_geno_pheno_hash = {}
+
+    phenotypes = []
+
+    with open('inter/ontologies/hp_hash.txt', 'rb') as handle:
+        phenotype_hash = pickle.load(handle)
+    for i in phenotype_hash:
+        if i not in phenotypes:
+            phenotypes.append(i)
+    with open('inter/hpo/human_disease_phenotype_hash.txt', 'rb') as handle:
+        geno_pheno_hash = pickle.load(handle)
+
+    random.shuffle(phenotypes)
+
+    for i in geno_pheno_hash:
+        random_geno_pheno_hash[i] = []
+        ortholog_list_length = len(geno_pheno_hash[i])
+        #print(ortholog_list_length)
+        phenotype_draw = phenotypes
+        random.shuffle(phenotype_draw)
+        #random_orthologs = random.sample(orthologs)
+        #test_pheno_ortholog_hash[i].append(random_orthologs)
+
+        for j in geno_pheno_hash[i]:
+            random.shuffle(phenotype_draw)
+            random_geno_pheno_hash[i].append(phenotype_draw[0])
+
+
+    with open(('inter/random/human/random_ext_'+str(x)+'.txt'), 'wb') as handle:
+        pickle.dump(random_geno_pheno_hash, handle)
+    print('Completed human random data set '+str(x)+' out of 1000.')
+    return
+
+
+def multiprocess_generate_random_mouse_ext_data(x):
+
+    random_geno_pheno_hash = {}
+
+    phenotypes = []
+
+    with open('inter/ontologies/mp_hash.txt', 'rb') as handle:
+        phenotype_hash = pickle.load(handle)
+    for i in phenotype_hash:
+        if i not in phenotypes:
+            phenotypes.append(i)
+    with open('inter/mgi/mouse_genotype_phenotype_hash.txt', 'rb') as handle:
+        geno_pheno_hash = pickle.load(handle)
+
+    random.shuffle(phenotypes)
+
+    for i in geno_pheno_hash:
+        random_geno_pheno_hash[i] = []
+        ortholog_list_length = len(geno_pheno_hash[i])
+        #print(ortholog_list_length)
+        phenotype_draw = phenotypes
+        random.shuffle(phenotype_draw)
+        #random_orthologs = random.sample(orthologs)
+        #test_pheno_ortholog_hash[i].append(random_orthologs)
+
+        for j in geno_pheno_hash[i]:
+            random.shuffle(phenotype_draw)
+            random_geno_pheno_hash[i].append(phenotype_draw[0])
+
+
+    with open(('inter/random/mouse/random_ext_'+str(x)+'.txt'), 'wb') as handle:
+        pickle.dump(random_geno_pheno_hash, handle)
+    print('Completed mouse random data set '+str(x)+' out of 1000.')
+    return
+
+
+def multiprocess_generate_random_zebrafish_ext_data(x):
+
+    random_geno_pheno_hash = {}
+
+    phenotypes = []
+
+    with open('inter/ontologies/zp_hash.txt', 'rb') as handle:
+        phenotype_hash = pickle.load(handle)
+    for i in phenotype_hash:
+        if i not in phenotypes:
+            phenotypes.append(i)
+    with open('inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'rb') as handle:
+        geno_pheno_hash = pickle.load(handle)
+
+    random.shuffle(phenotypes)
+
+    for i in geno_pheno_hash:
+        random_geno_pheno_hash[i] = []
+        ortholog_list_length = len(geno_pheno_hash[i])
+        #print(ortholog_list_length)
+        phenotype_draw = phenotypes
+        random.shuffle(phenotype_draw)
+        #random_orthologs = random.sample(orthologs)
+        #test_pheno_ortholog_hash[i].append(random_orthologs)
+
+        for j in geno_pheno_hash[i]:
+            random.shuffle(phenotype_draw)
+            random_geno_pheno_hash[i].append(phenotype_draw[0])
+
+
+    with open(('inter/random/zebrafish/random_ext_'+str(x)+'.txt'), 'wb') as handle:
+        pickle.dump(random_geno_pheno_hash, handle)
+    print('Completed zebrafish random data set '+str(x)+' out of 1000.')
+    return
+
+
+def multiprocess_ext_fdr_calculation(i):
+
+
+    print('INFO: Setting stage for second FDR estimation.')
+    # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
+    # set of 'genologs' (?) for proper estimation of FDR.
+
+    human_dir = 'inter/random/human/'
+    mouse_dir = 'inter/random/mouse/'
+    zebrafish_dir = 'inter/random/zebrafish/'
+
+    print('INFO: Performing phenolog extension calculation on random data set '+str(i)+' out of 1000.')
+
+    fdr_p_value_list = []
+    #FIXME: Remove this on full data set running.
+    #fdr_p_value_list.append(0.002222)
+    human_file = human_dir+'random_ext_'+str(i)+'.txt'
+    mouse_file = mouse_dir+'random_ext_'+str(i)+'.txt'
+    zebrafish_file = zebrafish_dir+'random_ext_'+str(i)+'.txt'
+
+    with open(human_file, 'rb') as handle:
+        human_geno_pheno_hash = pickle.load(handle)
+    with open(mouse_file, 'rb') as handle:
+        mouse_geno_pheno_hash = pickle.load(handle)
+    with open(zebrafish_file, 'rb') as handle:
+        zebrafish_geno_pheno_hash = pickle.load(handle)
+    with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
+        hvm_phenologs = pickle.load(handle)
+    with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
+        hvz_phenologs = pickle.load(handle)
+    with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
+        mvz_phenologs = pickle.load(handle)
+
+    #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
+    hvm_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, mouse_geno_pheno_hash, hvm_phenologs)
+    #print(hvm_phenolog_p_values)
+    fdr_p_value_list.extend(hvm_phenolog_p_values)
+    hvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, zebrafish_geno_pheno_hash, hvz_phenologs)
+    #print(hvz_phenolog_p_values)
+    fdr_p_value_list.extend(hvz_phenolog_p_values)
+    mvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(mouse_geno_pheno_hash, zebrafish_geno_pheno_hash, mvz_phenologs)
+    #print(mvz_phenolog_p_values)
+    fdr_p_value_list.extend(mvz_phenolog_p_values)
+
+    # After grabbing the p-values from each function, assemble and sort.
+    # Select the p-value that resides at the 0.05 percentile and add it to a list.
+
+    #print('fdr p value list: '+str(len(fdr_p_value_list)))
+    fdr_p_value_list.sort()
+    with open('inter/random/fdr_ext/fdr_ext_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
+        pickle.dump(fdr_p_value_list, handle)
+    #print(fdr_p_value_list)
+    cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
+    #print(fdr_p_value_list[cutoff_position])
+    if cutoff_position < 0:
+        cutoff_position = 0
+    fdr_cutoff_value = fdr_p_value_list[cutoff_position]
+
+    print('INFO: Phenolog extension calculation on random data set '+str(i)+' completed.')
+
+    return fdr_cutoff_value
+
+
+
 ####### MAIN #######
 
 limit = None
@@ -2680,11 +2884,12 @@ main = main()
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
 # Cutoff below is the average from the 1000 random data sets.
 fdr_cutoff = 0.004426898733810069
-main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
+#main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_mouse.txt', 'inter/panther/common_orthologs_human_mouse.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/mouse_vs_zebrafish.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', fdr_cutoff)
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
 
 #main.assemble_significant_phenologs()
+main.assemble_significant_phenologs_with_scores()
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
 
@@ -2692,14 +2897,17 @@ main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'i
 #main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
 #main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
-#NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
-#NOTE: These three functions are now combined and run in the create_phenolog_gene_candidate_matrices function.
-#(human_ortholog_phenotype_matrix, human_phenotype_list, human_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
-#(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
-#(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
+#Creation of random data sets for phenlog extension FDR.
+#main.generate_human_random_ext_data()
+#main.generate_mouse_random_ext_data()
+#main.generate_zebrafish_random_ext_data()
 
+#Assemble the phenlog lookup files.
+#main.assemble_hvm_phenologs()
+#main.assemble_hvz_phenologs()
+#main.assemble_mvz_phenologs()
 
-#ext_fdr_cutoff = main.set_stage_for_extension_fdr_calculation()
+#main.set_stage_for_extension_fdr_calculation()
 #ext_fdr_cutoff = 0.00022089684117479534
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/hvm_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/all_significant_phenologs.txt', ext_fdr_cutoff)
@@ -2708,6 +2916,14 @@ main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'i
 
 
 ####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
+
+#NOTE: Must be assembled after the nif phenotype to gene assembly has been performed.
+#NOTE: These three functions are now combined and run in the create_phenolog_gene_candidate_matrices function.
+#(human_ortholog_phenotype_matrix, human_phenotype_list, human_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/hpo/human_pheno_ortholog_matrix.txt')
+#(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
+#(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
+
+
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 #cProfile.run('main.create_phenolog_gene_candidate_matrices()')
