@@ -751,7 +751,8 @@ class main():
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                 #print(implicated_gene_ids)
-
+                if implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
                 if not re.match('.*,.*',implicated_gene_ids):
                     print(implicated_gene_labels)
                     #print(genes)
@@ -813,8 +814,10 @@ class main():
 
                     #print(implicated_gene_ids)
                     #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
+                    if implicated_gene_ids == '' or implicated_gene_ids is None:
+                        continue
 
-                    if not re.match('.*,.*',implicated_gene_ids):
+                    elif not re.match('.*,.*',implicated_gene_ids):
                         print(implicated_gene_labels)
                         #print(genes)
                         if implicated_gene_ids not in zfin_gene_to_phenotype_hash:
@@ -928,8 +931,10 @@ class main():
 
         return
 
-    def perform_owlsim_queries(self, raw1, raw2, out, limit=None):
-        print('INFO: Performing OWLSim queries.')
+
+
+    def assemble_owlsim_queries(self, raw1, raw2, inter, limit=None):
+
         line_counter = 0
         comparison_count = 0
         failure_counter = 0
@@ -960,8 +965,9 @@ class main():
         #print(organism_a_hash)
         #print(organism_b_hash)
         print('INFO: Assembling phenotypic profile comparison queries.')
-        with open(out, 'w', newline='') as outfile:
-            #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
+
+        with open(inter, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             for i in organism_a_hash:
                 entity_a = i
                 entity_a_attributes = organism_a_hash[i]
@@ -979,40 +985,71 @@ class main():
                     #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
                     comparison_id = entity_a+'_'+entity_b
                     #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
-                    comparison_list.append((comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes))
-            print('INFO: Done assembling phenotypic profile comparison queries.')
-
-            ###### MULTIPROCESSING INSERT ######
-            if __name__ == '__main__':
+                    output_row = (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes)
 
 
-                cores = (multiprocessing.cpu_count()-1)
-                #cores = 100
-                pool = multiprocessing.Pool(processes=cores)
-
-                #multiprocessing.Semaphore(cores)
-                #jobs = []
-                #phenotype_iterable = []
-                #phenotype_counter = 0
-
-                #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
-                #phenotype_counter += 1
-                #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
-                print('INFO: Multiprocessing started')
-                results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
+                    csvwriter.writerow(output_row)
+                    line_counter += 1
+                if limit is not None and line_counter > limit:
+                    break
+        print('INFO: Done assembling phenotypic profile comparison queries.')
+        return
 
 
-                print('Processing results.')
-                comparison_list = []
-                for p in results:
-                    (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = p.get()
-                    sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                    json.dump(sequence, outfile)
-                    outfile.write('\n')
-                print('Done processing results.')
 
-                print('INFO: Multiprocessing completed')
-                ###### END MULTIPROCESSING INSERT ######
+    def perform_owlsim_queries(self, raw1, raw2, inter, out, limit=None):
+        print('INFO: Performing OWLSim queries.')
+        line_counter = 0
+
+        if limit is not None:
+            print('Only querying first '+str(limit)+' phenotypic profile pairs.')
+            comparison_count = limit
+
+        data1 = open(raw1, 'rb')
+        organism_a_hash = pickle.load(data1)
+        data1.close()
+        data2 = open(raw2, 'rb')
+        organism_b_hash = pickle.load(data2)
+        data2.close()
+        if limit is None:
+            comparison_count = len(organism_a_hash) * len(organism_b_hash)
+            print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
+
+        with open(out, 'w', newline='') as outfile:
+            with open(inter, 'r', encoding="iso-8859-1") as csvfile:
+                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+
+                ###### MULTIPROCESSING INSERT ######
+                if __name__ == '__main__':
+
+
+                    cores = (multiprocessing.cpu_count()-1)
+                    #cores = 100
+                    pool = multiprocessing.Pool(processes=cores)
+
+                    #multiprocessing.Semaphore(cores)
+                    #jobs = []
+                    #phenotype_iterable = []
+                    #phenotype_counter = 0
+
+                    #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+                    #phenotype_counter += 1
+                    #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                    print('INFO: Multiprocessing started')
+                    results = [pool.apply(multiprocess_owlsim_queries, args=(row)) for row in filereader]
+
+
+                    print('Processing results.')
+                    comparison_list = []
+                    for x in results:
+                        (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = x
+                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                        json.dump(sequence, outfile)
+                        outfile.write('\n')
+                    print('Done processing results.')
+
+                    print('INFO: Multiprocessing completed')
+                    ###### END MULTIPROCESSING INSERT ######
 
         return
 
@@ -1588,7 +1625,6 @@ class main():
 
         return
 
-
     def assemble_hvm_phenologs(self):
         print('INFO: Assembling human-mouse phenologs.')
         hvm_phenologs = []
@@ -1596,11 +1632,12 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             for row in filereader:
                 (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-                print(combo_ab)
-                if combo_ab not in hvm_phenologs:
-                    hvm_phenologs.append(combo_ab)
+                hvm_phenologs.append(combo_ab)
+        print(len(hvm_phenologs))
+        unique_hvm_phenologs = set(hvm_phenologs)
+        print(len(unique_hvm_phenologs))
         with open('inter/phenolog/hvm_phenolog_combo.txt', 'wb') as handle:
-            pickle.dump(hvm_phenologs, handle)
+            pickle.dump(unique_hvm_phenologs, handle)
         print('INFO: Assembled human-mouse phenologs.')
         return
 
@@ -1611,11 +1648,12 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             for row in filereader:
                 (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-
-                if combo_ab not in hvz_phenologs:
-                    hvz_phenologs.append(combo_ab)
+                hvz_phenologs.append(combo_ab)
+        print(len(hvz_phenologs))
+        unique_hvz_phenologs = set(hvz_phenologs)
+        print(len(unique_hvz_phenologs))
         with open('inter/phenolog/hvz_phenolog_combo.txt', 'wb') as handle:
-            pickle.dump(hvz_phenologs, handle)
+            pickle.dump(unique_hvz_phenologs, handle)
         print('INFO: Assembled human-zebrafish phenologs.')
         return
 
@@ -1626,11 +1664,12 @@ class main():
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             for row in filereader:
                 (phenotype_a, phenotype_b, combo_ab, combo_ba) = row
-
-                if combo_ab not in mvz_phenologs:
-                    mvz_phenologs.append(combo_ab)
+                mvz_phenologs.append(combo_ab)
+        print(len(mvz_phenologs))
+        unique_mvz_phenologs = set(mvz_phenologs)
+        print(len(unique_mvz_phenologs))
         with open('inter/phenolog/mvz_phenolog_combo.txt', 'wb') as handle:
-            pickle.dump(mvz_phenologs, handle)
+            pickle.dump(unique_mvz_phenologs, handle)
         print('INFO: Assembled mouse-zebrafish phenologs.')
         return
 
@@ -1692,7 +1731,8 @@ class main():
             print('INFO: Multiprocessing started')
 
             fdr_global_p_value_list = [pool.map(multiprocess_ext_fdr_calculation, range(1,1001))]
-
+            with open('inter/random/fdr_ext/fdr_ext_global_p_value_list.txt', 'wb') as handle:
+                pickle.dump(fdr_global_p_value_list, handle)
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
 
@@ -2349,7 +2389,7 @@ counter_lock = multiprocessing.Lock()
 def increment():
     with counter_lock:
         counter.value += 1
-        print('INFO: Processing matrix comparison '+str(counter.value))
+        print('INFO: Processing comparison '+str(counter.value))
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
     #increment()
@@ -2695,8 +2735,8 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
 
 def multiprocess_ext_fdr_calculation(i):
 
-
-    print('INFO: Setting stage for second FDR estimation.')
+    processing_start_time = time.time()
+    #print('INFO: Setting stage for second FDR estimation.')
     # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
     # set of 'genologs' (?) for proper estimation of FDR.
 
@@ -2704,7 +2744,7 @@ def multiprocess_ext_fdr_calculation(i):
     mouse_dir = 'inter/random/mouse/'
     zebrafish_dir = 'inter/random/zebrafish/'
 
-    print('INFO: Performing phenolog extension calculation on random data set '+str(i)+' out of 1000.')
+
 
     fdr_p_value_list = []
     #FIXME: Remove this on full data set running.
@@ -2721,25 +2761,35 @@ def multiprocess_ext_fdr_calculation(i):
         zebrafish_geno_pheno_hash = pickle.load(handle)
     with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
         hvm_phenologs = pickle.load(handle)
+        hvm_phenologs = set(hvm_phenologs)
+        #print('INFO: There are '+str(len(hvm_phenologs))+' human-mouse phenologs present.')
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         hvz_phenologs = pickle.load(handle)
+        hvz_phenologs = set(hvz_phenologs)
+        #print('INFO: There are '+str(len(hvz_phenologs))+' human-zebrafish phenologs present.')
     with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
         mvz_phenologs = pickle.load(handle)
+        mvz_phenologs = set(mvz_phenologs)
+        #print('INFO: There are '+str(len(mvz_phenologs))+' mouse-zebrafish phenologs present.')
+    print('INFO: Performing phenolog extension calculation on random data set '+str(i)+' out of 1000.')
 
     #TODO: Need to return all of the p-values from the hypergeometric probability calculation for sorting and 5% cutoff.
     hvm_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, mouse_geno_pheno_hash, hvm_phenologs)
     #print(hvm_phenolog_p_values)
     fdr_p_value_list.extend(hvm_phenolog_p_values)
+    print('INFO: Completed human vs mouse phenolog extension calculations on random data set '+str(i)+' out of 1000.')
     hvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(human_geno_pheno_hash, zebrafish_geno_pheno_hash, hvz_phenologs)
     #print(hvz_phenolog_p_values)
     fdr_p_value_list.extend(hvz_phenolog_p_values)
+    print('INFO: Completed human vs zebrafish phenolog extension calculations on random data set '+str(i)+' out of 1000.')
     mvz_phenolog_p_values = main.perform_phenolog_calculations_for_ext_fdr(mouse_geno_pheno_hash, zebrafish_geno_pheno_hash, mvz_phenologs)
     #print(mvz_phenolog_p_values)
     fdr_p_value_list.extend(mvz_phenolog_p_values)
+    print('INFO: Completed mouse vs zebrafish phenolog extension calculations on random data set '+str(i)+' out of 1000.')
 
     # After grabbing the p-values from each function, assemble and sort.
     # Select the p-value that resides at the 0.05 percentile and add it to a list.
-
+    print('INFO: Sorting p-values for random data set '+str(i)+' out of 1000.')
     #print('fdr p value list: '+str(len(fdr_p_value_list)))
     fdr_p_value_list.sort()
     with open('inter/random/fdr_ext/fdr_ext_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
@@ -2752,6 +2802,8 @@ def multiprocess_ext_fdr_calculation(i):
     fdr_cutoff_value = fdr_p_value_list[cutoff_position]
 
     print('INFO: Phenolog extension calculation on random data set '+str(i)+' completed.')
+    processing_time = time.time() - processing_start_time
+    print('Processing completed in '+str(processing_time)+' seconds.')
 
     return fdr_cutoff_value
 
@@ -2793,9 +2845,21 @@ main = main()
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
 
+####### ASSEMBLE OWLSIM COMPARISONS QUERIES #######
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','inter/owlsim/human_disease_mouse_genotype_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/human_disease_zebrafish_genotype_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/mouse_genotype_zebrafish_genotype_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','inter/owlsim/human_disease_mouse_gene_queries.txt', limit)
+main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', limit)
+
+
+
 ####### OWLSIM COMPARISONS #######
 
 #OWLSim url calls take about 3 hours for 100,000 comparisons.
+#Current implementation runs at 185/second, or 666,000/hour?
+# 42 million would take 63 hours, or 2.5 days
 
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
@@ -2803,7 +2867,7 @@ main = main()
 #Total comparisons = 519,918,378
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human diseases vs mouse genotypes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','out/owlsim/human_disease_mouse_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype_queries.txt', 'out/owlsim/human_disease_mouse_genotype.txt')
 #print('INFO: Done processing human diseases vs mouse genotypes')
 
 #Processing completed in  hours,  comparisons.
@@ -2812,7 +2876,7 @@ main = main()
 #Total comparisons = 78,641,490
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genotype')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype_queries.txt', 'out/owlsim/human_disease_zebrafish_genotype.txt')
 #print('INFO: Done processing human disease vs zebrafish genotype')
 
 #Processing completed in  hours,  comparisons. Estimated to take 669 days?
@@ -2821,7 +2885,7 @@ main = main()
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','out/owlsim/mouse_genotype_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype_queries.txt', 'out/owlsim/mouse_genotype_zebrafish_genotype.txt')
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
 #Processing completed in  hours,  comparisons.
@@ -2830,7 +2894,7 @@ main = main()
 #Total comparisons = 120,721,828
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','out/owlsim/human_disease_mouse_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene_queries.txt', 'out/owlsim/human_disease_mouse_gene.txt')
 #print('INFO: Done processing human disease vs mouse genes')
 
 #Processing completed in  hours,  comparisons.
@@ -2839,8 +2903,8 @@ main = main()
 #Total comparisons = 42,200,120
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
+
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', 'out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
@@ -2850,7 +2914,7 @@ main = main()
 #Total comparisons = 60,007,160
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
-#main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/mouse_gene_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', 'out/owlsim/mouse_gene_zebrafish_gene.txt')
 #print('INFO: Done processing mouse genes vs zebrafish genes')
 
 #with open('inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'rb') as handle:
@@ -2889,7 +2953,7 @@ fdr_cutoff = 0.004426898733810069
 #main.perform_phenolog_calculations('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'out/phenolog/human_vs_zebrafish.txt', 'inter/panther/common_orthologs_human_zebrafish.txt', fdr_cutoff)
 
 #main.assemble_significant_phenologs()
-main.assemble_significant_phenologs_with_scores()
+#main.assemble_significant_phenologs_with_scores()
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
 
@@ -2906,6 +2970,7 @@ main.assemble_significant_phenologs_with_scores()
 #main.assemble_hvm_phenologs()
 #main.assemble_hvz_phenologs()
 #main.assemble_mvz_phenologs()
+
 
 #main.set_stage_for_extension_fdr_calculation()
 #ext_fdr_cutoff = 0.00022089684117479534
