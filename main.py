@@ -1019,10 +1019,10 @@ class main():
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
-        with open(inter, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            print(str(row_count)+' rows to process.')
+        #with open(inter, 'r', encoding="iso-8859-1") as csvfile:
+            #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            #row_count = sum(1 for row in filereader)
+            #print(str(row_count)+' rows to process.')
 
         with open(out, 'w', newline='') as outfile:
             with open(inter, 'r', encoding="iso-8859-1") as csvfile:
