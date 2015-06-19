@@ -982,7 +982,7 @@ class main():
                     phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
                     query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
                     #print(query_url)
-                    line_counter += 1
+
                     #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
                     comparison_id = entity_a+'_'+entity_b
                     #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
@@ -991,8 +991,11 @@ class main():
 
                     csvwriter.writerow(output_row)
                     line_counter += 1
+                    if limit is not None and line_counter > limit:
+                        break
                 if limit is not None and line_counter > limit:
                     break
+
         print('INFO: Done assembling phenotypic profile comparison queries.')
         return
 
@@ -1016,6 +1019,11 @@ class main():
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
+        with open(inter, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            print(str(row_count)+' rows to process.')
+
         with open(out, 'w', newline='') as outfile:
             with open(inter, 'r', encoding="iso-8859-1") as csvfile:
                 filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -1028,7 +1036,7 @@ class main():
                     cores = (multiprocessing.cpu_count()-1)
                     #cores = 100
                     pool = multiprocessing.Pool(processes=cores)
-                    num_chunks = 500
+                    num_chunks = 10000
                     chunks = itertools.groupby(filereader, keyfunc)
                     while True:
                         queries = [list(chunk) for key, chunk in itertools.islice(chunks, num_chunks)]
