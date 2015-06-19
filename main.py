@@ -20,6 +20,7 @@ import math
 import heapq
 import multiprocessing
 #from multiprocessing import Pool, Process, Manager, Lock, Value
+import itertools
 from threading import Thread
 #import threading
 from ctypes import c_int
@@ -1021,12 +1022,23 @@ class main():
 
                 ###### MULTIPROCESSING INSERT ######
                 if __name__ == '__main__':
+                    #lock = multiprocessing.Lock
 
-
+                    print('INFO: Multiprocessing started')
                     cores = (multiprocessing.cpu_count()-1)
                     #cores = 100
                     pool = multiprocessing.Pool(processes=cores)
+                    num_chunks = 500
+                    chunks = itertools.groupby(filereader, keyfunc)
+                    while True:
+                        queries = [list(chunk) for key, chunk in itertools.islice(chunks, num_chunks)]
 
+                        if queries:
+                            for result in pool.imap(multiprocess_owlsim_queries, queries):
+                                json.dump(result, outfile)
+                                outfile.write('\n')
+                        else:
+                            break
                     #multiprocessing.Semaphore(cores)
                     #jobs = []
                     #phenotype_iterable = []
@@ -1035,18 +1047,19 @@ class main():
                     #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
                     #phenotype_counter += 1
                     #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
-                    print('INFO: Multiprocessing started')
-                    results = [pool.apply(multiprocess_owlsim_queries, args=(row)) for row in filereader]
+
+                    #pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader
+                    #results = [pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader]
 
 
-                    print('Processing results.')
+                    '''print('Processing results.')
                     comparison_list = []
                     for x in results:
                         (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = x
                         sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
                         json.dump(sequence, outfile)
                         outfile.write('\n')
-                    print('Done processing results.')
+                    print('Done processing results.')'''
 
                     print('INFO: Multiprocessing completed')
                     ###### END MULTIPROCESSING INSERT ######
@@ -1672,7 +1685,7 @@ class main():
             pickle.dump(unique_mvz_phenologs, handle)
         print('INFO: Assembled mouse-zebrafish phenologs.')
         return
-#
+
     def set_stage_for_extension_fdr_calculation(self, limit=1000):
         print('INFO: Setting stage for second FDR estimation.')
         # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
@@ -2325,8 +2338,6 @@ class main():
 
         return
 
-
-
     def assemble_phenolog_gene_candidate_predictions(self):
         #Have ortholog predictions in matrix for each phenotype, now need to take the matrix data and output to a table
         # that is human readable for each phenotype for comparison/assembly with OWLSim output. Maybe write to JSON as well?
@@ -2391,6 +2402,9 @@ def increment():
         counter.value += 1
         print('INFO: Processing comparison '+str(counter.value))
 
+def keyfunc(row):
+    return row[0]
+
 def multiprocess_matrix_comparisons(matrix_coordinates):
     #increment()
     #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
@@ -2449,10 +2463,12 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
 
-def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes):
+def multiprocess_owlsim_queries(row):
 
     increment()
     #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+    (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = row[0]
+    #print(row[0])
     try:
         response = urllib.request.urlopen(query_url, timeout=5)
         reader = codecs.getreader("utf-8")
@@ -2467,9 +2483,11 @@ def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_att
         simIC = data['results'][0]['simGIC']
         #print(results)
         query_flag = 'success'
-        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        sequence = (comparison_id, entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #lock.acquire()
         #json.dump(sequence, outfile)
         #outfile.write('\n')
+        #lock.release()
 
         #print(sequence)
         #print('failed here')
@@ -2489,11 +2507,11 @@ def multiprocess_owlsim_queries(comparison_id, query_url, entity_a, entity_a_att
         simIC = 0
         query_flag = 'fail'
 
-        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        sequence = (comparison_id, entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+        #lock.acquire()
         #json.dump(sequence, outfile)
         #outfile.write('\n')
-
-
+        #lock.release()
 
     return (sequence)
 
@@ -2551,9 +2569,6 @@ class multithread_owlsim_queries(Thread):
 
 
         return (sequence)
-
-
-
 
 def multiprocess_fdr_calculation(i):
 
@@ -2623,8 +2638,6 @@ def multiprocess_fdr_calculation(i):
     print('INFO: Processing for random data set '+str(i)+' completed.')
     return fdr_cutoff_value
 
-
-
 def multiprocess_generate_random_human_ext_data(x):
 
     random_geno_pheno_hash = {}
@@ -2659,7 +2672,6 @@ def multiprocess_generate_random_human_ext_data(x):
         pickle.dump(random_geno_pheno_hash, handle)
     print('Completed human random data set '+str(x)+' out of 1000.')
     return
-
 
 def multiprocess_generate_random_mouse_ext_data(x):
 
@@ -2696,7 +2708,6 @@ def multiprocess_generate_random_mouse_ext_data(x):
     print('Completed mouse random data set '+str(x)+' out of 1000.')
     return
 
-
 def multiprocess_generate_random_zebrafish_ext_data(x):
 
     random_geno_pheno_hash = {}
@@ -2731,7 +2742,6 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
         pickle.dump(random_geno_pheno_hash, handle)
     print('Completed zebrafish random data set '+str(x)+' out of 1000.')
     return
-
 
 def multiprocess_ext_fdr_calculation(i):
 
@@ -2846,11 +2856,12 @@ main = main()
 
 
 ####### ASSEMBLE OWLSIM COMPARISONS QUERIES #######
+### CAUTION: These assemblies will take a large amount of time and file space!
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','inter/owlsim/human_disease_mouse_genotype_queries.txt', limit)
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/human_disease_zebrafish_genotype_queries.txt', limit)
 #main.assemble_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/mouse_genotype_zebrafish_genotype_queries.txt', limit)
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','inter/owlsim/human_disease_mouse_gene_queries.txt', limit)
-main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', limit)
 #main.assemble_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', limit)
 
 
@@ -2860,6 +2871,8 @@ main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inte
 #OWLSim url calls take about 3 hours for 100,000 comparisons.
 #Current implementation runs at 185/second, or 666,000/hour?
 # 42 million would take 63 hours, or 2.5 days
+
+#latest test: 284/second
 
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
