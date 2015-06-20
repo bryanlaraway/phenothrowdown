@@ -934,9 +934,11 @@ class main():
 
 
 
-    def assemble_owlsim_queries(self, raw1, raw2, inter, limit=None):
+    def assemble_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, limit=None):
 
         line_counter = 0
+        line_counter_max = 5000000
+        file_counter = 1
         comparison_count = 0
         failure_counter = 0
         comparison_hash = {}
@@ -966,40 +968,45 @@ class main():
         #print(organism_a_hash)
         #print(organism_b_hash)
         print('INFO: Assembling phenotypic profile comparison queries.')
+        file_name = interfile_directory+'/'+interfile_prefix+'_'+str(file_counter)+'.txt'
+        csvfile = open(file_name, 'w', newline='')
+        csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+        for i in organism_a_hash:
+            entity_a = i
+            entity_a_attributes = organism_a_hash[i]
+            #print(attributes)
+            #print(entity_a_attributes)
+            phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
+            for j in organism_b_hash:
+                entity_b = j
+                entity_b_attributes = organism_b_hash[j]
+                #print(entity_b_attributes)
+                phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
+                query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
+                #print(query_url)
 
-        with open(inter, 'w', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-            for i in organism_a_hash:
-                entity_a = i
-                entity_a_attributes = organism_a_hash[i]
-                #print(attributes)
-                #print(entity_a_attributes)
-                phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
-                for j in organism_b_hash:
-                    entity_b = j
-                    entity_b_attributes = organism_b_hash[j]
-                    #print(entity_b_attributes)
-                    phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
-                    query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
-                    #print(query_url)
-
-                    #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
-                    comparison_id = entity_a+'_'+entity_b
-                    #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
-                    output_row = (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes)
+                #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
+                comparison_id = entity_a+'_'+entity_b
+                #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
+                output_row = (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes)
 
 
-                    csvwriter.writerow(output_row)
-                    line_counter += 1
-                    if limit is not None and line_counter > limit:
-                        break
+                csvwriter.writerow(output_row)
+                line_counter += 1
+                if line_counter == line_counter_max:
+                    line_counter = 0
+                    file_counter += 1
+                    csvfile.close()
+                    file_name = interfile_directory+'/'+interfile_prefix+'_'+str(file_counter)+'.txt'
+                    csvfile = open(file_name, 'w', newline='')
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                 if limit is not None and line_counter > limit:
                     break
+            if limit is not None and line_counter > limit:
+                break
 
         print('INFO: Done assembling phenotypic profile comparison queries.')
         return
-
-
 
     def perform_owlsim_queries(self, raw1, raw2, inter, out, limit=None):
         print('INFO: Performing OWLSim queries.')
@@ -1289,15 +1296,17 @@ class main():
 
     def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
         print('INFO: Creating random data sets.')
-        #Take the phenotype-ortholog hashes I have created.
-        #Remove all orthologs and place in a list, replace with 0s or 1s or something.
-        #Randomly shuffle the ortholog list
-        #Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
+        # Take the phenotype-ortholog hashes I have created.
+        # Remove all orthologs and place in a list, replace with 0s or 1s or something.
+        # Randomly shuffle the ortholog list
+        # Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
 
-        #Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
+        # Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
         # Should the random data set have the same presence of orthologs as the test set?
-        # Meaning, if ortholog X is present in the test data set Y times, should it also be present in the test data set Y times?
-        #Need to have a way to make the data set creation fail if we get to the end and can only put an ortholog with a phenotype that already has that ortholog with it.
+        # Meaning, if ortholog X is present in the test data set Y times,
+        # should it also be present in the test data set Y times?
+        # Need to have a way to make the data set creation fail if we get to the end and
+        # can only put an ortholog with a phenotype that already has that ortholog with it.
 
         # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
         # would it make more sense to populate from the total orthologs shared between two species?
@@ -2863,14 +2872,16 @@ main = main()
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
 
 
-####### ASSEMBLE OWLSIM COMPARISONS QUERIES #######
+####### ASSEMBLE OWLSIM COMPARISON QUERIES #######
 ### CAUTION: These assemblies will take a large amount of time and file space!
-#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt','inter/owlsim/human_disease_mouse_genotype_queries.txt', limit)
-#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/human_disease_zebrafish_genotype_queries.txt', limit)
-#main.assemble_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt','inter/owlsim/mouse_genotype_zebrafish_genotype_queries.txt', limit)
-#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt','inter/owlsim/human_disease_mouse_gene_queries.txt', limit)
-#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', limit)
-#main.assemble_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_queries', limit)
+#main.assemble_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', limit)
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_queries', limit)
+
+#main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_queries', limit)
+
+#main.assemble_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene', 'mouse_gene_zebrafish_gene_queries', limit)
 
 
 
@@ -2880,7 +2891,7 @@ main = main()
 #Current implementation runs at 185/second, or 666,000/hour?
 # 42 million would take 63 hours, or 2.5 days
 
-#latest test: 284/second
+#latest test: 320/second
 
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
@@ -2925,7 +2936,7 @@ main = main()
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
 
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', 'out/owlsim/human_disease_zebrafish_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', 'out/owlsim/human_disease_zebrafish_gene.txt')
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
@@ -3020,6 +3031,12 @@ fdr_cutoff = 0.004426898733810069
 #test_matrix[0][0] = 1
 #test_matrix[3][1] = 5
 #print(test_matrix)
+
+#with open('inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', 'r', encoding="iso-8859-1") as csvfile:
+    #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+    #row_count = sum(1 for row in filereader)
+    #print(str(row_count)+' rows to process.')
+
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
