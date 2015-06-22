@@ -533,7 +533,6 @@ class main():
         # Can filter on extrinsic genotype = ''
         print('INFO:Assembling zebrafish genotype to phenotype data.')
         line_counter = 0
-        failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
         inter = 'inter/zfin/zebrafish_genotype_phenotype_hash.txt'
         zfin_genotype_to_phenotype_hash = {}
@@ -563,21 +562,14 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                if extrinsic_genotype_id != '' and extrinsic_genotype_id is not None:
+                if extrinsic_genotype_id != '' or extrinsic_genotype_id is not None:
                     print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
                     continue
                 elif extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
-                    #print(phenotype_id)
-                    #genes = implicated_gene_ids.split()
-                    #print(genes)
                     if effective_genotype_id not in zfin_genotype_to_phenotype_hash:
                         zfin_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
-                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
                     else:
                         zfin_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
-                        #print(zfin_genotype_to_phenotype_hash[genotype_id])
-                        #print(len(zfin_genotype_to_phenotype_hash.keys()))
-                        #print('Repeat genotype: '+effective_genotype_id)
                     if limit is not None and line_counter > limit:
                         break
         with open(inter, 'wb') as handle:
@@ -591,7 +583,6 @@ class main():
         # Can filter on extrinsic genotype = ''
         print('INFO:Assembling mouse genotype to phenotype data.')
         line_counter = 0
-        failure_counter = 0
         raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
         inter = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         mgi_genotype_to_phenotype_hash = {}
@@ -617,17 +608,10 @@ class main():
                  environment_label, publication_id, publication_label, publication_url, taxon_id,
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
-                #print(phenotype_id)
-                #genes = implicated_gene_ids.split()
-                #print(genes)
                 if effective_genotype_id not in mgi_genotype_to_phenotype_hash:
                     mgi_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
-                    #print(mgi_genotype_to_phenotype_hash[genotype_id])
                 else:
                     mgi_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
-                    #print(mgi_genotype_to_phenotype_hash[genotype_id])
-                    #print(len(mgi_genotype_to_phenotype_hash.keys()))
-                    #print('Repeat genotype: '+effective_genotype_id)
                 if limit is not None and line_counter > limit:
                     break
         with open(inter, 'wb') as handle:
@@ -779,7 +763,6 @@ class main():
     def assemble_nif_zfin_gene_to_phenotype(self, limit=None):
         print('INFO:Assembling zebrafish gene to phenotype data.')
         line_counter = 0
-        failure_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
         inter = 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt'
         zfin_gene_to_phenotype_hash = {}
@@ -812,9 +795,6 @@ class main():
                 if phenotype_id == '' or phenotype_id == None:
                     continue
                 else:
-
-                    #print(implicated_gene_ids)
-                    #FIXME: Going to need to convert the ZFIN Gene IDs to NCBIGene IDs.
                     if implicated_gene_ids == '' or implicated_gene_ids is None:
                         continue
 
@@ -852,8 +832,6 @@ class main():
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
             comparison_count = limit
-        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
-        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
         data1 = open(raw1, 'rb')
         organism_a_hash = pickle.load(data1)
         data1.close()
@@ -1008,7 +986,7 @@ class main():
         print('INFO: Done assembling phenotypic profile comparison queries.')
         return
 
-    def perform_owlsim_queries(self, raw1, raw2, inter, out, limit=None):
+    def perform_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, outfile_prefix, num_files, limit=None):
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
 
@@ -1025,56 +1003,61 @@ class main():
         if limit is None:
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
-
+        # Dump the hash files from memory.
+        organism_a_hash = {}
+        organism_b_hash = {}
         #with open(inter, 'r', encoding="iso-8859-1") as csvfile:
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
+        for x in range(4, num_files):
+            interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
+            outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
-        with open(out, 'w', newline='') as outfile:
-            with open(inter, 'r', encoding="iso-8859-1") as csvfile:
-                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            with open(outfile, 'w', newline='') as outfile:
+                with open(interfile, 'r', encoding="iso-8859-1") as csvfile:
+                    filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
 
-                ###### MULTIPROCESSING INSERT ######
-                if __name__ == '__main__':
-                    #lock = multiprocessing.Lock
+                    ###### MULTIPROCESSING INSERT ######
+                    if __name__ == '__main__':
+                        #lock = multiprocessing.Lock
 
-                    print('INFO: Multiprocessing started')
-                    cores = (multiprocessing.cpu_count()-1)
-                    #cores = 100
-                    pool = multiprocessing.Pool(processes=cores)
-                    num_chunks = 10000
-                    chunks = itertools.groupby(filereader, keyfunc)
-                    while True:
-                        queries = [list(chunk) for key, chunk in itertools.islice(chunks, num_chunks)]
+                        print('INFO: Multiprocessing started')
+                        cores = (multiprocessing.cpu_count()-1)
+                        #cores = 100
+                        pool = multiprocessing.Pool(processes=cores)
+                        num_chunks = 10000
+                        chunks = itertools.groupby(filereader, keyfunc)
+                        while True:
+                            queries = [list(chunk) for key, chunk in itertools.islice(chunks, num_chunks)]
 
-                        if queries:
-                            for result in pool.imap(multiprocess_owlsim_queries, queries):
-                                json.dump(result, outfile)
-                                outfile.write('\n')
-                        else:
-                            break
-                    #multiprocessing.Semaphore(cores)
-                    #jobs = []
-                    #phenotype_iterable = []
-                    #phenotype_counter = 0
+                            if queries:
+                                for result in pool.imap(multiprocess_owlsim_queries, queries):
+                                    json.dump(result, outfile)
+                                    outfile.write('\n')
+                            else:
+                                break
+                        #multiprocessing.Semaphore(cores)
+                        #jobs = []
+                        #phenotype_iterable = []
+                        #phenotype_counter = 0
 
-                    #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
-                    #phenotype_counter += 1
-                    #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
+                        #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
+                        #phenotype_counter += 1
+                        #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
 
-                    #pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader
-                    #results = [pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader]
+                        #pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader
+                        #results = [pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader]
 
 
-                    '''print('Processing results.')
-                    comparison_list = []
-                    for x in results:
-                        (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = x
-                        sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                        json.dump(sequence, outfile)
-                        outfile.write('\n')
-                    print('Done processing results.')'''
+                        '''print('Processing results.')
+                        comparison_list = []
+                        for x in results:
+                            (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = x
+                            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
+                            json.dump(sequence, outfile)
+                            outfile.write('\n')
+                        print('Done processing results.')'''
 
                     print('INFO: Multiprocessing completed')
                     ###### END MULTIPROCESSING INSERT ######
@@ -1708,54 +1691,11 @@ class main():
         # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
         # set of 'genologs' (?) for proper estimation of FDR.
 
-        # Need: human disease -> phenotype, mouse genotype -> phenotype, zebrafish genotype -> phenotype
-        hvm_human_dir = 'inter/random/human_vs_mouse/human/'
-        hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
-        hvz_human_dir = 'inter/random/human_vs_zebrafish/human/'
-        hvz_zebrafish_dir = 'inter/random/human_vs_zebrafish/zebrafish/'
-        mvz_mouse_dir = 'inter/random/mouse_vs_zebrafish/mouse/'
-        mvz_zebrafish_dir = 'inter/random/mouse_vs_zebrafish/zebrafish/'
-
-        human_dir = 'inter/random/human/'
-        mouse_dir = 'inter/random/mouse/'
-        zebrafish_dir = 'inter/random/zebrafish/'
-
-        hvm_phenolog_file = 'inter/phenolog/hvm_significant_phenologs.txt'
-        hvz_phenolog_file = 'inter/phenolog/hvz_significant_phenologs.txt'
-        mvz_phenolog_file = 'inter/phenolog/mvz_significant_phenologs.txt'
-
-        human_phenotype_file = 'inter/ontologies/hp_hash.txt'
-        mouse_phenotype_file = 'inter/ontologies/mp_hash.txt'
-        zebrafish_phenotype_file = 'inter/ontologies/zp_hash.txt'
-
-        human_phenotypes = []
-        mouse_phenotypes = []
-        zebrafish_phenotypes = []
-
-        #NOTE: Moved random data generation to separate function calls outside of this function.
-        #main.generate_random_ext_data('inter/hpo/human_disease_phenotype_hash.txt', 'inter/ontologies/hp_hash.txt', 'inter/random/human/')
-        #main.generate_random_ext_data('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/ontologies/mp_hash.txt', 'inter/random/mouse/')
-        #main.generate_random_ext_data('inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/ontologies/zp_hash.txt', 'inter/random/zebrafish/')
-
-
-        fdr_global_p_value_list = []
-
-        #with open('inter/phenolog/all_significant_phenologs.txt', 'rb') as handle:
-            #hvm_phenologs = len(pickle.load(handle))
-        #with open('inter/phenolog/hvz_significant_phenologs.txt', 'rb') as handle:
-            #hvz_phenologs = len(pickle.load(handle))
-        #with open('inter/phenolog/mvz_significant_phenologs.txt', 'rb') as handle:
-            #mvz_phenologs = len(pickle.load(handle))
-        #print(hvm_common_orthologs)
-        #print(hvz_common_orthologs)
-        #print(mvz_common_orthologs)
-
         ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
 
 
             cores = (multiprocessing.cpu_count()-1)
-            #cores = 100
             pool = multiprocessing.Pool(processes=cores)
 
             print('INFO: Multiprocessing started')
@@ -2483,9 +2423,7 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
 def multiprocess_owlsim_queries(row):
 
     increment()
-    #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
     (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = row[0]
-    #print(row[0])
     try:
         response = urllib.request.urlopen(query_url, timeout=5)
         reader = codecs.getreader("utf-8")
@@ -2923,7 +2861,7 @@ main = main()
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #Mouse genes = 13102
-#Total comparisons = 120,721,828
+#Total comparisons = 120,712,614
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene_queries.txt', 'out/owlsim/human_disease_mouse_gene.txt')
@@ -2932,18 +2870,19 @@ main = main()
 #Processing completed in  hours,  comparisons.
 #Human Diseases = 9214
 #zebrafish Genes = 4580
-#Total comparisons = 42,200,120
+#Total comparisons = 42,190,906
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
-
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene_queries.txt', 'out/owlsim/human_disease_zebrafish_gene.txt')
+#(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, , outfile_prefix, num_files, limit=None)
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene',
+                            'human_disease_zebrafish_gene_queries', 'out/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_results', 9)
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
 #Processing completed in  hours,  comparisons. Estimated to take 83 days?
 #Mouse Genes = 13102
 #zebrafish Genes = 4580
-#Total comparisons = 60,007,160
+#Total comparisons = 59,989,479
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', 'out/owlsim/mouse_gene_zebrafish_gene.txt')
