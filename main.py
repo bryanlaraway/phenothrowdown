@@ -1010,7 +1010,7 @@ class main():
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
-        for x in range(4, num_files):
+        for x in range(num_files, num_files+1):
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -2837,7 +2837,7 @@ main = main()
 #Total comparisons = 519,918,378
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human diseases vs mouse genotypes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype_queries.txt', 'out/owlsim/human_disease_mouse_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
 #print('INFO: Done processing human diseases vs mouse genotypes')
 
 #Processing completed in  hours,  comparisons.
@@ -2846,7 +2846,7 @@ main = main()
 #Total comparisons = 78,641,490
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genotype')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype_queries.txt', 'out/owlsim/human_disease_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_queries', 'out/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_results', 16)
 #print('INFO: Done processing human disease vs zebrafish genotype')
 
 #Processing completed in  hours,  comparisons. Estimated to take 669 days?
@@ -2855,7 +2855,7 @@ main = main()
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype_queries.txt', 'out/owlsim/mouse_genotype_zebrafish_genotype.txt')
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
 #Processing completed in  hours,  comparisons.
@@ -2864,7 +2864,7 @@ main = main()
 #Total comparisons = 120,712,614
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene_queries.txt', 'out/owlsim/human_disease_mouse_gene.txt')
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
 #print('INFO: Done processing human disease vs mouse genes')
 
 #Processing completed in  hours,  comparisons.
@@ -2874,8 +2874,7 @@ main = main()
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs zebrafish genes')
 #(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, , outfile_prefix, num_files, limit=None)
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene',
-                            'human_disease_zebrafish_gene_queries', 'out/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_results', 9)
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_queries', 'out/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_results', 9)
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
@@ -2885,7 +2884,7 @@ main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter
 #Total comparisons = 59,989,479
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genes vs zebrafish genes')
-#main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', 'out/owlsim/mouse_gene_zebrafish_gene.txt')
+main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene','mouse_gene_zebrafish_gene_queries', 'out/owlsim/mouse_gene_zebrafish_gene', 'mouse_gene_zebrafish_gene_results', 12)
 #print('INFO: Done processing mouse genes vs zebrafish genes')
 
 #with open('inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'rb') as handle:
