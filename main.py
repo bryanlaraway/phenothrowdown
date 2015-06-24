@@ -2417,7 +2417,7 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for x in range(2, len(phenotype_list)): #len(phenotype_list)
+            for x in range(0, len(phenotype_list)): #len(phenotype_list)
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
