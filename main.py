@@ -2612,7 +2612,7 @@ def keyfunc(row):
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
     #increment()
-    print(matrix_coordinates)
+    #print(matrix_coordinates)
     #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
         #ortholog_list = pickle.load(handle)
 
