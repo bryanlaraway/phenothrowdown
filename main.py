@@ -3050,7 +3050,7 @@ fdr_cutoff = 0.004426898733810069
 #main.assemble_mvz_phenologs()
 
 
-#main.set_stage_for_extension_fdr_calculation()
+main.set_stage_for_extension_fdr_calculation()
 #ext_fdr_cutoff = 0.00022089684117479534
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/hvm_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/all_significant_phenologs.txt', ext_fdr_cutoff)
@@ -3071,9 +3071,9 @@ fdr_cutoff = 0.004426898733810069
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 #cProfile.run()
 #main.create_phenolog_gene_candidate_matrices()
-main.create_phenolog_gene_candidate_matrices_alternate()
-main.create_phenolog_gene_candidate_prediction_matrix()
-main.assemble_phenolog_gene_candidate_predictions()
+#main.create_phenolog_gene_candidate_matrices_alternate()
+#main.create_phenolog_gene_candidate_prediction_matrix()
+#main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
