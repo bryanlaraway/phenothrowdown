@@ -2417,7 +2417,7 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for x in range(0, len(phenotype_list)): #len(phenotype_list)
+            for x in range(1, len(phenotype_list)): #len(phenotype_list)
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
@@ -3212,10 +3212,10 @@ fdr_cutoff = 0.004426898733810069
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 #cProfile.run()
-main.assemble_ortholog_phenotype_matrix()
+#main.assemble_ortholog_phenotype_matrix()
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
-main.create_empty_phenolog_gene_candidate_matrices()
+#main.create_empty_phenolog_gene_candidate_matrices()
 main.populate_phenolog_gene_candidate_matrices()
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
