@@ -2417,7 +2417,7 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for x in range(1, len(phenotype_list)): #len(phenotype_list)
+            for x in range(1, 2): #len(phenotype_list)
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
@@ -2465,6 +2465,134 @@ class main():
                 #pickle.dump(ortholog_list, handle)
             #print(ortholog_list[0])
             print('DONE!')
+        return
+
+    def populate_phenolog_gene_candidate_matrices_alternate(self):
+
+        #Testing - read in the matrix, compare matrix columns
+
+        # Set the number of nearest neighbor phenotypes to consider for predictions.
+        k = 11
+        # Added file dumps to main.assemble_ortholog_phenotype_matrix, so this function call is not necessary if already run.
+        #(ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
+        # If testing, set a limit to something reasonable like 100.
+        #(ortholog_phenotype_matrix, phenotype_list, ortholog_list) = main.assemble_ortholog_phenotype_matrix()
+
+        ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+        #print(ortholog_phenotype_matrix[1][1])
+
+        with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
+            phenotype_list = pickle.load(handle)
+        with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+            ortholog_list = pickle.load(handle)
+
+        total_phenotypes = len(phenotype_list)
+        print('INFO: Total number of phenotypes: '+str(total_phenotypes))
+        total_orthologs = len(ortholog_list)
+        print('INFO: Total number of orthologs: '+str(total_orthologs))
+        #Have the matrix, need to get the sum of the k (10) nearest neighbors, weight by the pearson correlation coefficient.
+        # Pearson correlation to determine the k nearest neighbors. So I need to calculate the similarity of phenotypes
+        # for all pair-wise phenotype combinations. So need a similarity score matrix in addition to the weight matrix.
+        # Use the hypergeometric CDF to provide scores for the weight matrix.
+
+        #Creating a small test matrix for testing.
+        #test_matrix = numpy.random.randint(2, size=(10,10))
+        #ortholog_phenotype_matrix = test_matrix
+        #test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
+        #phenotype_list = test_phenotype_list
+        #test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
+        #ortholog_list = test_ortholog_list
+        total_phenotypes = len(phenotype_list)
+
+
+        #print(phenotype_list[0])
+        #distance_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
+        distance_matrix_counter = 0
+        #weight_matrix = numpy.zeros((len(phenotype_list), len(phenotype_list)))
+        weight_matrix_comparisons = (len(phenotype_list)*len(phenotype_list))
+        weight_matrix_counter = 0
+        total_orthologs = len(ortholog_list)
+
+        print('INFO: '+str(matrix_comparisons)+' matrix comparisons to process.')
+
+        #Need to multi-process this segment.
+
+
+        if __name__ == '__main__':
+            #with Manager() as manager:
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+
+            #multiprocessing.Semaphore(cores)
+            #jobs = []
+            #phenotype_iterable = []
+            phenotype_counter = 0
+
+            #Takes ~65 seconds to reach this point.
+            print('INFO: Assembling phenotype matrix coordinates.')
+
+            for x in range(4, len(phenotype_list)): #len(phenotype_list)
+                i = phenotype_list[x]
+                input_phenotype_index_i = phenotype_list.index(i)
+
+                print('INFO: Processing phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+                print('INFO: Processing phenotype '+i+'.')
+                matrix_coordinates = []
+                for j in phenotype_list:
+                    input_phenotype_index_j = phenotype_list.index(j)
+                    matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
+                print('INFO: Done assembling phenotype matrix coordinates.')
+                print('INFO: Starting multiprocessing.')
+                distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
+                weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
+                for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates):
+                    (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = results
+                    distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
+                    weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
+
+                print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+
+                # Dump all of the files to disk.
+                numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
+                #numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
+                print('INFO: Dumping distance matrix to disk.')
+                numpy.save('inter/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
+                #FYI: The human readable matrix file is 3X the size of the .npy file.
+                #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+                print('INFO: Dumping weight matrix to disk.')
+                numpy.save('inter/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
+                #numpy.savetxt('inter/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
+
+            #numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
+            #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+            #numpy.savetxt('inter/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
+            #with open('inter/phenolog_gene_cand/phenotype_list.txt', 'wb') as handle:
+                #pickle.dump(phenotype_list, handle)
+            #print(phenotype_list[0])
+            #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'wb') as handle:
+                #pickle.dump(ortholog_list, handle)
+            #print(ortholog_list[0])
+            print('DONE!')
+        return
+
+
+
+    def merge_matrices(self): #, input_matrix_1, input_matrix_2, output_matrix
+        input_matrix_1 = numpy.random.randint(2, size=(10,10))
+        print(input_matrix_1)
+        input_matrix_2 = numpy.random.randint(2, size=(10,10))
+        print(input_matrix_2)
+        output_matrix = numpy.zeros((len(input_matrix_1), len(input_matrix_1)))
+        #print(merged_matrix)
+        #print(len(input_matrix_1))
+        #print(input_matrix_1[0][1])
+        for x in range(0, len(input_matrix_1)):
+            for y in range(0, len(input_matrix_1)):
+                output_matrix[x][y] = max(input_matrix_1[x][y], input_matrix_2[x][y])
+
+        print(output_matrix)
         return
 
 
@@ -3216,7 +3344,9 @@ fdr_cutoff = 0.004426898733810069
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_empty_phenolog_gene_candidate_matrices()
-main.populate_phenolog_gene_candidate_matrices()
+#main.populate_phenolog_gene_candidate_matrices()
+main.populate_phenolog_gene_candidate_matrices_alternate()
+#main.merge_matrices()
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
