@@ -2417,7 +2417,7 @@ class main():
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for x in range(1, 2): #len(phenotype_list)
+            for x in range(0, len(phenotype_list)): #len(phenotype_list)
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
@@ -2530,10 +2530,17 @@ class main():
             #phenotype_iterable = []
             phenotype_counter = 0
 
+            print('INFO: Loading distance matrix.')
+            distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
+            print('INFO: Loading weight matrix.')
+            weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
+
             #Takes ~65 seconds to reach this point.
             print('INFO: Assembling phenotype matrix coordinates.')
 
-            for x in range(4, len(phenotype_list)): #len(phenotype_list)
+
+
+            for x in range(0, len(phenotype_list)): #len(phenotype_list)
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
@@ -2545,25 +2552,25 @@ class main():
                     matrix_coordinates.append([input_phenotype_index_i,input_phenotype_index_j])
                 print('INFO: Done assembling phenotype matrix coordinates.')
                 print('INFO: Starting multiprocessing.')
-                distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
-                weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
-                for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates):
+
+                #ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+                for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates, chunksize=100):
                     (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = results
                     distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
                     weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
 
                 print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
 
-                # Dump all of the files to disk.
-                numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
-                #numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
-                print('INFO: Dumping distance matrix to disk.')
-                numpy.save('inter/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
-                #FYI: The human readable matrix file is 3X the size of the .npy file.
-                #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
-                print('INFO: Dumping weight matrix to disk.')
-                numpy.save('inter/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
-                #numpy.savetxt('inter/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
+            # Dump all of the files to disk.
+            numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
+            #numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
+            print('INFO: Dumping distance matrix to disk.')
+            numpy.save('inter/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
+            #FYI: The human readable matrix file is 3X the size of the .npy file.
+            #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+            print('INFO: Dumping weight matrix to disk.')
+            numpy.save('inter/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
+            #numpy.savetxt('inter/phenolog_gene_cand/weight_matrix.txt', weight_matrix)
 
             #numpy.savetxt('inter/phenolog_gene_cand/ortholog_phenotype_matrix.txt', ortholog_phenotype_matrix)
             #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
@@ -2760,42 +2767,53 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
     phenotype_index_j = matrix_coordinates[1]
     #distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
     #weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
-    ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+    #print('Loading ortholog phenotype matrix.')
+    #ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
     #print(len(ortholog_phenotype_matrix))
+    #print('Done loading ortholog phenotype matrix.')
 
     ortholog_counter = 0
     ortholog_match = 0
     #print(len(ortholog_list))
 
-    (coefficient, p_value) = pearsonr(ortholog_phenotype_matrix[phenotype_index_i], ortholog_phenotype_matrix[phenotype_index_j])
+    (coefficient, p_value) = pearsonr(read_only_ortholog_phenotype_matrix[phenotype_index_i], read_only_ortholog_phenotype_matrix[phenotype_index_j])
     #print(str(coeffecient)+'_'+str(p_value))
     #distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
     #distance_matrix_counter += 1
     #print('INFO: Completed matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
-    phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
+    #phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
     #print('Phenotype I draws = '+ str(phenotype_i_draws))
-    phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
+    #phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
     #print('Phenotype J draws = '+ str(phenotype_j_draws))
     for x in range(0, (len_ortholog_list)):
     #while ortholog_counter < len(ortholog_list):
-        if ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
+        if read_only_ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and read_only_ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
             ortholog_match += 1
         ortholog_counter += 1
-
+    #(ortholog_match, ortholog_counter) = map(ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x), x in range(0, len_ortholog_list))
+    #print('Ortholog Matches: '+str(ortholog_match))
+    #print('Ortholog Counter: '+str(ortholog_counter))
 
     # N = total number of orthologs shared between species
     # n = nummber of orthologs in species A phenotype
     # m = nummber of orthologs in species B phenotype
     # c = number of common orthologs between phenotypes (ortholog matches)
 
-    m = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_i]))
-    n = float(numpy.sum(ortholog_phenotype_matrix[phenotype_index_j]))
+    m = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_i]))
+    n = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_j]))
     N = float(len_ortholog_list) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
     c = float(ortholog_match)
     hyp_prob = (hypergeom.cdf(c, N, m, n))
     #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
+def ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x):
+    ortholog_counter = 0
+    ortholog_match = 0
+    if ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
+        ortholog_match += 1
+    ortholog_counter += 1
+    return ortholog_match, ortholog_counter
 
 def multiprocess_owlsim_queries(row):
 
@@ -3336,8 +3354,6 @@ fdr_cutoff = 0.004426898733810069
 #(mouse_ortholog_phenotype_matrix, mouse_phenotype_list, mouse_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_matrix.txt')
 #(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
 
-
-
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 #cProfile.run()
 #main.assemble_ortholog_phenotype_matrix()
@@ -3345,6 +3361,7 @@ fdr_cutoff = 0.004426898733810069
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
+read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
 #main.create_phenolog_gene_candidate_prediction_matrix()
