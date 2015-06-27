@@ -912,8 +912,6 @@ class main():
 
         return
 
-
-
     def assemble_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, limit=None):
 
         line_counter = 0
@@ -1697,17 +1695,18 @@ class main():
         if __name__ == '__main__':
 
 
-            cores = (multiprocessing.cpu_count()-1)
+            #cores = (multiprocessing.cpu_count()-1)
+            cores = 2
             pool = multiprocessing.Pool(processes=cores)
 
             print('INFO: Multiprocessing started')
 
-            fdr_global_p_value_list = [pool.map(multiprocess_ext_fdr_calculation, range(1,1001))]
+            fdr_global_p_value_list = [pool.map(multiprocess_ext_fdr_calculation, range(1, 11))]
             with open('inter/random/fdr_ext/fdr_ext_global_p_value_list.txt', 'wb') as handle:
                 pickle.dump(fdr_global_p_value_list, handle)
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
-
+            '''
             p_value_sum = float(0)
             for x in range(0,1000):
                 #print(fdr_global_p_value_list[x])
@@ -1715,7 +1714,7 @@ class main():
             fdr_cutoff = float(p_value_sum)/float(len(fdr_global_p_value_list))
             #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
             print('The empirical FDR adjustment cutoff is '+str(fdr_cutoff)+'.')
-
+            '''
             #fdr_global_p_value_list.sort()
             #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
             #if global_cutoff_position < 0:
@@ -1723,6 +1722,8 @@ class main():
             #print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return #fdr_global_p_value_list[global_cutoff_position]
+
+
 
     def generate_human_random_ext_data(self):
         print('INFO: Creating random data sets.')
@@ -1823,7 +1824,8 @@ class main():
                 genotype_b_phenotype_count = len(species_b_phenotypes)
 
                 comparison_counter += 1
-                print('INFO: Processing comparison '+str(comparison_counter)+' out of '+str(total_comparisons)+' total comparisons to perform.')
+                if re.match('.*000000', str(comparison_counter)):
+                    print('INFO: Processing comparison '+str(comparison_counter)+' out of '+str(total_comparisons)+' total comparisons to perform.')
                 for k in species_a_phenotypes:
                     # Orthologs for species A
                     #ortholog_matches = 0
@@ -1884,6 +1886,63 @@ class main():
             #prb = hypergeom.cdf(x, M, n, N)
 
         return phenolog_ext_p_value_list
+
+    def perform_hvz_phenolog_calculations_for_ext_fdr_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
+
+        line_counter = 0
+        failure_counter = 0
+        comparison_counter = 0
+        total_phenotype_matches = 0
+        total_phenotype_nonmatches = 0
+        phenotype_matches = 0
+        phenotype_non_matches = 0
+        genotype_a_phenotype_count = 0
+        genotype_b_phenotype_count = 0
+        total_hyp_calcs = 0
+        phenolog_ext_p_value_list = []
+
+        species_a_geno_pheno_hash = species_a_gp_hash
+        species_b_geno_pheno_hash = species_b_gp_hash
+
+        total_comparisons = (len(species_a_geno_pheno_hash))*(len(species_b_geno_pheno_hash))
+        print('INFO: '+str(total_comparisons)+' total comparisons to perform.')
+
+        print('INFO: Assembling disease/genotype comparison list.')
+
+        comparison_list = []
+
+        for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
+            comparison_list.append(element)
+
+        print('INFO: Done assembling disease/genotype comparison list.')
+
+        if __name__ == '__main__':
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+
+            print('INFO: Starting multiprocessing.')
+
+            for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_alternate, comparison_list, chunksize=100):
+                if results is not None:
+                    phenolog_ext_p_value_list.append(results)
+                    #print(results)
+
+
+            #print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+
+        with open(out_file, 'wb') as handle:
+            pickle.dump(phenolog_ext_p_value_list, handle)
+        #print('Total Matches: '+str(total_phenotype_matches))
+        #print('Total non-matches: '+str(total_phenotype_nonmatches))
+        #print('Total phenolog calculations: '+str(total_hyp_calcs))
+
+
+        return phenolog_ext_p_value_list
+
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
         print('INFO: Performing phenolog extension calculations.')
@@ -2539,8 +2598,9 @@ class main():
             print('INFO: Assembling phenotype matrix coordinates.')
 
 
-
+            xcounter = 0
             for x in range(0, len(phenotype_list)): #len(phenotype_list)
+                xcounter += 1
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
 
@@ -2560,6 +2620,14 @@ class main():
                     weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
 
                 print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+                if xcounter == 1000:
+                    print('INFO: Dumping distance matrix to disk.')
+                    numpy.save('inter/phenolog_gene_cand/distance_matrix.npy', distance_matrix)
+                    #FYI: The human readable matrix file is 3X the size of the .npy file.
+                    #numpy.savetxt('inter/phenolog_gene_cand/distance_matrix.txt', distance_matrix)
+                    print('INFO: Dumping weight matrix to disk.')
+                    numpy.save('inter/phenolog_gene_cand/weight_matrix.npy', weight_matrix)
+                    xcounter = 0
 
             # Dump all of the files to disk.
             numpy.save('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy', ortholog_phenotype_matrix)
@@ -3168,6 +3236,65 @@ def multiprocess_ext_fdr_calculation(i):
 
     return fdr_cutoff_value
 
+def multiprocess_ext_fdr_calculation_alternate(comparison_list):
+    #increment()
+
+    total_phenotype_matches = 0
+    total_phenotype_nonmatches = 0
+
+    species_a_genotype_id = comparison_list[0]
+    species_a_phenotypes = read_only_human_geno_pheno_hash[comparison_list[0]]
+    #print(species_a_phenotypes)
+    genotype_a_phenotype_count = len(species_a_phenotypes)
+
+    # Genotype for species B
+    species_b_genotype_id = comparison_list[1]
+    species_b_phenotypes = read_only_zebrafish_geno_pheno_hash[comparison_list[1]]
+    #print(species_b_phenotypes)
+    phenotype_matches = 0
+    phenotype_non_matches = 0
+
+
+    genotype_b_phenotype_count = len(species_b_phenotypes)
+
+    for k in species_a_phenotypes:
+        # Orthologs for species A
+        #ortholog_matches = 0
+        #ortholog_non_matches = 0
+
+        species_a_phenotype = k
+        for l in species_b_phenotypes:
+            # Orthologs for species B
+            species_b_phenotype = l
+
+            ab_combo = species_a_phenotype+'_'+species_b_phenotype
+            ba_combo = species_b_phenotype+'_'+species_a_phenotype
+            if ab_combo in read_only_hvz_phenologs or ba_combo in read_only_hvz_phenologs:
+                #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                phenotype_matches += 1
+                #print(species_a_ortholog+' == '+species_b_ortholog)
+                total_phenotype_matches += 1
+            else:
+                #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                phenotype_non_matches += 1
+                total_phenotype_nonmatches += 1
+
+    if phenotype_matches > 0:
+        #print('Matches: '+str(ortholog_matches))
+        #print('Non-matches: '+str(ortholog_non_matches))
+        m = float(genotype_b_phenotype_count)
+        n = float(genotype_a_phenotype_count)
+        N = float(len(read_only_hvz_phenologs))
+        c = float(phenotype_matches)
+        prb = float(hypergeom.pmf(c, N, m, n))
+        #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+        #print(prb)
+        #phenolog_ext_p_value_list.append(prb)
+        #total_hyp_calcs += 1
+
+        return prb
+    else:
+        return
 
 
 ####### MAIN #######
@@ -3339,6 +3466,25 @@ fdr_cutoff = 0.004426898733810069
 
 
 #main.set_stage_for_extension_fdr_calculation()
+'''
+for i in range(1, 1001):
+
+
+    with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
+        read_only_hvz_phenologs = set(pickle.load(handle))
+    with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_human_geno_pheno_hash = pickle.load(handle)
+    with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
+    print('INFO: Processing human vs zebrafish random data set '+str(i)+'.')
+    p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
+    main.perform_hvz_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+'''
+#main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
+#main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
+
+
+
 #ext_fdr_cutoff = 0.00022089684117479534
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/hvm_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/all_significant_phenologs.txt', ext_fdr_cutoff)
@@ -3377,7 +3523,15 @@ main.populate_phenolog_gene_candidate_matrices_alternate()
     #row_count = sum(1 for row in filereader)
     #print(str(row_count)+' rows to process.')
 
-elapsed_time = time.time() - start_time
+'''
+a = ['A', 'B', 'C']
+b = ['X', 'Y', 'Z']
+for element in itertools.product(a,b):
+    print(element)
+    print(element[0])
+    print(element[1])
+'''
+
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 #TODO: Make sure and have the ability to filter between single-gene genotypes and multi-gene genotypes.
