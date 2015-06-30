@@ -1010,7 +1010,7 @@ class main():
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
-        for x in range(num_files, num_files+1):
+        for x in range(22, num_files+1):
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -1357,7 +1357,7 @@ class main():
 
 
             cores = (multiprocessing.cpu_count()-1)
-            cores = 1
+            #cores = 1
             pool = multiprocessing.Pool(processes=cores)
 
             #multiprocessing.Semaphore(cores)
@@ -2614,7 +2614,10 @@ class main():
                 print('INFO: Starting multiprocessing.')
 
                 #ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
-                for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates, chunksize=100):
+                #for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates, chunksize=100):
+                #distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
+                #weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
+                for results in pool.imap_unordered(multiprocess_matrix_comparisons, matrix_coordinates, chunksize=1000):
                     (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient) = results
                     distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
                     weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
@@ -2888,7 +2891,7 @@ def multiprocess_owlsim_queries(row):
     increment()
     (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = row[0]
     try:
-        response = urllib.request.urlopen(query_url, timeout=5)
+        response = urllib.request.urlopen(query_url, timeout=1000)
         reader = codecs.getreader("utf-8")
         data = json.load(reader(response))
         #print(data)
@@ -2947,7 +2950,7 @@ class multithread_owlsim_queries(Thread):
         print('INFO: Performing an OWLSim query.')
         (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
         try:
-            response = urllib.request.urlopen(query_url, timeout=5)
+            response = urllib.request.urlopen(query_url, timeout=1000)
             reader = codecs.getreader("utf-8")
             data = json.load(reader(response))
             #print(data)
@@ -3387,10 +3390,10 @@ main = main()
 #Total comparisons = 120,712,614
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
 #print('INFO: Done processing human disease vs mouse genes')
 
-#Processing completed in  hours,  comparisons.
+#Processing completed!
 #Human Diseases = 9214
 #zebrafish Genes = 4580
 #Total comparisons = 42,190,906
@@ -3401,7 +3404,7 @@ main = main()
 #main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
 #print('INFO: Done processing human disease vs zebrafish genes')
 
-#Processing completed in  hours,  comparisons. Estimated to take 83 days?
+#Processing completed!
 #Mouse Genes = 13102
 #zebrafish Genes = 4580
 #Total comparisons = 59,989,479
@@ -3507,9 +3510,13 @@ for i in range(1, 1001):
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
+#main.populate_phenolog_gene_candidate_matrices_alternate()
 read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
+#main.create_phenolog_gene_candidate_prediction_matrix()
+#main.assemble_phenolog_gene_candidate_predictions()
+#main.create_phenolog_gene_candidate_matrices_alternate()
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
