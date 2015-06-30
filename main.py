@@ -3390,7 +3390,7 @@ main = main()
 #Total comparisons = 120,712,614
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing human disease vs mouse genes')
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
 #print('INFO: Done processing human disease vs mouse genes')
 
 #Processing completed!
@@ -3469,8 +3469,8 @@ fdr_cutoff = 0.004426898733810069
 
 
 #main.set_stage_for_extension_fdr_calculation()
-'''
-for i in range(1, 1001):
+
+for i in range(98, 101):
 
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
@@ -3482,7 +3482,13 @@ for i in range(1, 1001):
     print('INFO: Processing human vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
     main.perform_hvz_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
-'''
+
+    read_only_hvz_phenologs = []
+    read_only_human_geno_pheno_hash = {}
+    read_only_zebrafish_geno_pheno_hash = {}
+
+    print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
+
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
@@ -3511,12 +3517,11 @@ for i in range(1, 1001):
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices_alternate()
-read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+#read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 main.populate_phenolog_gene_candidate_matrices_alternate()
+#read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+#main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
-#main.create_phenolog_gene_candidate_prediction_matrix()
-#main.assemble_phenolog_gene_candidate_predictions()
-#main.create_phenolog_gene_candidate_matrices_alternate()
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
@@ -3539,6 +3544,8 @@ for element in itertools.product(a,b):
     print(element[1])
 '''
 
+
+elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 #TODO: Make sure and have the ability to filter between single-gene genotypes and multi-gene genotypes.
