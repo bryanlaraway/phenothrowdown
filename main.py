@@ -1010,7 +1010,7 @@ class main():
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
-        for x in range(22, num_files+1):
+        for x in range(1, num_files+1):
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -2599,7 +2599,7 @@ class main():
 
 
             xcounter = 0
-            for x in range(0, len(phenotype_list)): #len(phenotype_list)
+            for x in range(22000, len(phenotype_list)): #len(phenotype_list)
                 xcounter += 1
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
@@ -3384,7 +3384,7 @@ main = main()
 #main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
-#Processing completed in  hours,  comparisons.
+#Processing completed!
 #Human Diseases = 9214
 #Mouse genes = 13102
 #Total comparisons = 120,712,614
@@ -3469,8 +3469,8 @@ fdr_cutoff = 0.004426898733810069
 
 
 #main.set_stage_for_extension_fdr_calculation()
-
-for i in range(98, 101):
+'''
+for i in range(108, 111):
 
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
@@ -3488,7 +3488,7 @@ for i in range(98, 101):
     read_only_zebrafish_geno_pheno_hash = {}
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
-
+'''
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
@@ -3517,7 +3517,7 @@ for i in range(98, 101):
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices_alternate()
-#read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 main.populate_phenolog_gene_candidate_matrices_alternate()
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
