@@ -2808,13 +2808,18 @@ class main():
 
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
+
+
 def increment():
+    """ This function provides a shared counter for multiprocessing funtctions for tracking progress."""
     with counter_lock:
         counter.value += 1
         print('INFO: Processing comparison '+str(counter.value))
 
+
 def keyfunc(row):
     return row[0]
+
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
     #increment()
@@ -3557,6 +3562,7 @@ for i in range(1, 1001):
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 
+#main.populate_phenolog_gene_candidate_matrices_alternate()
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
