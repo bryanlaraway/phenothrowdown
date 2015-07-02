@@ -1887,7 +1887,7 @@ class main():
 
         return phenolog_ext_p_value_list
 
-    def perform_hvz_phenolog_calculations_for_ext_fdr_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
+    def perform_phenolog_calculations_for_ext_fdr_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -3472,7 +3472,6 @@ fdr_cutoff = 0.004426898733810069
 '''
 for i in range(108, 111):
 
-
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
@@ -3481,14 +3480,51 @@ for i in range(108, 111):
         read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
     print('INFO: Processing human vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
-    main.perform_hvz_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 
     read_only_hvz_phenologs = []
     read_only_human_geno_pheno_hash = {}
     read_only_zebrafish_geno_pheno_hash = {}
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
+    '''
 '''
+for i in range(1, 1001):
+
+    with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
+        read_only_hvm_phenologs = set(pickle.load(handle))
+    with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_human_geno_pheno_hash = pickle.load(handle)
+    with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_mouse_geno_pheno_hash = pickle.load(handle)
+    print('INFO: Processing human vs mouse random data set '+str(i)+'.')
+    p_value_out_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(i)+'.txt'
+    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash, p_value_out_file)
+
+    read_only_phenologs = []
+    read_only_human_geno_pheno_hash = {}
+    read_only_mouse_geno_pheno_hash = {}
+
+    print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
+    '''
+for i in range(1, 1001):
+
+    with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
+        read_only_mvz_phenologs = set(pickle.load(handle))
+    with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_mouse_geno_pheno_hash = pickle.load(handle)
+    with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
+        read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
+    print('INFO: Processing mouse vs zebrafish random data set '+str(i)+'.')
+    p_value_out_file = 'inter/phenolog_ext/mvz_p_values/hvz_p_values_'+str(i)+'.txt'
+    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+
+    read_only_mvz_phenologs = []
+    read_only_mouse_geno_pheno_hash = {}
+    read_only_zebrafish_geno_pheno_hash = {}
+
+    print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
+
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
@@ -3524,8 +3560,8 @@ for i in range(108, 111):
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
-main.create_phenolog_gene_candidate_prediction_matrix()
-main.assemble_phenolog_gene_candidate_predictions()
+#main.create_phenolog_gene_candidate_prediction_matrix()
+#main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
