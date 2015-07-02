@@ -3469,8 +3469,8 @@ fdr_cutoff = 0.004426898733810069
 
 
 #main.set_stage_for_extension_fdr_calculation()
-'''
-for i in range(108, 111):
+
+for i in range(135, 1001):
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
@@ -3487,7 +3487,7 @@ for i in range(108, 111):
     read_only_zebrafish_geno_pheno_hash = {}
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
-    '''
+
 '''
 for i in range(1, 1001):
 
@@ -3506,7 +3506,7 @@ for i in range(1, 1001):
     read_only_mouse_geno_pheno_hash = {}
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
-    '''
+
 for i in range(1, 1001):
 
     with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
@@ -3524,7 +3524,7 @@ for i in range(1, 1001):
     read_only_zebrafish_geno_pheno_hash = {}
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
-
+'''
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
