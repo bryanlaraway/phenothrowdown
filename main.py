@@ -1010,7 +1010,7 @@ class main():
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
-        for x in range(1, num_files+1):
+        for x in range(5, num_files+1):
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -2739,7 +2739,7 @@ class main():
                     if ortholog_phenotype_matrix[i][j] != 0:
                         phenotype_ortholog_prediction_matrix[y][j] += weight_matrix[i][j]*ortholog_phenotype_matrix[i][j]
 
-            print(phenotype_ortholog_prediction_matrix[y])
+            #print(phenotype_ortholog_prediction_matrix[y])
 
 
         numpy.save('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
@@ -3517,13 +3517,15 @@ for i in range(108, 111):
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices_alternate()
-read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
-main.populate_phenolog_gene_candidate_matrices_alternate()
+
+#read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+#main.populate_phenolog_gene_candidate_matrices_alternate()
+
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
-#main.create_phenolog_gene_candidate_prediction_matrix()
-#main.assemble_phenolog_gene_candidate_predictions()
+main.create_phenolog_gene_candidate_prediction_matrix()
+main.assemble_phenolog_gene_candidate_predictions()
 #test_matrix = numpy.zeros((5, 2))
 #print(test_matrix)
 #test_matrix[0][0] = 1
