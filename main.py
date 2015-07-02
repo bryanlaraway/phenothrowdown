@@ -1941,7 +1941,7 @@ class main():
         #print('Total phenolog calculations: '+str(total_hyp_calcs))
 
 
-        return phenolog_ext_p_value_list
+        return #phenolog_ext_p_value_list
 
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
