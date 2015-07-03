@@ -2676,6 +2676,11 @@ class main():
 
 
     def create_phenolog_gene_candidate_prediction_matrix(self):
+
+
+        #FIXME: This needs to be adjusted to ensure that the nearest neighbor phenotypes are not in the same species!!!
+        # What would work better? Including a prefix check for the nearest neighbor,
+        # or splitting the main matrix into a few submatrices for the comparison phenotypes?
         distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
         weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
         ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
@@ -3476,7 +3481,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 
-for i in range(190, 200):
+for i in range(200, 210):
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
