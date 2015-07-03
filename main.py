@@ -3476,7 +3476,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 
-for i in range(170, 1001):
+for i in range(183, 190):
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
