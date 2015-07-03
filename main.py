@@ -1893,16 +1893,17 @@ class main():
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
-        line_counter = 0
-        failure_counter = 0
-        comparison_counter = 0
-        total_phenotype_matches = 0
-        total_phenotype_nonmatches = 0
-        phenotype_matches = 0
-        phenotype_non_matches = 0
-        genotype_a_phenotype_count = 0
-        genotype_b_phenotype_count = 0
-        total_hyp_calcs = 0
+        #line_counter = 0
+        #failure_counter = 0
+        #comparison_counter = 0
+        #total_phenotype_matches = 0
+        #total_phenotype_nonmatches = 0
+        #phenotype_matches = 0
+        #phenotype_non_matches = 0
+        #genotype_a_phenotype_count = 0
+        #genotype_b_phenotype_count = 0
+        #total_hyp_calcs = 0
+
         phenolog_ext_p_value_list = []
 
         species_a_geno_pheno_hash = species_a_gp_hash
@@ -1941,7 +1942,9 @@ class main():
         #print('Total non-matches: '+str(total_phenotype_nonmatches))
         #print('Total phenolog calculations: '+str(total_hyp_calcs))
 
-
+        phenolog_ext_p_value_list = []
+        comparison_list = []
+        gc.collect()
         return #phenolog_ext_p_value_list
 
 
@@ -3481,7 +3484,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 
-for i in range(200, 210):
+for i in range(200, 1001):
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
