@@ -8,6 +8,7 @@ import json
 import urllib.request
 import codecs
 import time
+import gc
 from socket import *
 import os
 import re
@@ -3475,7 +3476,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 
-for i in range(160, 170):
+for i in range(170, 1001):
 
     with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
         read_only_hvz_phenologs = set(pickle.load(handle))
@@ -3490,6 +3491,7 @@ for i in range(160, 170):
     read_only_hvz_phenologs = []
     read_only_human_geno_pheno_hash = {}
     read_only_zebrafish_geno_pheno_hash = {}
+    gc.collect()
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
 
