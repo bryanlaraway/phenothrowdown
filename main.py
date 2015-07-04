@@ -22,7 +22,7 @@ from scipy.stats import hypergeom, pearsonr
 import math
 import heapq
 import multiprocessing
-from memory_profiler import profile
+#from memory_profiler import profile
 #from multiprocessing import Pool, Process, Manager, Lock, Value
 import itertools
 from threading import Thread
