@@ -22,6 +22,7 @@ from scipy.stats import hypergeom, pearsonr
 import math
 import heapq
 import multiprocessing
+from memory_profiler import profile
 #from multiprocessing import Pool, Process, Manager, Lock, Value
 import itertools
 from threading import Thread
@@ -29,6 +30,7 @@ from threading import Thread
 from ctypes import c_int
 from queue import Queue
 #import matplotlib.pyplot as plt
+
 
 start_time = time.time()
 
@@ -1888,6 +1890,7 @@ class main():
 
         return phenolog_ext_p_value_list
 
+    #@profile
     def perform_phenolog_calculations_for_ext_fdr_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
@@ -3253,6 +3256,7 @@ def multiprocess_ext_fdr_calculation(i):
 
     return fdr_cutoff_value
 
+
 def multiprocess_ext_fdr_calculation_alternate(comparison_list):
     #increment()
 
@@ -3484,10 +3488,11 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 #gc.set_debug(gc.DEBUG_LEAK)
+
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 
-for i in range(340, 350):
+for i in range(350, 360):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
