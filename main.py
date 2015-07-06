@@ -1891,7 +1891,7 @@ class main():
         return phenolog_ext_p_value_list
 
     #@profile
-    def perform_phenolog_calculations_for_ext_fdr_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
+    def perform_phenolog_calculations_for_ext_fdr_hvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -1931,7 +1931,7 @@ class main():
 
             print('INFO: Starting multiprocessing.')
 
-            for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_alternate, comparison_list, chunksize=100):
+            for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_hvz, comparison_list, chunksize=100):
                 if results is not None:
                     phenolog_ext_p_value_list.append(results)
                     #print(results)
@@ -1945,10 +1945,130 @@ class main():
         #print('Total non-matches: '+str(total_phenotype_nonmatches))
         #print('Total phenolog calculations: '+str(total_hyp_calcs))
 
-        phenolog_ext_p_value_list = []
-        comparison_list = []
+        phenolog_ext_p_value_list = None
+        comparison_list = None
         gc.collect()
         return #phenolog_ext_p_value_list
+
+    def perform_phenolog_calculations_for_ext_fdr_hvm(self, species_a_gp_hash, species_b_gp_hash, out_file):
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
+
+        #line_counter = 0
+        #failure_counter = 0
+        #comparison_counter = 0
+        #total_phenotype_matches = 0
+        #total_phenotype_nonmatches = 0
+        #phenotype_matches = 0
+        #phenotype_non_matches = 0
+        #genotype_a_phenotype_count = 0
+        #genotype_b_phenotype_count = 0
+        #total_hyp_calcs = 0
+
+        phenolog_ext_p_value_list = []
+
+        species_a_geno_pheno_hash = species_a_gp_hash
+        species_b_geno_pheno_hash = species_b_gp_hash
+
+        total_comparisons = (len(species_a_geno_pheno_hash))*(len(species_b_geno_pheno_hash))
+        print('INFO: '+str(total_comparisons)+' total comparisons to perform.')
+
+        print('INFO: Assembling disease/genotype comparison list.')
+
+        comparison_list = []
+
+        for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
+            comparison_list.append(element)
+
+        print('INFO: Done assembling disease/genotype comparison list.')
+
+        if __name__ == '__main__':
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+
+            print('INFO: Starting multiprocessing.')
+
+            for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_hvm, comparison_list, chunksize=100):
+                if results is not None:
+                    phenolog_ext_p_value_list.append(results)
+                    #print(results)
+
+
+            #print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+        print('INFO: Done with multiprocessing.')
+        with open(out_file, 'wb') as handle:
+            pickle.dump(phenolog_ext_p_value_list, handle)
+        #print('Total Matches: '+str(total_phenotype_matches))
+        #print('Total non-matches: '+str(total_phenotype_nonmatches))
+        #print('Total phenolog calculations: '+str(total_hyp_calcs))
+
+        phenolog_ext_p_value_list = None
+        comparison_list = None
+        gc.collect()
+        return #phenolog_ext_p_value_list
+
+
+    def perform_phenolog_calculations_for_ext_fdr_mvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
+
+        #line_counter = 0
+        #failure_counter = 0
+        #comparison_counter = 0
+        #total_phenotype_matches = 0
+        #total_phenotype_nonmatches = 0
+        #phenotype_matches = 0
+        #phenotype_non_matches = 0
+        #genotype_a_phenotype_count = 0
+        #genotype_b_phenotype_count = 0
+        #total_hyp_calcs = 0
+
+        phenolog_ext_p_value_list = []
+
+        species_a_geno_pheno_hash = species_a_gp_hash
+        species_b_geno_pheno_hash = species_b_gp_hash
+
+        total_comparisons = (len(species_a_geno_pheno_hash))*(len(species_b_geno_pheno_hash))
+        print('INFO: '+str(total_comparisons)+' total comparisons to perform.')
+
+        print('INFO: Assembling disease/genotype comparison list.')
+
+        comparison_list = []
+
+        for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
+            comparison_list.append(element)
+
+        print('INFO: Done assembling disease/genotype comparison list.')
+
+        if __name__ == '__main__':
+
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+
+            print('INFO: Starting multiprocessing.')
+
+            for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_mvz, comparison_list, chunksize=100):
+                if results is not None:
+                    phenolog_ext_p_value_list.append(results)
+                    #print(results)
+
+
+            #print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
+        print('INFO: Done with multiprocessing.')
+        with open(out_file, 'wb') as handle:
+            pickle.dump(phenolog_ext_p_value_list, handle)
+        #print('Total Matches: '+str(total_phenotype_matches))
+        #print('Total non-matches: '+str(total_phenotype_nonmatches))
+        #print('Total phenolog calculations: '+str(total_hyp_calcs))
+
+        phenolog_ext_p_value_list = None
+        comparison_list = None
+        gc.collect()
+        return #phenolog_ext_p_value_list
+
 
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
@@ -3257,7 +3377,7 @@ def multiprocess_ext_fdr_calculation(i):
     return fdr_cutoff_value
 
 
-def multiprocess_ext_fdr_calculation_alternate(comparison_list):
+def multiprocess_ext_fdr_calculation_hvz(comparison_list):
     #increment()
 
     total_phenotype_matches = 0
@@ -3291,6 +3411,126 @@ def multiprocess_ext_fdr_calculation_alternate(comparison_list):
             ab_combo = species_a_phenotype+'_'+species_b_phenotype
             ba_combo = species_b_phenotype+'_'+species_a_phenotype
             if ab_combo in read_only_hvz_phenologs or ba_combo in read_only_hvz_phenologs:
+                #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                phenotype_matches += 1
+                #print(species_a_ortholog+' == '+species_b_ortholog)
+                total_phenotype_matches += 1
+            else:
+                #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                phenotype_non_matches += 1
+                total_phenotype_nonmatches += 1
+
+    if phenotype_matches > 0:
+        #print('Matches: '+str(ortholog_matches))
+        #print('Non-matches: '+str(ortholog_non_matches))
+        m = float(genotype_b_phenotype_count)
+        n = float(genotype_a_phenotype_count)
+        N = float(len(read_only_hvz_phenologs))
+        c = float(phenotype_matches)
+        prb = float(hypergeom.pmf(c, N, m, n))
+        #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+        #print(prb)
+        #phenolog_ext_p_value_list.append(prb)
+        #total_hyp_calcs += 1
+
+        return prb
+    else:
+        return
+
+def multiprocess_ext_fdr_calculation_hvm(comparison_list):
+    #increment()
+
+    total_phenotype_matches = 0
+    total_phenotype_nonmatches = 0
+
+    species_a_genotype_id = comparison_list[0]
+    species_a_phenotypes = read_only_human_geno_pheno_hash[comparison_list[0]]
+    #print(species_a_phenotypes)
+    genotype_a_phenotype_count = len(species_a_phenotypes)
+
+    # Genotype for species B
+    species_b_genotype_id = comparison_list[1]
+    species_b_phenotypes = read_only_zebrafish_geno_pheno_hash[comparison_list[1]]
+    #print(species_b_phenotypes)
+    phenotype_matches = 0
+    phenotype_non_matches = 0
+
+
+    genotype_b_phenotype_count = len(species_b_phenotypes)
+
+    for k in species_a_phenotypes:
+        # Orthologs for species A
+        #ortholog_matches = 0
+        #ortholog_non_matches = 0
+
+        species_a_phenotype = k
+        for l in species_b_phenotypes:
+            # Orthologs for species B
+            species_b_phenotype = l
+
+            ab_combo = species_a_phenotype+'_'+species_b_phenotype
+            ba_combo = species_b_phenotype+'_'+species_a_phenotype
+            if ab_combo in read_only_hvm_phenologs or ba_combo in read_only_hvm_phenologs:
+                #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
+                phenotype_matches += 1
+                #print(species_a_ortholog+' == '+species_b_ortholog)
+                total_phenotype_matches += 1
+            else:
+                #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
+                phenotype_non_matches += 1
+                total_phenotype_nonmatches += 1
+
+    if phenotype_matches > 0:
+        #print('Matches: '+str(ortholog_matches))
+        #print('Non-matches: '+str(ortholog_non_matches))
+        m = float(genotype_b_phenotype_count)
+        n = float(genotype_a_phenotype_count)
+        N = float(len(read_only_hvz_phenologs))
+        c = float(phenotype_matches)
+        prb = float(hypergeom.pmf(c, N, m, n))
+        #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
+        #print(prb)
+        #phenolog_ext_p_value_list.append(prb)
+        #total_hyp_calcs += 1
+
+        return prb
+    else:
+        return
+
+def multiprocess_ext_fdr_calculation_mvz(comparison_list):
+    #increment()
+
+    total_phenotype_matches = 0
+    total_phenotype_nonmatches = 0
+
+    species_a_genotype_id = comparison_list[0]
+    species_a_phenotypes = read_only_human_geno_pheno_hash[comparison_list[0]]
+    #print(species_a_phenotypes)
+    genotype_a_phenotype_count = len(species_a_phenotypes)
+
+    # Genotype for species B
+    species_b_genotype_id = comparison_list[1]
+    species_b_phenotypes = read_only_zebrafish_geno_pheno_hash[comparison_list[1]]
+    #print(species_b_phenotypes)
+    phenotype_matches = 0
+    phenotype_non_matches = 0
+
+
+    genotype_b_phenotype_count = len(species_b_phenotypes)
+
+    for k in species_a_phenotypes:
+        # Orthologs for species A
+        #ortholog_matches = 0
+        #ortholog_non_matches = 0
+
+        species_a_phenotype = k
+        for l in species_b_phenotypes:
+            # Orthologs for species B
+            species_b_phenotype = l
+
+            ab_combo = species_a_phenotype+'_'+species_b_phenotype
+            ba_combo = species_b_phenotype+'_'+species_a_phenotype
+            if ab_combo in read_only_mvz_phenologs or ba_combo in read_only_mvz_phenologs:
                 #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                 phenotype_matches += 1
                 #print(species_a_ortholog+' == '+species_b_ortholog)
@@ -3491,60 +3731,57 @@ fdr_cutoff = 0.004426898733810069
 
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
-
-
-for i in range(500, 510):
+for i in range(500, 1001):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
     print('INFO: Processing human vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
-    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+    main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 
-    read_only_human_geno_pheno_hash = {}
-    read_only_zebrafish_geno_pheno_hash = {}
+    read_only_human_geno_pheno_hash = None
+    read_only_zebrafish_geno_pheno_hash = None
     gc.collect()
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
 
-'''
-for i in range(1, 1001):
 
-    with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
-        read_only_hvm_phenologs = set(pickle.load(handle))
+with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
+    read_only_hvm_phenologs = set(pickle.load(handle))
+for i in range(1, 1001):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_mouse_geno_pheno_hash = pickle.load(handle)
     print('INFO: Processing human vs mouse random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(i)+'.txt'
-    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash, p_value_out_file)
+    main.perform_phenolog_calculations_for_ext_fdr_hvm(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash, p_value_out_file)
 
-    read_only_phenologs = []
-    read_only_human_geno_pheno_hash = {}
-    read_only_mouse_geno_pheno_hash = {}
+    read_only_human_geno_pheno_hash = None
+    read_only_mouse_geno_pheno_hash = None
+    gc.collect()
 
-    print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
+    print('INFO: Done processing human vs mouse random data set '+str(i)+'.')
 
+
+with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
+    read_only_mvz_phenologs = set(pickle.load(handle))
 for i in range(1, 1001):
-
-    with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
-        read_only_mvz_phenologs = set(pickle.load(handle))
     with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_mouse_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
     print('INFO: Processing mouse vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/mvz_p_values/hvz_p_values_'+str(i)+'.txt'
-    main.perform_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+    main.perform_phenolog_calculations_for_ext_fdr_mvz(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 
-    read_only_mvz_phenologs = []
-    read_only_mouse_geno_pheno_hash = {}
-    read_only_zebrafish_geno_pheno_hash = {}
+    read_only_mouse_geno_pheno_hash = None
+    read_only_zebrafish_geno_pheno_hash = None
+    gc.collect()
 
-    print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
-'''
+    print('INFO: Done processing mouse vs zebrafish random data set '+str(i)+'.')
+
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
