@@ -3438,7 +3438,7 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
         return
 
 def multiprocess_ext_fdr_calculation_hvm(comparison_list):
-    #increment()
+    increment()
 
     total_phenotype_matches = 0
     total_phenotype_nonmatches = 0
@@ -3498,7 +3498,7 @@ def multiprocess_ext_fdr_calculation_hvm(comparison_list):
         return
 
 def multiprocess_ext_fdr_calculation_mvz(comparison_list):
-    #increment()
+    increment()
 
     total_phenotype_matches = 0
     total_phenotype_nonmatches = 0
