@@ -3749,7 +3749,7 @@ for i in range(500, 1001):
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
-for i in range(1, 1001):
+for i in range(2, 3):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
@@ -3764,7 +3764,7 @@ for i in range(1, 1001):
 
     print('INFO: Done processing human vs mouse random data set '+str(i)+'.')
 
-
+'''
 with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
     read_only_mvz_phenologs = set(pickle.load(handle))
 for i in range(1, 1001):
@@ -3781,7 +3781,7 @@ for i in range(1, 1001):
     gc.collect()
 
     print('INFO: Done processing mouse vs zebrafish random data set '+str(i)+'.')
-
+'''
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
