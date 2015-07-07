@@ -1922,6 +1922,7 @@ class main():
         for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
             comparison_list.append(element)
 
+
         print('INFO: Done assembling disease/genotype comparison list.')
 
         if __name__ == '__main__':
@@ -1945,8 +1946,8 @@ class main():
         #print('Total non-matches: '+str(total_phenotype_nonmatches))
         #print('Total phenolog calculations: '+str(total_hyp_calcs))
 
-        phenolog_ext_p_value_list = None
-        comparison_list = None
+        del phenolog_ext_p_value_list
+        del comparison_list
         gc.collect()
         return #phenolog_ext_p_value_list
 
@@ -3740,8 +3741,8 @@ for i in range(500, 1001):
     p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
     main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 
-    read_only_human_geno_pheno_hash = None
-    read_only_zebrafish_geno_pheno_hash = None
+    del read_only_human_geno_pheno_hash
+    del read_only_zebrafish_geno_pheno_hash
     gc.collect()
 
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
