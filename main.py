@@ -3785,11 +3785,10 @@ for i in range(1, 1001):
     gc.collect()
 
     print('INFO: Done processing mouse vs zebrafish random data set '+str(i)+'.')
-'''
+
 
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
-
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
     read_only_human_geno_pheno_hash = pickle.load(handle)
 with open('inter/random/zebrafish/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3797,13 +3796,41 @@ with open('inter/random/zebrafish/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as
 print('INFO: Processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
 p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(sys.argv[1])+'.txt'
 main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
-
 del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
-
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
+'''
 
+with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
+    read_only_hvm_phenologs = set(pickle.load(handle))
+with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
+    read_only_human_geno_pheno_hash = pickle.load(handle)
+with open('inter/random/mouse/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
+    read_only_mouse_geno_pheno_hash = pickle.load(handle)
+print('INFO: Processing human vs mouse random data set '+str(sys.argv[1])+'.')
+p_value_out_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(sys.argv[1])+'.txt'
+main.perform_phenolog_calculations_for_ext_fdr_hvm(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash, p_value_out_file)
+read_only_human_geno_pheno_hash = None
+read_only_mouse_geno_pheno_hash = None
+gc.collect()
+print('INFO: Done processing human vs mouse random data set '+str(sys.argv[1])+'.')
+
+'''
+with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
+    read_only_mvz_phenologs = set(pickle.load(handle))
+with open('inter/random/mouse/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
+    read_only_mouse_geno_pheno_hash = pickle.load(handle)
+with open('inter/random/zebrafish/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
+    read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
+print('INFO: Processing mouse vs zebrafish random data set '+str(sys.argv[1])+'.')
+p_value_out_file = 'inter/phenolog_ext/mvz_p_values/mvz_p_values_'+str(sys.argv[1])+'.txt'
+main.perform_phenolog_calculations_for_ext_fdr_mvz(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
+read_only_mouse_geno_pheno_hash = None
+read_only_zebrafish_geno_pheno_hash = None
+gc.collect()
+print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1])+'.')
+'''
 
 
 #main.perform_phenolog_calculations_for_ext_fdr(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
