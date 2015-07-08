@@ -568,16 +568,18 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                if extrinsic_genotype_id != '' or extrinsic_genotype_id is not None:
+
+                if extrinsic_genotype_id != '':
                     print('Skipping genotype with extrinsic modifiers: '+effective_genotype_id)
                     continue
                 elif extrinsic_genotype_id == '' or extrinsic_genotype_id is None:
-                    if effective_genotype_id not in zfin_genotype_to_phenotype_hash:
-                        zfin_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
-                    else:
-                        zfin_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
-                    if limit is not None and line_counter > limit:
-                        break
+                    if phenotype_id != '' and phenotype_id is not None:
+                        if effective_genotype_id not in zfin_genotype_to_phenotype_hash:
+                            zfin_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
+                        else:
+                            zfin_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
+                        if limit is not None and line_counter > limit:
+                            break
         with open(inter, 'wb') as handle:
             pickle.dump(zfin_genotype_to_phenotype_hash, handle)
         print('INFO: Done assembling zebrafish genotype to phenotype data.')
@@ -614,9 +616,9 @@ class main():
                  environment_label, publication_id, publication_label, publication_url, taxon_id,
                  taxon_label, e_uid, v_uid, v_uuid, v_lastmodified) = row
 
-                if effective_genotype_id not in mgi_genotype_to_phenotype_hash:
+                if effective_genotype_id not in mgi_genotype_to_phenotype_hash and phenotype_id != '':
                     mgi_genotype_to_phenotype_hash[effective_genotype_id] = [phenotype_id]
-                else:
+                elif phenotype_id != '':
                     mgi_genotype_to_phenotype_hash[effective_genotype_id].append(phenotype_id)
                 if limit is not None and line_counter > limit:
                     break
@@ -694,10 +696,10 @@ class main():
                 print(disorder_id)
 
                 #print(genes)
-                if disorder_id not in hpo_disease_to_phenotype_hash:
+                if disorder_id not in hpo_disease_to_phenotype_hash and phenotype_id != '':
                     hpo_disease_to_phenotype_hash[disorder_id] = [phenotype_id]
                     #print(hpo_disease_to_phenotype_hash[disease)id])
-                else:
+                elif phenotype_id != '':
                     if phenotype_id not in hpo_disease_to_phenotype_hash[disorder_id]:
                         hpo_disease_to_phenotype_hash[disorder_id].append(phenotype_id)
                     #print(hpo_disease_to_phenotype_hash[disorder_id])
@@ -798,7 +800,7 @@ class main():
                  evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
                  taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
 
-                if phenotype_id == '' or phenotype_id == None:
+                if phenotype_id == '' or phenotype_id is None:
                     continue
                 else:
                     if implicated_gene_ids == '' or implicated_gene_ids is None:
@@ -1014,7 +1016,7 @@ class main():
             #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #row_count = sum(1 for row in filereader)
             #print(str(row_count)+' rows to process.')
-        for x in range(2, num_files+1): #num_files+1
+        for x in range(25, num_files+1): #num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -3643,7 +3645,7 @@ main = main()
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
+main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 #print('INFO: Done processing mouse genotype vs zebrafish genotypes')
 
 #Processing completed!
@@ -3801,7 +3803,7 @@ del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
 '''
-
+'''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3815,7 +3817,7 @@ read_only_human_geno_pheno_hash = None
 read_only_mouse_geno_pheno_hash = None
 gc.collect()
 print('INFO: Done processing human vs mouse random data set '+str(sys.argv[1])+'.')
-
+'''
 '''
 with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
     read_only_mvz_phenologs = set(pickle.load(handle))
@@ -3895,7 +3897,6 @@ for element in itertools.product(a,b):
     print(element[0])
     print(element[1])
 '''
-
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
