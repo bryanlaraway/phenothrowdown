@@ -227,6 +227,7 @@ class main():
         print('INFO: '+str(failure_counter)+' failed to retrieve through SciGraph services.')
         return
 
+
     ####### NIF DATA ASSEMBLY #######
 
     ####### PHENOLOG PHENOTYPE TO GENE #######
@@ -395,7 +396,6 @@ class main():
         print('INFO: '+str(len(mgi_phenotype_to_gene_hash.keys()))+' mouse phenotypes present.')
 
         return
-
 
     def assemble_nif_hpo_phenotype_to_gene(self, limit=None):
         """This function assembles human phenotype to gene associations from the NIF/DISCO flat data file"""
@@ -823,11 +823,12 @@ class main():
         print('INFO: '+str(len(zfin_gene_to_phenotype_hash.keys()))+' human phenotypes present.')
         return
 
-    ####### OWLSIM DATA PROCESSING #######
+
+    ####### OWLSIM DATA PROCESSING ####### DOCUMENTATION COMPLETED
 
     def perform_owlsim_queries_threaded(self, raw1, raw2, out, limit=None):
         """
-        This is an unused testing function for multi-threading of OWLSim queries.
+        This is an unused testing function for multi-threading of OWLSim queries. Multiprocessing is sufficiently fast.
         :param raw1:
         :param raw2:
         :param out:
@@ -905,7 +906,8 @@ class main():
 
     def assemble_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, limit=None):
         """
-        This function assembles the comparison ID, disease/genotype/gene IDs, and URL query for the OWLSim server
+        This function assembles the comparison ID, disease/genotype/gene IDs, and URL query for the OWLSim server,
+        and saves each set as a row in a text file.
         :param raw1:
         :param raw2:
         :param interfile_directory:
@@ -913,6 +915,8 @@ class main():
         :param limit:
         :return:
         """
+
+        # Set up line counters and max line count for splitting to separate files.
         line_counter = 0
         line_counter_max = 5000000
         file_counter = 1
@@ -930,11 +934,16 @@ class main():
         if limit is None:
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
+
+        # Example URL format: http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
         base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         print('INFO: Assembling phenotypic profile comparison queries.')
         file_name = interfile_directory+'/'+interfile_prefix+'_'+str(file_counter)+'.txt'
         csvfile = open(file_name, 'w', newline='')
         csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+
+        # Cycle through each organism's disease/genotype to phenotype hash and
+        # assemble the comparison information and OWLSim query, then write to file.
         for i in organism_a_hash:
             entity_a = i
             entity_a_attributes = organism_a_hash[i]
@@ -965,7 +974,8 @@ class main():
 
     def perform_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, outfile_prefix, num_files, limit=None):
         """
-        This function takes as input the assembled OWLSim query files,
+        This function takes as input the assembled OWLSim query files, one row at a time, and performs the query.
+        It then parses the results from the OWLSim server, adding a success/fail flag, and writes to a file.
         :param raw1:
         :param raw2:
         :param interfile_directory:
@@ -1006,18 +1016,19 @@ class main():
                     filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
 
                     ###### MULTIPROCESSING INSERT ######
+                    # This section will chunk the queries to allow more efficient splitting across processors,
+                    # as the results are written to a file one at a time, but the queries can be
+                    # sent/receieved without waiting for the results to be written.
                     if __name__ == '__main__':
                         #lock = multiprocessing.Lock
 
                         print('INFO: Multiprocessing started')
                         cores = (multiprocessing.cpu_count()-1)
-                        #cores = 100
                         pool = multiprocessing.Pool(processes=cores)
                         num_chunks = 10000
                         chunks = itertools.groupby(filereader, keyfunc)
                         while True:
                             queries = [list(chunk) for key, chunk in itertools.islice(chunks, num_chunks)]
-
                             if queries:
                                 for result in pool.imap(multiprocess_owlsim_queries, queries):
                                     json.dump(result, outfile)
@@ -1030,11 +1041,13 @@ class main():
 
         return
 
+
     ####### PHENOLOG DATA PROCESSING #######
 
     def trim_panther_data(self, inter, taxons):
         """
-        This function trims the PANTHER flat file from NIF/DISCO for a given taxon.
+        This function trims the PANTHER flat file from NIF/DISCO for a given taxon,
+        which speeds up data assembly when converting from genes to orthologs.
         :param inter:
         :param taxons:
         :return:
@@ -1057,8 +1070,6 @@ class main():
                 filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
                 next(filereader,None)
                 for row in filereader:
-
-                    #
                     line_counter += 1
                     (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                     proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
@@ -1074,26 +1085,23 @@ class main():
                         output_line_counter += 1
                         csvwriter.writerow(output_row)
 
-
         print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
-
         return
 
     def get_common_orthologs(self, inter, taxons):
         """
-
-        :param inter:
-        :param taxons:
+        This function takes as input a list of taxons and the PANTHER flat file,
+        filters the PANTHER flat file using the provided taxon IDs, and writes the list to a new output file.
+        :param inter: directory & file name for the output file.
+        :param taxons: taxon IDs for filtering the PANTHER flat file.
         :return:
         """
-
-
         print('INFO: Getting common orthologs between species.')
         line_counter = 0
         ortholog_counter = 0
         raw = 'raw/panther/dvp.pr_nlx_84521_1'
         common_orthologs = []
-        #inter = 'inter/panther/common_orthologs_'+species_a+'_vs_'+species_b+'.txt'
+
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -1431,7 +1439,6 @@ class main():
 
         return
 
-
     def perform_phenolog_calculations_for_fdr(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
         """
 
@@ -1593,7 +1600,6 @@ class main():
 
         return
 
-
     def assemble_significant_phenologs_with_scores(self):
         """
 
@@ -1663,7 +1669,9 @@ class main():
 
     def assemble_hvm_phenologs(self):
         """
-
+        This function iterates through the significant human-mouse phenologs,
+        creates a combo field using the two phenotype IDs that will be used
+        as a lookup for the phenolog extension calculations.
         :return:
         """
         print('INFO: Assembling human-mouse phenologs.')
@@ -1683,7 +1691,9 @@ class main():
 
     def assemble_hvz_phenologs(self):
         """
-
+        This function iterates through the significant human-zebrafish phenologs,
+        creates a combo field using the two phenotype IDs that will be used
+        as a lookup for the phenolog extension calculations.
         :return:
         """
         print('INFO: Assembling human-zebrafish phenologs.')
@@ -1703,7 +1713,9 @@ class main():
 
     def assemble_mvz_phenologs(self):
         """
-
+        This function iterates through the significant mouse-zebrafish phenologs,
+        creates a combo field using the two phenotype IDs that will be used
+        as a lookup for the phenolog extension calculations.
         :return:
         """
         print('INFO: Assembling mouse-zebrafish phenologs.')
@@ -1762,7 +1774,6 @@ class main():
             #print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
 
         return #fdr_global_p_value_list[global_cutoff_position]
-
 
     def generate_human_random_ext_data(self):
         """
@@ -1829,7 +1840,6 @@ class main():
             ###### END MULTIPROCESSING INSERT ######
 
         return
-
 
     def perform_phenolog_calculations_for_ext_fdr(self, species_a_gp_hash, species_b_gp_hash, shared_phenologs):
         """
@@ -1944,7 +1954,6 @@ class main():
             #prb = hypergeom.cdf(x, M, n, N)
 
         return phenolog_ext_p_value_list
-
 
     def perform_phenolog_calculations_for_ext_fdr_hvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
@@ -2067,7 +2076,6 @@ class main():
         gc.collect()
         return #phenolog_ext_p_value_list
 
-
     def perform_phenolog_calculations_for_ext_fdr_mvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
@@ -2126,8 +2134,6 @@ class main():
         comparison_list = None
         gc.collect()
         return #phenolog_ext_p_value_list
-
-
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
         print('INFO: Performing phenolog extension calculations.')
@@ -2283,6 +2289,7 @@ class main():
             pickle.dump(hp_hash, handle)
 
         return
+
 
     ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES #######
 
@@ -2442,8 +2449,6 @@ class main():
 
 
     ####### PHENOLOG GENE CANDIDATE PREDICTION ALGORITHM #######
-    # Multiple things to do here.
-    #
 
     def create_phenolog_gene_candidate_matrices(self):
 
@@ -2550,7 +2555,6 @@ class main():
             #print(ortholog_list[0])
             print('DONE!')
         return
-
 
     def create_empty_phenolog_gene_candidate_matrices(self):
 
@@ -2841,8 +2845,6 @@ class main():
             print('DONE!')
         return
 
-
-
     def merge_matrices(self): #, input_matrix_1, input_matrix_2, output_matrix
         """
         """
@@ -2860,7 +2862,6 @@ class main():
 
         print(output_matrix)
         return
-
 
     def create_phenolog_gene_candidate_prediction_matrix(self):
         """
@@ -3006,7 +3007,6 @@ class main():
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
 
-
 def increment():
     """
     This function provides a shared counter for multiprocessing functions for tracking progress.
@@ -3016,93 +3016,12 @@ def increment():
         counter.value += 1
         print('INFO: Processing comparison '+str(counter.value))
 
-
 def keyfunc(row):
     return row[0]
 
 
-def multiprocess_matrix_comparisons(matrix_coordinates):
-    """
 
-    :param matrix_coordinates:
-    :return:
-    """
-    #increment()
-    #print(matrix_coordinates)
-    #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
-        #ortholog_list = pickle.load(handle)
-
-    #Total number of orthologs is 2905. Hard coding to remove multiple openings of the ortholog_list.txt file.
-    len_ortholog_list = 2905
-    # For testing with smaller phenotype sets, set number of orthologs from saved file
-    #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
-            #ortholog_list = pickle.load(handle)
-    #len_ortholog_list = len(ortholog_list)
-    #Comment out when done testing.
-    #test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
-    #phenotype_list = test_phenotype_list
-    #test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
-    #ortholog_list = test_ortholog_list
-
-    phenotype_index_i = matrix_coordinates[0]
-    phenotype_index_j = matrix_coordinates[1]
-    #distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
-    #weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
-    #print('Loading ortholog phenotype matrix.')
-    #ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
-    #print(len(ortholog_phenotype_matrix))
-    #print('Done loading ortholog phenotype matrix.')
-
-    ortholog_counter = 0
-    ortholog_match = 0
-    #print(len(ortholog_list))
-
-    (coefficient, p_value) = pearsonr(read_only_ortholog_phenotype_matrix[phenotype_index_i], read_only_ortholog_phenotype_matrix[phenotype_index_j])
-    #print(str(coeffecient)+'_'+str(p_value))
-    #distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
-    #distance_matrix_counter += 1
-    #print('INFO: Completed matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
-    #phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
-    #print('Phenotype I draws = '+ str(phenotype_i_draws))
-    #phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
-    #print('Phenotype J draws = '+ str(phenotype_j_draws))
-    for x in range(0, (len_ortholog_list)):
-    #while ortholog_counter < len(ortholog_list):
-        if read_only_ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and read_only_ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
-            ortholog_match += 1
-        ortholog_counter += 1
-    #(ortholog_match, ortholog_counter) = map(ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x), x in range(0, len_ortholog_list))
-    #print('Ortholog Matches: '+str(ortholog_match))
-    #print('Ortholog Counter: '+str(ortholog_counter))
-
-    # N = total number of orthologs shared between species
-    # n = nummber of orthologs in species A phenotype
-    # m = nummber of orthologs in species B phenotype
-    # c = number of common orthologs between phenotypes (ortholog matches)
-
-    m = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_i]))
-    n = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_j]))
-    N = float(len_ortholog_list) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
-    c = float(ortholog_match)
-    hyp_prob = (hypergeom.cdf(c, N, m, n))
-    #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
-    return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
-
-def ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x):
-    """
-
-    :param ortholog_phenotype_matrix:
-    :param phenotype_index_i:
-    :param phenotype_index_j:
-    :param x:
-    :return:
-    """
-    ortholog_counter = 0
-    ortholog_match = 0
-    if ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
-        ortholog_match += 1
-    ortholog_counter += 1
-    return ortholog_match, ortholog_counter
+####### OWLSIM QUERY MULTIPROCESSING #######
 
 def multiprocess_owlsim_queries(row):
     """
@@ -3159,14 +3078,12 @@ def multiprocess_owlsim_queries(row):
 
     return (sequence)
 
-
 class multithread_owlsim_queries(Thread):
     def __init__(self, url, name):
         Thread.__init__(self)
         self.name = name
         self.url = url
         return
-
 
     def run(self):
         """
@@ -3215,6 +3132,8 @@ class multithread_owlsim_queries(Thread):
 
 
         return (sequence)
+
+####### OWLSIM QUERY MULTIPROCESSING #######
 
 def multiprocess_fdr_calculation(i):
     """
@@ -3288,6 +3207,9 @@ def multiprocess_fdr_calculation(i):
 
     print('INFO: Processing for random data set '+str(i)+' completed.')
     return fdr_cutoff_value
+
+
+####### PHENOLOG EXTENSION MULTIPROCESSING #######
 
 def multiprocess_generate_random_human_ext_data(x):
     """
@@ -3478,7 +3400,6 @@ def multiprocess_ext_fdr_calculation(i):
     print('Processing completed in '+str(processing_time)+' seconds.')
 
     return fdr_cutoff_value
-
 
 def multiprocess_ext_fdr_calculation_hvz(comparison_list):
     """
@@ -3680,6 +3601,93 @@ def multiprocess_ext_fdr_calculation_mvz(comparison_list):
         return prb
     else:
         return
+
+
+####### PHENOLOG GENE CANDIDATE MULTIPROCESSING #######
+
+def multiprocess_matrix_comparisons(matrix_coordinates):
+    """
+
+    :param matrix_coordinates:
+    :return:
+    """
+    #increment()
+    #print(matrix_coordinates)
+    #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+        #ortholog_list = pickle.load(handle)
+
+    #Total number of orthologs is 2905. Hard coding to remove multiple openings of the ortholog_list.txt file.
+    len_ortholog_list = 2905
+    # For testing with smaller phenotype sets, set number of orthologs from saved file
+    #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
+            #ortholog_list = pickle.load(handle)
+    #len_ortholog_list = len(ortholog_list)
+    #Comment out when done testing.
+    #test_phenotype_list = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10']
+    #phenotype_list = test_phenotype_list
+    #test_ortholog_list = ['O1', 'O2', 'O3', 'O4', 'O5', 'O6', 'O7', 'O8', 'O9', 'O10']
+    #ortholog_list = test_ortholog_list
+
+    phenotype_index_i = matrix_coordinates[0]
+    phenotype_index_j = matrix_coordinates[1]
+    #distance_matrix = numpy.load('inter/phenolog_gene_cand/distance_matrix.npy')
+    #weight_matrix = numpy.load('inter/phenolog_gene_cand/weight_matrix.npy')
+    #print('Loading ortholog phenotype matrix.')
+    #ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+    #print(len(ortholog_phenotype_matrix))
+    #print('Done loading ortholog phenotype matrix.')
+
+    ortholog_counter = 0
+    ortholog_match = 0
+    #print(len(ortholog_list))
+
+    (coefficient, p_value) = pearsonr(read_only_ortholog_phenotype_matrix[phenotype_index_i], read_only_ortholog_phenotype_matrix[phenotype_index_j])
+    #print(str(coeffecient)+'_'+str(p_value))
+    #distance_matrix[phenotype_index_i][phenotype_index_j] = coefficient
+    #distance_matrix_counter += 1
+    #print('INFO: Completed matrix comparison '+str(distance_matrix_counter)+' out of '+str(distance_matrix_comparisons)+'.')
+    #phenotype_i_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_i])
+    #print('Phenotype I draws = '+ str(phenotype_i_draws))
+    #phenotype_j_draws = numpy.sum(ortholog_phenotype_matrix[phenotype_index_j])
+    #print('Phenotype J draws = '+ str(phenotype_j_draws))
+    for x in range(0, (len_ortholog_list)):
+    #while ortholog_counter < len(ortholog_list):
+        if read_only_ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and read_only_ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
+            ortholog_match += 1
+        ortholog_counter += 1
+    #(ortholog_match, ortholog_counter) = map(ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x), x in range(0, len_ortholog_list))
+    #print('Ortholog Matches: '+str(ortholog_match))
+    #print('Ortholog Counter: '+str(ortholog_counter))
+
+    # N = total number of orthologs shared between species
+    # n = nummber of orthologs in species A phenotype
+    # m = nummber of orthologs in species B phenotype
+    # c = number of common orthologs between phenotypes (ortholog matches)
+
+    m = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_i]))
+    n = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_j]))
+    N = float(len_ortholog_list) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
+    c = float(ortholog_match)
+    hyp_prob = (hypergeom.cdf(c, N, m, n))
+    #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
+    return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
+
+def ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x):
+    """
+
+    :param ortholog_phenotype_matrix:
+    :param phenotype_index_i:
+    :param phenotype_index_j:
+    :param x:
+    :return:
+    """
+    ortholog_counter = 0
+    ortholog_match = 0
+    if ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
+        ortholog_match += 1
+    ortholog_counter += 1
+    return ortholog_match, ortholog_counter
+
 
 
 ####### MAIN #######
