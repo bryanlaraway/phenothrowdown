@@ -66,11 +66,6 @@ class main():
         'dvp.pr_nif_0000_02550_3' # ANIMAL QTL DB: Traits
     ]
 
-    files = {
-        'aqtl' : {'file' : 'dvp.pr_nif_0000_02550_3'},
-        'mgi' : {'file' : 'dvp.pr_nif_0000_00096_6'}
-    }
-
     ####### SCIGRAPH DATA ASSEMBLY #######
     #NOTE: While this code works, acquiring data via SciGraph is rate-limiting due to the URL calls.
     #I have instead downloaded the flat files from NIF/DISCO
@@ -831,11 +826,17 @@ class main():
     ####### OWLSIM DATA PROCESSING #######
 
     def perform_owlsim_queries_threaded(self, raw1, raw2, out, limit=None):
+        """
+        This is an unused testing function for multi-threading of OWLSim queries.
+        :param raw1:
+        :param raw2:
+        :param out:
+        :param limit:
+        :return:
+        """
+
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
-        comparison_count = 0
-        failure_counter = 0
-        comparison_hash = {}
         comparison_list = []
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
@@ -849,16 +850,7 @@ class main():
         if limit is None:
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
-        #data2 = open(raw2,'r', encoding="iso-8859-1")
-        #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
-            #organism_a_hash = pickle.loads(handle1.read())
-        #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
-            #organism_b_hash = pickle.loads(handle2.read())
-        #print(organism_a_hash)
-        #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
         base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
-        #print(organism_a_hash)
-        #print(organism_b_hash)
         with open(out, 'w', newline='') as outfile:
             #wlsimwriter = csv.writer(csvfile, delimiter='\t', quotechar="'")
             for i in organism_a_hash:
@@ -885,15 +877,9 @@ class main():
             num_threads = len(comparison_list)
             for sequence in comparison_list:
                 queue.put(tuple)
-
                 worker = Thread(target=multithread_owlsim_queries, args=(sequence))
-
-
             if __name__ == '__main__':
-
                 print('INFO: Multithreading started')
-
-
                 #multiprocessing.Semaphore(cores)
                 #jobs = []
                 #phenotype_iterable = []
@@ -912,26 +898,29 @@ class main():
                     json.dump(sequence, outfile)
                     outfile.write('\n')
                 print('Done processing results.')
-
                 print('INFO: Multiprocessing completed')
                 ###### END THREADING INSERT ######
 
         return
 
     def assemble_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, limit=None):
-
+        """
+        This function assembles the comparison ID, disease/genotype/gene IDs, and URL query for the OWLSim server
+        :param raw1:
+        :param raw2:
+        :param interfile_directory:
+        :param interfile_prefix:
+        :param limit:
+        :return:
+        """
         line_counter = 0
         line_counter_max = 5000000
         file_counter = 1
-        comparison_count = 0
-        failure_counter = 0
-        comparison_hash = {}
-        comparison_list = []
+
         if limit is not None:
             print('Only querying first '+str(limit)+' phenotypic profile pairs.')
             comparison_count = limit
-        #raw1 = 'inter/hpo/nif_human_disease_phenotype_hash.txt'
-        #raw2 = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
+
         data1 = open(raw1, 'rb')
         organism_a_hash = pickle.load(data1)
         data1.close()
@@ -941,16 +930,7 @@ class main():
         if limit is None:
             comparison_count = len(organism_a_hash) * len(organism_b_hash)
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
-        #data2 = open(raw2,'r', encoding="iso-8859-1")
-        #with open(raw1, 'r', encoding="iso-8859-1") as handle1:
-            #organism_a_hash = pickle.loads(handle1.read())
-        #with open(raw2, 'r', encoding="iso-8859-1") as handle2:
-            #organism_b_hash = pickle.loads(handle2.read())
-        #print(organism_a_hash)
-        #base_url = 'http://owlsim.crbs.ucsd.edu/compareAttributeSets?'
         base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
-        #print(organism_a_hash)
-        #print(organism_b_hash)
         print('INFO: Assembling phenotypic profile comparison queries.')
         file_name = interfile_directory+'/'+interfile_prefix+'_'+str(file_counter)+'.txt'
         csvfile = open(file_name, 'w', newline='')
@@ -958,23 +938,14 @@ class main():
         for i in organism_a_hash:
             entity_a = i
             entity_a_attributes = organism_a_hash[i]
-            #print(attributes)
-            #print(entity_a_attributes)
             phenotypic_profile_a = 'a='+('&a=').join(entity_a_attributes)
             for j in organism_b_hash:
                 entity_b = j
                 entity_b_attributes = organism_b_hash[j]
-                #print(entity_b_attributes)
                 phenotypic_profile_b = '&b='+('&b=').join(entity_b_attributes)
                 query_url = base_url+phenotypic_profile_a+phenotypic_profile_b
-                #print(query_url)
-
-                #print('INFO: Assembling phenotypic profile comparison query '+str(line_counter)+' out of '+str(comparison_count)+'.')
                 comparison_id = entity_a+'_'+entity_b
-                #comparison_tuple = ([comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes])
                 output_row = (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes)
-
-
                 csvwriter.writerow(output_row)
                 line_counter += 1
                 if line_counter == line_counter_max:
@@ -993,6 +964,19 @@ class main():
         return
 
     def perform_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, outfile_prefix, num_files, limit=None):
+        """
+        This function takes as input the assembled OWLSim query files,
+        :param raw1:
+        :param raw2:
+        :param interfile_directory:
+        :param interfile_prefix:
+        :param outfile_directory:
+        :param outfile_prefix:
+        :param num_files:
+        :param limit:
+        :return:
+        """
+
         print('INFO: Performing OWLSim queries.')
         line_counter = 0
 
@@ -1012,10 +996,7 @@ class main():
         # Dump the hash files from memory.
         organism_a_hash = {}
         organism_b_hash = {}
-        #with open(inter, 'r', encoding="iso-8859-1") as csvfile:
-            #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            #row_count = sum(1 for row in filereader)
-            #print(str(row_count)+' rows to process.')
+
         for x in range(25, num_files+1): #num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
@@ -1043,27 +1024,6 @@ class main():
                                     outfile.write('\n')
                             else:
                                 break
-                        #multiprocessing.Semaphore(cores)
-                        #jobs = []
-                        #phenotype_iterable = []
-                        #phenotype_counter = 0
-
-                        #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
-                        #phenotype_counter += 1
-                        #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
-
-                        #pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader
-                        #results = [pool.apply(multiprocess_owlsim_queries, args=(lock, row, outfile)) for row in filereader]
-
-
-                        '''print('Processing results.')
-                        comparison_list = []
-                        for x in results:
-                            (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)  = x
-                            sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                            json.dump(sequence, outfile)
-                            outfile.write('\n')
-                        print('Done processing results.')'''
 
                     print('INFO: Multiprocessing completed')
                     ###### END MULTIPROCESSING INSERT ######
@@ -1073,7 +1033,12 @@ class main():
     ####### PHENOLOG DATA PROCESSING #######
 
     def trim_panther_data(self, inter, taxons):
-        """ This function trims the PANTHER flat file from NIF/DISCO for a given taxon. """
+        """
+        This function trims the PANTHER flat file from NIF/DISCO for a given taxon.
+        :param inter:
+        :param taxons:
+        :return:
+        """
 
         print('INFO: Trimming PANTHER data.')
 
@@ -1115,6 +1080,14 @@ class main():
         return
 
     def get_common_orthologs(self, inter, taxons):
+        """
+
+        :param inter:
+        :param taxons:
+        :return:
+        """
+
+
         print('INFO: Getting common orthologs between species.')
         line_counter = 0
         ortholog_counter = 0
@@ -1150,7 +1123,12 @@ class main():
         return
 
     def get_ortholog(self, query_gene_id, panther):
+        """
 
+        :param query_gene_id:
+        :param panther:
+        :return:
+        """
         with open(panther, 'r') as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             #print(str(row_count)+' zebrafish gene to phenotype rows to process.')
@@ -1172,6 +1150,15 @@ class main():
         return('fail')
 
     def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs, fdr_cutoff):
+        """
+
+        :param inter1:
+        :param inter2:
+        :param out:
+        :param shared_orthologs:
+        :param fdr_cutoff:
+        :return:
+        """
         print('INFO: Performing phenolog calculations.')
         line_counter = 0
         failure_counter = 0
@@ -1284,6 +1271,14 @@ class main():
         return
 
     def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
+        """
+
+        :param pheno_gene_hash:
+        :param common_orthologs:
+        :param out_dir:
+        :param limit:
+        :return:
+        """
         print('INFO: Creating random data sets.')
         # Take the phenotype-ortholog hashes I have created.
         # Remove all orthologs and place in a list, replace with 0s or 1s or something.
@@ -1347,6 +1342,10 @@ class main():
         return
 
     def set_stage_for_fdr_calculation(self):
+        """
+
+        :return:
+        """
         print('INFO: Setting stage for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -1402,7 +1401,10 @@ class main():
         return fdr_global_p_value_list[global_cutoff_position]
 
     def assemble_partial_fdr(self):
+        """
 
+        :return:
+        """
         with open('inter/random/fdr/fdr_999_global_p_value_list.txt', 'rb') as handle:
             fdr_global_p_value_list = pickle.load(handle)
         with open('inter/random/fdr/fdr_1_global_p_value_list.txt', 'rb') as handle:
@@ -1431,6 +1433,13 @@ class main():
 
 
     def perform_phenolog_calculations_for_fdr(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
+        """
+
+        :param species_a_po_hash:
+        :param species_b_po_hash:
+        :param shared_orthologs:
+        :return:
+        """
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -1527,6 +1536,10 @@ class main():
         return phenolog_p_value_list
 
     def assemble_significant_phenologs(self):
+        """
+
+        :return:
+        """
         #json = open('out/phenolog/human_vs_mouse.txt')
         #data = json.loads(json)
         #json_lines = []
@@ -1582,6 +1595,10 @@ class main():
 
 
     def assemble_significant_phenologs_with_scores(self):
+        """
+
+        :return:
+        """
         #json = open('out/phenolog/human_vs_mouse.txt')
         #data = json.loads(json)
         #json_lines = []
@@ -1645,6 +1662,10 @@ class main():
         return
 
     def assemble_hvm_phenologs(self):
+        """
+
+        :return:
+        """
         print('INFO: Assembling human-mouse phenologs.')
         hvm_phenologs = []
         with open('inter/phenolog/hvm_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
@@ -1661,6 +1682,10 @@ class main():
         return
 
     def assemble_hvz_phenologs(self):
+        """
+
+        :return:
+        """
         print('INFO: Assembling human-zebrafish phenologs.')
         hvz_phenologs = []
         with open('inter/phenolog/hvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
@@ -1677,6 +1702,10 @@ class main():
         return
 
     def assemble_mvz_phenologs(self):
+        """
+
+        :return:
+        """
         print('INFO: Assembling mouse-zebrafish phenologs.')
         mvz_phenologs = []
         with open('inter/phenolog/mvz_significant_phenologs.txt', 'r', encoding="iso-8859-1") as csvfile:
@@ -1693,6 +1722,11 @@ class main():
         return
 
     def set_stage_for_extension_fdr_calculation(self, limit=1000):
+        """
+
+        :param limit:
+        :return:
+        """
         print('INFO: Setting stage for second FDR estimation.')
         # Need to calculate phenolog extension for each pairwise species and combine in order to get a full
         # set of 'genologs' (?) for proper estimation of FDR.
@@ -1730,8 +1764,11 @@ class main():
         return #fdr_global_p_value_list[global_cutoff_position]
 
 
-
     def generate_human_random_ext_data(self):
+        """
+
+        :return:
+        """
         print('INFO: Creating random data sets.')
 
 
@@ -1750,6 +1787,10 @@ class main():
         return
 
     def generate_mouse_random_ext_data(self):
+        """
+
+        :return:
+        """
         print('INFO: Creating random data sets.')
 
 
@@ -1768,6 +1809,10 @@ class main():
         return
 
     def generate_zebrafish_random_ext_data(self):
+        """
+
+        :return:
+        """
         print('INFO: Creating random data sets.')
 
 
@@ -1787,6 +1832,13 @@ class main():
 
 
     def perform_phenolog_calculations_for_ext_fdr(self, species_a_gp_hash, species_b_gp_hash, shared_phenologs):
+        """
+
+        :param species_a_gp_hash:
+        :param species_b_gp_hash:
+        :param shared_phenologs:
+        :return:
+        """
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
@@ -1893,7 +1945,7 @@ class main():
 
         return phenolog_ext_p_value_list
 
-    #@profile
+
     def perform_phenolog_calculations_for_ext_fdr_hvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
@@ -2502,6 +2554,7 @@ class main():
 
     def create_empty_phenolog_gene_candidate_matrices(self):
 
+
         #Testing - read in the matrix, compare matrix columns
 
         # Set the number of nearest neighbor phenotypes to consider for predictions.
@@ -2791,6 +2844,8 @@ class main():
 
 
     def merge_matrices(self): #, input_matrix_1, input_matrix_2, output_matrix
+        """
+        """
         input_matrix_1 = numpy.random.randint(2, size=(10,10))
         print(input_matrix_1)
         input_matrix_2 = numpy.random.randint(2, size=(10,10))
@@ -2808,7 +2863,8 @@ class main():
 
 
     def create_phenolog_gene_candidate_prediction_matrix(self):
-
+        """
+        """
 
         #FIXME: This needs to be adjusted to ensure that the nearest neighbor phenotypes are not in the same species!!!
         # What would work better? Including a prefix check for the nearest neighbor,
@@ -2888,6 +2944,9 @@ class main():
         return
 
     def assemble_phenolog_gene_candidate_predictions(self):
+        """
+
+        """
         #Have ortholog predictions in matrix for each phenotype, now need to take the matrix data and output to a table
         # that is human readable for each phenotype for comparison/assembly with OWLSim output. Maybe write to JSON as well?
 
@@ -2949,7 +3008,10 @@ counter_lock = multiprocessing.Lock()
 
 
 def increment():
-    """ This function provides a shared counter for multiprocessing funtctions for tracking progress."""
+    """
+    This function provides a shared counter for multiprocessing functions for tracking progress.
+    :return:
+    """
     with counter_lock:
         counter.value += 1
         print('INFO: Processing comparison '+str(counter.value))
@@ -2960,6 +3022,11 @@ def keyfunc(row):
 
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
+    """
+
+    :param matrix_coordinates:
+    :return:
+    """
     #increment()
     #print(matrix_coordinates)
     #with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
@@ -3022,6 +3089,14 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
     return (phenotype_index_i, phenotype_index_j, hyp_prob, coefficient)
 
 def ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_index_j, x):
+    """
+
+    :param ortholog_phenotype_matrix:
+    :param phenotype_index_i:
+    :param phenotype_index_j:
+    :param x:
+    :return:
+    """
     ortholog_counter = 0
     ortholog_match = 0
     if ortholog_phenotype_matrix[phenotype_index_i][x] == 1 and ortholog_phenotype_matrix[phenotype_index_j][x] == 1:
@@ -3030,6 +3105,11 @@ def ortholog_matches(ortholog_phenotype_matrix, phenotype_index_i, phenotype_ind
     return ortholog_match, ortholog_counter
 
 def multiprocess_owlsim_queries(row):
+    """
+
+    :param row:
+    :return:
+    """
 
     increment()
     (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = row[0]
@@ -3089,7 +3169,8 @@ class multithread_owlsim_queries(Thread):
 
 
     def run(self):
-
+        """
+        """
         print('INFO: Performing an OWLSim query.')
         (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
         try:
@@ -3136,6 +3217,11 @@ class multithread_owlsim_queries(Thread):
         return (sequence)
 
 def multiprocess_fdr_calculation(i):
+    """
+
+    :param i:
+    :return:
+    """
 
     hvm_human_dir = 'inter/random/human_vs_mouse/human/'
     hvm_mouse_dir = 'inter/random/human_vs_mouse/mouse/'
@@ -3204,6 +3290,11 @@ def multiprocess_fdr_calculation(i):
     return fdr_cutoff_value
 
 def multiprocess_generate_random_human_ext_data(x):
+    """
+
+    :param x:
+    :return:
+    """
 
     random_geno_pheno_hash = {}
 
@@ -3239,6 +3330,11 @@ def multiprocess_generate_random_human_ext_data(x):
     return
 
 def multiprocess_generate_random_mouse_ext_data(x):
+    """
+
+    :param x:
+    :return:
+    """
 
     random_geno_pheno_hash = {}
 
@@ -3274,6 +3370,11 @@ def multiprocess_generate_random_mouse_ext_data(x):
     return
 
 def multiprocess_generate_random_zebrafish_ext_data(x):
+    """
+
+    :param x:
+    :return:
+    """
 
     random_geno_pheno_hash = {}
 
@@ -3309,6 +3410,11 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
     return
 
 def multiprocess_ext_fdr_calculation(i):
+    """
+
+    :param i:
+    :return:
+    """
 
     processing_start_time = time.time()
     #print('INFO: Setting stage for second FDR estimation.')
@@ -3384,6 +3490,11 @@ def multiprocess_ext_fdr_calculation(i):
 
 
 def multiprocess_ext_fdr_calculation_hvz(comparison_list):
+    """
+
+    :param comparison_list:
+    :return:
+    """
     #increment()
 
     total_phenotype_matches = 0
@@ -3444,6 +3555,11 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
         return
 
 def multiprocess_ext_fdr_calculation_hvm(comparison_list):
+    """
+
+    :param comparison_list:
+    :return:
+    """
     #increment()
 
     total_phenotype_matches = 0
@@ -3504,6 +3620,11 @@ def multiprocess_ext_fdr_calculation_hvm(comparison_list):
         return
 
 def multiprocess_ext_fdr_calculation_mvz(comparison_list):
+    """
+
+    :param comparison_list:
+    :return:
+    """
     #increment()
 
     total_phenotype_matches = 0
@@ -3566,129 +3687,118 @@ def multiprocess_ext_fdr_calculation_mvz(comparison_list):
 
 ####### MAIN #######
 
+# Here is where I'm calling each of the functions individually, as needed.
+
 limit = None
 
 main = main()
 
-#Trim the PANTHER data set for each taxon.
+####### ASSEMBLY OF CROSS-SPECIES ORTHOLOG LISTS #######
+
+# Trim the PANTHER data set for each taxon.
 #main.trim_panther_data('inter/panther/panther_human.txt', ['NCBITaxon:9606'])
 #main.trim_panther_data('inter/panther/panther_mouse.txt', ['NCBITaxon:10090'])
 #main.trim_panther_data('inter/panther/panther_zebrafish.txt', ['NCBITaxon:7955'])
 #main.trim_panther_data('inter/panther/panther_hmz_trio.txt', ['NCBITaxon:9606', 'NCBITaxon:7955', 'NCBITaxon:10090'])
 
+# Assemble ortholog lookup-tables for each pair of species.
 #main.get_common_orthologs('inter/panther/common_orthologs_human_zebrafish.txt', ['NCBITaxon:9606', 'NCBITaxon:7955'])
 #main.get_common_orthologs('inter/panther/common_orthologs_human_mouse.txt', ['NCBITaxon:9606', 'NCBITaxon:10090'])
 #main.get_common_orthologs('inter/panther/common_orthologs_mouse_zebrafish.txt', ['NCBITaxon:10090', 'NCBITaxon:7955'])
 
-### Data assembly via SciGraph ###
+
+
+####### DATA ASSEMBLY VIA SCIGRAPH #######
+# I have abaondoned using SciGraph in favor of the flat tables from NIF/DISCO, as the URL queries were too slow.
 #main._assemble_human_disease_to_phenotype(limit)
 #main._assemble_mouse_genotype_to_phenotype(limit)
-#FIXME: Note that the zebrafish data is not currently available through REST services.
-#main.assemble_zebrafish_genotype_to_phenotype(500)
+#main.assemble_zebrafish_genotype_to_phenotype(limit)
 
-### Data assembly via NIF/DISCO ###
+
+
+####### DATA ASSEMBLY VIA  NIF/DISCO #######
+# Assemble the phenotype to gene files for phenologs.
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
 #main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
 #main.assemble_nif_hpo_phenotype_to_gene(limit)  # Completed on full data set in 75.5 hours.
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
-#main.assemble_nif_hpo_disease_to_gene(limit)
+# Assemble the files for OWLSim queries and phenolog extension.
 #main.assemble_nif_zfin_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_genotype_to_phenotype(limit)
 #main.assemble_nif_mgi_gene_to_phenotype(limit)
 #main.assemble_nif_zfin_gene_to_phenotype(limit)
 #main.assemble_nif_hpo_disease_to_phenotype(limit)
+#main.assemble_nif_hpo_disease_to_gene(limit)
+
 
 
 ####### ASSEMBLE OWLSIM COMPARISON QUERIES #######
+# These scripts assemble the OWLSim queries and save them to files, 5 million queries/file.
 ### CAUTION: These assemblies will take a large amount of time and file space!
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', limit)
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_queries', limit)
 #main.assemble_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', limit)
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_queries', limit)
-
 #main.assemble_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_queries', limit)
-
 #main.assemble_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene', 'mouse_gene_zebrafish_gene_queries', limit)
 
 
 
 ####### OWLSIM COMPARISONS #######
-
 #OWLSim url calls take about 3 hours for 100,000 comparisons.
 #Current implementation runs at 185/second, or 666,000/hour?
 # 42 million would take 63 hours, or 2.5 days
+#latest test: 320/second, or 100K/5 minutes
 
-#latest test: 320/second
-
-#Processing completed in  hours,  comparisons.
+#Processing...
 #Human Diseases = 9214
 #Mouse Genotypes = 56427
 #Total comparisons = 519,918,378
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing human diseases vs mouse genotypes')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
-#print('INFO: Done processing human diseases vs mouse genotypes')
 
 #Process completed!
 #Human Diseases = 9214
 #zebrafish Genotype = 8535
 #Total comparisons = 78,641,490
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing human disease vs zebrafish genotype')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_queries', 'out/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_results', 16)
-#print('INFO: Done processing human disease vs zebrafish genotype')
 
-#Processing completed in  hours,  comparisons. Estimated to take 669 days?
+#Processing...
 #Mouse genotype = 56427
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing mouse genotype vs zebrafish genotypes')
-main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
-#print('INFO: Done processing mouse genotype vs zebrafish genotypes')
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 
 #Processing completed!
 #Human Diseases = 9214
 #Mouse genes = 13102
 #Total comparisons = 120,712,614
 # Compare human disease phenotypic profiles & mouse gene phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing human disease vs mouse genes')
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_gene','human_disease_mouse_gene_queries', 'out/owlsim/human_disease_mouse_gene', 'human_disease_mouse_gene_results', 25)
-#print('INFO: Done processing human disease vs mouse genes')
 
 #Processing completed!
 #Human Diseases = 9214
 #zebrafish Genes = 4580
 #Total comparisons = 42,190,906
 # Compare human disease phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing human disease vs zebrafish genes')
 #(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, , outfile_prefix, num_files, limit=None)
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_queries', 'out/owlsim/human_disease_zebrafish_gene', 'human_disease_zebrafish_gene_results', 9)
-#main.perform_owlsim_queries_threaded('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt','out/owlsim/human_disease_zebrafish_gene.txt')
-#print('INFO: Done processing human disease vs zebrafish genes')
 
 #Processing completed!
 #Mouse Genes = 13102
 #zebrafish Genes = 4580
 #Total comparisons = 59,989,479
 # Compare mouse gene phenotypic profiles & zebrafish gene phenotypic profiles via OWLSim.
-#print('INFO: OWLSim processing mouse genes vs zebrafish genes')
 #main.perform_owlsim_queries('inter/mgi/mouse_gene_phenotype_hash.txt', 'inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'inter/owlsim/mouse_gene_zebrafish_gene','mouse_gene_zebrafish_gene_queries', 'out/owlsim/mouse_gene_zebrafish_gene', 'mouse_gene_zebrafish_gene_results', 12)
-#print('INFO: Done processing mouse genes vs zebrafish genes')
 
-#with open('inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'rb') as handle:
-    #species_b_pheno_gene_hash = pickle.load(handle)
-#print(len(species_b_pheno_gene_hash.keys()))
-
-#TODO: Data assembly
-# Would it be easier/more efficient to add the phenolog data to the OWLSim output table,
-# or do separate output tables and then match them together into a combined table? Essentially need to do an SQL join.
 
 
 ####### PHENOLOG FDR CALCULATION #######
 
-# Each random data generation takes ~8-10 hours.
+# Generate random data sets for each organism using common orthologs between the other organisms.
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/mouse/')
 #main.generate_random_data('inter/hpo/human_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_human_mouse.txt', 'inter/random/human_vs_mouse/human/')
 
@@ -3697,12 +3807,13 @@ main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inte
 
 #main.generate_random_data('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/zebrafish/')
 #main.generate_random_data('inter/mgi/mouse_pheno_ortholog_hash.txt', 'inter/panther/common_orthologs_mouse_zebrafish.txt', 'inter/random/mouse_vs_zebrafish/mouse/')
-#print('INFO: Done with random data generation.')
 
 #main.set_stage_for_fdr_calculation()
 #fdr_cutoff = main.set_stage_for_fdr_calculation()
 #main.assemble_partial_fdr()
 #print(fdr_cutoff)
+
+
 
 ####### PHENOLOG COMPARISONS #######
 # NOTE: Either run the FDR calculations or set an FDR cutoff before running the phenolog calculations.
@@ -3717,11 +3828,13 @@ fdr_cutoff = 0.004426898733810069
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
 
+# Parse each of the phenotype ontology files to obtain a set of all possible phenotypes for each species.
 #main.parse_hp('raw/ontologies/hp.obo', 'inter/ontologies/hp_hash.txt')
 #main.parse_mp('raw/ontologies/MPheno_OBO.ontology', 'inter/ontologies/mp_hash.txt')
 #main.parse_zp('raw/ontologies/zp_mapping.txt', 'inter/ontologies/zp_hash.txt')
 
-#Creation of random data sets for phenlog extension FDR.
+# Create random data sets for phenlog extension FDR from all possible phenotypes and
+# the significant phenologs between species pair.
 #main.generate_human_random_ext_data()
 #main.generate_mouse_random_ext_data()
 #main.generate_zebrafish_random_ext_data()
@@ -3734,10 +3847,15 @@ fdr_cutoff = 0.004426898733810069
 
 #main.set_stage_for_extension_fdr_calculation()
 #gc.set_debug(gc.DEBUG_LEAK)
+
+
+# The next three code snippets process the phenolog extension calculations to determine the FDR.
+# However, I have switched to using the three code snippets after this section in combination with a bash script,
+# as there is an issue with Python not deleting lists of floats even when specifically removed.
 '''
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
-for i in range(513, 1001):
+for i in range(1, 1001):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/zebrafish/random_ext_'+str(i)+'.txt', 'rb') as handle:
@@ -3745,17 +3863,15 @@ for i in range(513, 1001):
     print('INFO: Processing human vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
     main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
-
     del read_only_human_geno_pheno_hash
     del read_only_zebrafish_geno_pheno_hash
     gc.collect()
-
     print('INFO: Done processing human vs zebrafish random data set '+str(i)+'.')
 
 
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
-for i in range(2, 3):
+for i in range(1, 1001):
     with open('inter/random/human/random_ext_'+str(i)+'.txt', 'rb') as handle:
         read_only_human_geno_pheno_hash = pickle.load(handle)
     with open('inter/random/mouse/random_ext_'+str(i)+'.txt', 'rb') as handle:
@@ -3763,11 +3879,9 @@ for i in range(2, 3):
     print('INFO: Processing human vs mouse random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(i)+'.txt'
     main.perform_phenolog_calculations_for_ext_fdr_hvm(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash, p_value_out_file)
-
     read_only_human_geno_pheno_hash = None
     read_only_mouse_geno_pheno_hash = None
     gc.collect()
-
     print('INFO: Done processing human vs mouse random data set '+str(i)+'.')
 
 
@@ -3781,14 +3895,15 @@ for i in range(1, 1001):
     print('INFO: Processing mouse vs zebrafish random data set '+str(i)+'.')
     p_value_out_file = 'inter/phenolog_ext/mvz_p_values/mvz_p_values_'+str(i)+'.txt'
     main.perform_phenolog_calculations_for_ext_fdr_mvz(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
-
     read_only_mouse_geno_pheno_hash = None
     read_only_zebrafish_geno_pheno_hash = None
     gc.collect()
-
     print('INFO: Done processing mouse vs zebrafish random data set '+str(i)+'.')
+'''
 
-
+# The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
+# This gets around the memory management issue.
+'''
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3803,7 +3918,7 @@ del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
 '''
-'''
+
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3817,7 +3932,7 @@ read_only_human_geno_pheno_hash = None
 read_only_mouse_geno_pheno_hash = None
 gc.collect()
 print('INFO: Done processing human vs mouse random data set '+str(sys.argv[1])+'.')
-'''
+
 '''
 with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
     read_only_mvz_phenologs = set(pickle.load(handle))
@@ -3836,18 +3951,16 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 
 #main.perform_phenolog_calculations_for_ext_fdr(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
-
-
-
-
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
 
 
+# Made up FDR for testing purposes.
 #ext_fdr_cutoff = 0.00022089684117479534
+
+# Once the FDR has been determined, can run the actual phenolog extension calculations using the FDR cutoff.
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/hvm_significant_phenologs.txt', ext_fdr_cutoff)
-#main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_mouse.txt', 'inter/phenolog/all_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/human_vs_zebrafish.txt', 'inter/phenolog/hvz_significant_phenologs.txt', ext_fdr_cutoff)
 #main.perform_phenolog_ext_calculations('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'out/phenolog_ext/mouse_vs_zebrafish.txt', 'inter/phenolog/mvz_significant_phenologs.txt', ext_fdr_cutoff)
 
@@ -3861,7 +3974,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #(zebrafish_ortholog_phenotype_matrix, zebrafish_phenotype_list, zebrafish_ortholog_list) = main.assemble_ortholog_phenotype_matrix('inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_matrix.txt')
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
-#cProfile.run()
+
 #main.assemble_ortholog_phenotype_matrix()
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
@@ -3878,33 +3991,17 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.merge_matrices()
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
-#test_matrix = numpy.zeros((5, 2))
-#print(test_matrix)
-#test_matrix[0][0] = 1
-#test_matrix[3][1] = 5
-#print(test_matrix)
 
-#with open('inter/owlsim/mouse_gene_zebrafish_gene_queries.txt', 'r', encoding="iso-8859-1") as csvfile:
-    #filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-    #row_count = sum(1 for row in filereader)
-    #print(str(row_count)+' rows to process.')
 
-'''
-a = ['A', 'B', 'C']
-b = ['X', 'Y', 'Z']
-for element in itertools.product(a,b):
-    print(element)
-    print(element[0])
-    print(element[1])
-'''
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 #TODO: Make sure and have the ability to filter between single-gene genotypes and multi-gene genotypes.
 
+# URL Format for OWLSim queries:
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
-#Format for mutliple:
+# URL format for mutliple phenotypes:
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
 
 
