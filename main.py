@@ -3910,7 +3910,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-'''
+
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3924,8 +3924,8 @@ del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-'''
 
+'''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3940,7 +3940,7 @@ read_only_mouse_geno_pheno_hash = None
 gc.collect()
 print('INFO: Done processing human vs mouse random data set '+str(sys.argv[1])+'.')
 
-'''
+
 with open('inter/phenolog/mvz_phenolog_combo.txt', 'rb') as handle:
     read_only_mvz_phenologs = set(pickle.load(handle))
 with open('inter/random/mouse/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
