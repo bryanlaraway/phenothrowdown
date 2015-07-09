@@ -3377,9 +3377,7 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
     """
 
     random_geno_pheno_hash = {}
-
     phenotypes = []
-
     with open('inter/ontologies/zp_hash.txt', 'rb') as handle:
         phenotype_hash = pickle.load(handle)
     for i in phenotype_hash:
@@ -3387,9 +3385,7 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
             phenotypes.append(i)
     with open('inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'rb') as handle:
         geno_pheno_hash = pickle.load(handle)
-
     random.shuffle(phenotypes)
-
     for i in geno_pheno_hash:
         random_geno_pheno_hash[i] = []
         ortholog_list_length = len(geno_pheno_hash[i])
@@ -3398,7 +3394,6 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
         random.shuffle(phenotype_draw)
         #random_orthologs = random.sample(orthologs)
         #test_pheno_ortholog_hash[i].append(random_orthologs)
-
         for j in geno_pheno_hash[i]:
             random.shuffle(phenotype_draw)
             random_geno_pheno_hash[i].append(phenotype_draw[0])
@@ -3425,11 +3420,7 @@ def multiprocess_ext_fdr_calculation(i):
     mouse_dir = 'inter/random/mouse/'
     zebrafish_dir = 'inter/random/zebrafish/'
 
-
-
     fdr_p_value_list = []
-    #FIXME: Remove this on full data set running.
-    #fdr_p_value_list.append(0.002222)
     human_file = human_dir+'random_ext_'+str(i)+'.txt'
     mouse_file = mouse_dir+'random_ext_'+str(i)+'.txt'
     zebrafish_file = zebrafish_dir+'random_ext_'+str(i)+'.txt'
@@ -3491,10 +3482,12 @@ def multiprocess_ext_fdr_calculation(i):
 
 def multiprocess_ext_fdr_calculation_hvz(comparison_list):
     """
-
-    :param comparison_list:
+    This function is the multi-processed portion of the phenolog extension FDR calculation.
+    If there is at least one phenolog match, will perform the hypergeometric probability calculation and return the probability.
+    :param comparison_list: One pair-wise combination of human and zebrafish genotypes from the comparison list.
     :return:
     """
+    # Activate to track comparisons.
     #increment()
 
     total_phenotype_matches = 0
@@ -3556,10 +3549,12 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
 
 def multiprocess_ext_fdr_calculation_hvm(comparison_list):
     """
-
-    :param comparison_list:
+    This function is the multi-processed portion of the phenolog extension FDR calculation.
+    If there is at least one phenolog match, will perform the hypergeometric probability calculation and return the probability.
+    :param comparison_list: One pair-wise combination of human and mouse genotypes from the comparison list.
     :return:
     """
+    # Activate to track comparisons.
     #increment()
 
     total_phenotype_matches = 0
@@ -3621,10 +3616,12 @@ def multiprocess_ext_fdr_calculation_hvm(comparison_list):
 
 def multiprocess_ext_fdr_calculation_mvz(comparison_list):
     """
-
-    :param comparison_list:
+    This function is the multi-processed portion of the phenolog extension FDR calculation.
+    If there is at least one phenolog match, will perform the hypergeometric probability calculation and return the probability.
+    :param comparison_list: One pair-wise combination of mouse and zebrafish genotypesfrom the comparison list.
     :return:
     """
+    # Activate to track comparisons.
     #increment()
 
     total_phenotype_matches = 0
