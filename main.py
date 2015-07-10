@@ -9,14 +9,14 @@ import urllib.request
 import codecs
 import time
 import gc
-from socket import *
-import os
+#from socket import *
+#import os
 import sys
 import re
 import csv
 import pickle
 from decimal import Decimal, getcontext
-import cProfile
+#import cProfile
 import numpy
 from numpy import random
 from scipy.stats import hypergeom, pearsonr
@@ -893,11 +893,11 @@ class main():
                 #results = [pool.apply_async(multiprocess_owlsim_queries, args=(tuple)) for tuple in comparison_list]
                 print('Processing results.')
                 comparison_list = []
-                for p in results:
-                    sequence  = p.get()
+                #for p in results:
+                    #sequence  = p.get()
                     #sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-                    json.dump(sequence, outfile)
-                    outfile.write('\n')
+                    #json.dump(sequence, outfile)
+                    #outfile.write('\n')
                 print('Done processing results.')
                 print('INFO: Multiprocessing completed')
                 ###### END THREADING INSERT ######
@@ -1007,7 +1007,7 @@ class main():
         organism_a_hash = {}
         organism_b_hash = {}
 
-        for x in range(25, num_files+1): #num_files+1
+        for x in range(39, num_files+1): #num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -3775,7 +3775,7 @@ main = main()
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
+main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 
 #Processing completed!
 #Human Diseases = 9214
