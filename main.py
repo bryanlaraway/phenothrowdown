@@ -1080,8 +1080,9 @@ class main():
 
     def get_common_orthologs(self, inter, taxons):
         """
-        This function takes as input a list of taxons and the PANTHER flat file,
-        filters the PANTHER flat file using the provided taxon IDs, and writes the list to a new output file.
+        This function takes as input a list of taxons and a the PANTHER flat file,
+        filters the PANTHER flat file using the provided taxon IDs to obtain
+        the common orthologs between the taxons, and writes the list to a new output file.
         :param inter: directory & file name for the output file.
         :param taxons: taxon IDs for filtering the PANTHER flat file.
         :return:
@@ -1122,9 +1123,10 @@ class main():
 
     def get_ortholog(self, query_gene_id, panther):
         """
-
-        :param query_gene_id:
-        :param panther:
+        This function is used when creating the phenotype-ortholog hashes.
+        It takes a gene ID and, if there is an ortholog match, return the PANTHER ID of the ortholog.
+        :param query_gene_id: Gene ID used to query for an ortholog.
+        :param panther: PANTHER file trimmed for the specific taxon.
         :return:
         """
         with open(panther, 'r') as csvfile:
