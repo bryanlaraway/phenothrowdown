@@ -1039,8 +1039,8 @@ class main():
         """
         This function trims the PANTHER flat file from NIF/DISCO for a given taxon,
         which speeds up data assembly when converting from genes to orthologs.
-        :param inter:
-        :param taxons:
+        :param inter: Directory and file name for saving the trimmed PANTHER file.
+        :param taxons: taxon IDs for filtering.
         :return:
         """
 
@@ -1072,7 +1072,6 @@ class main():
                         output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                         proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
                         gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
-                        #print('found one')
                         output_line_counter += 1
                         csvwriter.writerow(output_row)
 
