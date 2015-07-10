@@ -943,7 +943,8 @@ class main():
         csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
 
         # Cycle through each organism's disease/genotype to phenotype hash and
-        # assemble the comparison information and OWLSim query, then write to file.
+        # assemble the comparison information and OWLSim query for
+        # each phenotypic profile comparison, then write to file.
         for i in organism_a_hash:
             entity_a = i
             entity_a_attributes = organism_a_hash[i]
@@ -972,42 +973,31 @@ class main():
         print('INFO: Done assembling phenotypic profile comparison queries.')
         return
 
-    def perform_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, outfile_prefix, num_files, limit=None):
+    def perform_owlsim_queries(self, raw1, raw2, interfile_directory, interfile_prefix, outfile_directory, outfile_prefix, num_files):
         """
         This function takes as input the assembled OWLSim query files, one row at a time, and performs the query.
         It then parses the results from the OWLSim server, adding a success/fail flag, and writes to a file.
-        :param raw1:
-        :param raw2:
-        :param interfile_directory:
-        :param interfile_prefix:
-        :param outfile_directory:
-        :param outfile_prefix:
-        :param num_files:
-        :param limit:
+        :param raw1: Used to obtain the number of diseases/genotypes/genes to compare from organism 1.
+        :param raw2: Used to obtain the number of diseases/genotypes/genes to compare from organism .
+        :param interfile_directory: Directory of the OWLSim query text files.
+        :param interfile_prefix: Prefix of the OWLSim query text files.
+        :param outfile_directory: Directory of the OWLSim output text files.
+        :param outfile_prefix: Prefix of the OWLSim output text files.
+        :param num_files: Total number of OWLSim query text files.
+        :param limit: Optional limit for testing, not currently used
         :return:
         """
 
         print('INFO: Performing OWLSim queries.')
-        line_counter = 0
+        with open(raw1, 'rb') as data1:
+            organism_a_hash = pickle.load(data1)
+        with open(raw2, 'rb') as data2:
+            organism_b_hash = pickle.load(data2)
+        comparison_count = len(organism_a_hash) * len(organism_b_hash)
+        print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
-        if limit is not None:
-            print('Only querying first '+str(limit)+' phenotypic profile pairs.')
-            comparison_count = limit
-
-        data1 = open(raw1, 'rb')
-        organism_a_hash = pickle.load(data1)
-        data1.close()
-        data2 = open(raw2, 'rb')
-        organism_b_hash = pickle.load(data2)
-        data2.close()
-        if limit is None:
-            comparison_count = len(organism_a_hash) * len(organism_b_hash)
-            print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
-        # Dump the hash files from memory.
-        organism_a_hash = {}
-        organism_b_hash = {}
-
-        for x in range(39, num_files+1): #num_files+1
+        # Cycle through the OWLSim query files to feed queries to the OWLSim server.
+        for x in range(39, num_files+1): #1, num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -1019,6 +1009,7 @@ class main():
                     # This section will chunk the queries to allow more efficient splitting across processors,
                     # as the results are written to a file one at a time, but the queries can be
                     # sent/receieved without waiting for the results to be written.
+                    # This approach avoids having to use the multiprocessing lock.
                     if __name__ == '__main__':
                         #lock = multiprocessing.Lock
 
@@ -3775,7 +3766,7 @@ main = main()
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 
 #Processing completed!
 #Human Diseases = 9214
