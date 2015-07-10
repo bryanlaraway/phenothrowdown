@@ -230,7 +230,116 @@ class main():
 
     ####### NIF DATA ASSEMBLY #######
 
-    ####### PHENOLOG PHENOTYPE TO GENE #######
+    ####### PHENOLOG PHENOTYPE TO GENE/ORTHOLOG #######
+
+
+    def trim_panther_data(self, inter, taxons):
+        """
+        This function trims the PANTHER flat file from NIF/DISCO for a given taxon,
+        which speeds up data assembly when converting from genes to orthologs.
+        :param inter: Directory and file name for saving the trimmed PANTHER file.
+        :param taxons: taxon IDs for filtering.
+        :return:
+        """
+
+        print('INFO: Trimming PANTHER data.')
+
+        # Set counters and open required files.
+        line_counter = 0
+        output_line_counter = 0
+        raw = 'raw/panther/dvp.pr_nlx_84521_1'
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' PANTHER rows to process.')
+        with open(inter, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+                next(filereader,None)
+                for row in filereader:
+                    line_counter += 1
+                    (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                    proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                    gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
+                    e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                    #Currently filtering on the big three taxons, and ortholog relations only.
+                    if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
+                        output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                        proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
+                        output_line_counter += 1
+                        csvwriter.writerow(output_row)
+
+        print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
+        return
+
+    def get_common_orthologs(self, inter, taxons):
+        """
+        This function takes as input a list of taxons and a the PANTHER flat file,
+        filters the PANTHER flat file using the provided taxon IDs to obtain
+        the common orthologs between the taxons, and writes the list to a new output file.
+        :param inter: directory & file name for the output file.
+        :param taxons: taxon IDs for filtering the PANTHER flat file.
+        :return:
+        """
+        print('INFO: Getting common orthologs between species.')
+        line_counter = 0
+        ortholog_counter = 0
+        raw = 'raw/panther/dvp.pr_nlx_84521_1'
+        common_orthologs = []
+
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' PANTHER rows to process.')
+
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
+                proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
+                gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
+                e_uid, v_uid, v_uuid, v_lastmodified) = row
+
+                if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
+                    if panther_id not in common_orthologs:
+                        common_orthologs.append(panther_id)
+                        ortholog_counter += 1
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(common_orthologs, handle)
+
+        print(str(ortholog_counter)+' common orthologs found.')
+
+        return
+
+    def get_ortholog(self, query_gene_id, panther):
+        """
+        This function is used when creating the phenotype-ortholog hashes.
+        It takes a gene ID and, if there is an ortholog match, return the PANTHER ID of the ortholog.
+        :param query_gene_id: Gene ID used to query for an ortholog.
+        :param panther: PANTHER file trimmed for the specific taxon.
+        :return: PANTHER ID if successfail, fail flag if unsuccessful.
+        """
+        with open(panther, 'r') as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            print('query= '+query_gene_id)
+            for row in filereader:
+                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina,
+                 panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb,
+                 orthology_class, orthology_class_label, panther_id) = row
+                if query_gene_id in [genea, gene_id_a, geneb, gene_id_b]:
+                    result_panther_id = panther_id
+                    print('found ortholog for '+query_gene_id+'.')
+                    return(result_panther_id)
+        print('no ortholog found for '+query_gene_id+'.')
+        return('fail')
 
     def assemble_nif_zfin_phenotype_to_gene(self, limit=None):
         """This function assembles zebrafish phenotype to gene associations from the NIF/DISCO flat data file"""
@@ -1035,123 +1144,10 @@ class main():
 
     ####### PHENOLOG DATA PROCESSING #######
 
-    def trim_panther_data(self, inter, taxons):
-        """
-        This function trims the PANTHER flat file from NIF/DISCO for a given taxon,
-        which speeds up data assembly when converting from genes to orthologs.
-        :param inter: Directory and file name for saving the trimmed PANTHER file.
-        :param taxons: taxon IDs for filtering.
-        :return:
-        """
-
-        print('INFO: Trimming PANTHER data.')
-
-        # Set counters and open required files.
-        line_counter = 0
-        output_line_counter = 0
-        raw = 'raw/panther/dvp.pr_nlx_84521_1'
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' PANTHER rows to process.')
-        with open(inter, 'w', newline='') as csvfile:
-            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-            with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-                next(filereader,None)
-                for row in filereader:
-                    line_counter += 1
-                    (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
-                    proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                    gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
-                    e_uid, v_uid, v_uuid, v_lastmodified) = row
-
-                    #Currently filtering on the big three taxons, and ortholog relations only.
-                    if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
-                        output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
-                        proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                        gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
-                        output_line_counter += 1
-                        csvwriter.writerow(output_row)
-
-        print('PANTHER file trimmed to '+str(output_line_counter)+' rows.')
-        return
-
-    def get_common_orthologs(self, inter, taxons):
-        """
-        This function takes as input a list of taxons and a the PANTHER flat file,
-        filters the PANTHER flat file using the provided taxon IDs to obtain
-        the common orthologs between the taxons, and writes the list to a new output file.
-        :param inter: directory & file name for the output file.
-        :param taxons: taxon IDs for filtering the PANTHER flat file.
-        :return:
-        """
-        print('INFO: Getting common orthologs between species.')
-        line_counter = 0
-        ortholog_counter = 0
-        raw = 'raw/panther/dvp.pr_nlx_84521_1'
-        common_orthologs = []
-
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' PANTHER rows to process.')
-
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                (panther_speciesa, tax_id_a, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
-                proteina, panther_speciesb, tax_id_b, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
-                gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
-                e_uid, v_uid, v_uuid, v_lastmodified) = row
-
-                if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
-                    if panther_id not in common_orthologs:
-                        common_orthologs.append(panther_id)
-                        ortholog_counter += 1
-
-        with open(inter, 'wb') as handle:
-            pickle.dump(common_orthologs, handle)
-
-        print(str(ortholog_counter)+' common orthologs found.')
-
-        return
-
-    def get_ortholog(self, query_gene_id, panther):
-        """
-        This function is used when creating the phenotype-ortholog hashes.
-        It takes a gene ID and, if there is an ortholog match, return the PANTHER ID of the ortholog.
-        :param query_gene_id: Gene ID used to query for an ortholog.
-        :param panther: PANTHER file trimmed for the specific taxon.
-        :return:
-        """
-        with open(panther, 'r') as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            #print(str(row_count)+' zebrafish gene to phenotype rows to process.')
-            print('query= '+query_gene_id)
-            for row in filereader:
-                #print(row)
-                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina,
-                 panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb,
-                 orthology_class, orthology_class_label, panther_id) = row
-                #print(panther_speciesa)
-                #print(panther_id)
-
-                if query_gene_id in [genea, gene_id_a, geneb, gene_id_b]:
-                    result_panther_id = panther_id
-                    print('found ortholog for '+query_gene_id+'.')
-                    return(result_panther_id)
-
-        print('no ortholog found for '+query_gene_id+'.')
-        return('fail')
-
     def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs, fdr_cutoff):
         """
-
+        This function performs the calculations to determine whether two phenotypes are phenologs
+        using the previously determined FDR cutoff. between two phenot
         :param inter1:
         :param inter2:
         :param out:
@@ -1724,6 +1720,9 @@ class main():
             pickle.dump(unique_mvz_phenologs, handle)
         print('INFO: Assembled mouse-zebrafish phenologs.')
         return
+
+
+    ####### PHENOLOG EXTENSION DATA PROCESSING #######
 
     def set_stage_for_extension_fdr_calculation(self, limit=1000):
         """
