@@ -1146,70 +1146,38 @@ class main():
 
     def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
         """
+        This function creates random data sets for the determination of the FDR cutoff for the significant phenologs.
+        It takes as input the real phenotype-ortholog hash and the common orthologs between two species.
+        It creates a test phenotype-ortholog hash using the real phenotype-ortholog hash as a guide.
+        This allows for the creation of a random data set of similar size and shape
+        (same number of phenotypes with the same number of associated orthologs for each phenotype).
 
-        :param pheno_gene_hash:
-        :param common_orthologs:
-        :param out_dir:
-        :param limit:
+        :param pheno_gene_hash: Phenotype-ortholog hash file for a given species.
+        :param common_orthologs: Table of common orthologs between two species for the random data set.
+        :param out_dir: Directory for saving the random data set files.
+        :param limit: Total number of random data sets to create.
         :return:
         """
         print('INFO: Creating random data sets.')
-        # Take the phenotype-ortholog hashes I have created.
-        # Remove all orthologs and place in a list, replace with 0s or 1s or something.
-        # Randomly shuffle the ortholog list
-        # Iterate through the hash and replace the 0s with an ortholog ID IF that ortholog ID is not present in the hash.
-
-        # Question: How to be sure that the data set is random, and that I’m not creating 1000 identical data sets?
-        # Should the random data set have the same presence of orthologs as the test set?
-        # Meaning, if ortholog X is present in the test data set Y times,
-        # should it also be present in the test data set Y times?
-        # Need to have a way to make the data set creation fail if we get to the end and
-        # can only put an ortholog with a phenotype that already has that ortholog with it.
-
-        # Question: Is it appropriate to use the orthologs that are in the data set/associated with phenotypes, or
-        # would it make more sense to populate from the total orthologs shared between two species?
-        # What about getting random.sample from the total list of orthologs, with replacement?
         counter = 1
         while counter <= limit:
             print('INFO: Creating random data set '+str(counter)+' out of '+str(limit)+'.')
             test_pheno_ortholog_hash = {}
 
-            orthologs = []
-            list_length = 0
             with open(pheno_gene_hash, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
             with open(common_orthologs, 'rb') as handle:
                 orthologs = pickle.load(handle)
-            # Adjusting this to instead call from the full pool of common orthologs.
-            #for i in pheno_ortholog_hash:
-                #for j in pheno_ortholog_hash[i]:
-                    #orthologs.append(j)
-            #FIXME: How random is this? Is it sufficiently random?
             random.shuffle(orthologs)
-
             for i in pheno_ortholog_hash:
                 test_pheno_ortholog_hash[i] = []
-                ortholog_list_length = len(pheno_ortholog_hash[i])
-                #print(ortholog_list_length)
                 ortholog_draw = orthologs
                 random.shuffle(ortholog_draw)
-                #random_orthologs = random.sample(orthologs)
-                #test_pheno_ortholog_hash[i].append(random_orthologs)
 
                 for j in pheno_ortholog_hash[i]:
                     random.shuffle(ortholog_draw)
                     test_pheno_ortholog_hash[i].append(ortholog_draw[0])
-                    #list_length = len(orthologs)
-                    #print(list_length)
 
-                    #if orthologs[(1 - list_length)] not in test_pheno_ortholog_hash[i]:
-                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
-                    #else:
-                        #while orthologs[(1 - list_length)] in test_pheno_ortholog_hash[i]:
-                            #random.shuffle(orthologs)
-                        #test_pheno_ortholog_hash[i].append(orthologs.pop())
-                    #if orthologs.pop
-            #print('Completed randomization successfully!')
             with open((out_dir+'random_'+str(counter)+'.txt'), 'wb') as handle:
                 pickle.dump(test_pheno_ortholog_hash, handle)
             counter += 1
