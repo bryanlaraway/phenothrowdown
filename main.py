@@ -1106,7 +1106,7 @@ class main():
         print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
         # Cycle through the OWLSim query files to feed queries to the OWLSim server.
-        for x in range(39, num_files+1): #1, num_files+1
+        for x in range(62, num_files+1): #1, num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -2252,74 +2252,48 @@ class main():
 
     ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES #######
 
-    def assemble_ortholog_phenotype_matrix(self, limit=None):
-        # To speed things up, going to assemble from already assembled phenotype-ortholog hash
+    def assemble_ortholog_phenotype_matrix(self):
+        """
+        This function assembles the ortholog-phenotype matrix to be used in gene candidate predictions.
+        It utilizes the already created phenotype-ortholog hashes for each species.
+        It then saves the phenotype list, the ortholog list, and the ortholog-phenotype matrix to disk.
+        """
 
         print('INFO: Assembling phenotype-ortholog matrices.')
-        #How to do this?
-
-
-
-        # Create gene list
-        # Convert to ortholog list (unique)
-        # Create phenotype-ortholog matrix filled with zeroes
-        # Cycle through table, set the phenotype-ortholog matrix
-
-        # Create gene-ortholog hash (Create list of genes, update with ortholog as value)
-        # Create phenotype list
-        # Cycle through
+        # Create the phenotype and ortholog lists from the existing phenotype-ortholog hashes for each species.
         phenotype_list = []
         ortholog_list = []
-        phenotype_limit = limit
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
-            #print(species_a_pheno_gene_hash)
-
-            phenotype_counter = 0
             for i in pheno_ortholog_hash:
-                #if phenotype_counter < phenotype_limit:
-                    #phenotype_counter += 1
                 if i not in phenotype_list:
                     phenotype_list.append(i)
                 for j in pheno_ortholog_hash[i]:
                     if j not in ortholog_list:
                         ortholog_list.append(j)
-                #else:
-                    #continue
+
         phenotype_list.sort()
         ortholog_list.sort()
         total_phenotypes = len(phenotype_list)
         print('INFO: Total number of phenotypes: '+str(total_phenotypes))
         total_orthologs = len(ortholog_list)
         print('INFO: Total number of orthologs: '+str(total_orthologs))
-        #print(phenotype_list[5])
-        #print(phenotype_list.index('ZP:0000007'))
-        #print(phenotype_list[5])
+
+        # Create the ortholog-phenotype matrix as a matrix of zeroes.
         ortholog_phenotype_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
+        # Now, for each species, enter a 1 at each matrix coordinate corresponding to a phenotype and an associated ortholog.
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
-            phenotype_counter = 0
             for i in pheno_ortholog_hash:
-                #if phenotype_counter < phenotype_limit:
-                    #phenotype_counter += 1
                 phenotype_index = phenotype_list.index(i)
                 for j in pheno_ortholog_hash[i]:
                     ortholog_index = ortholog_list.index(j)
                     ortholog_phenotype_matrix[phenotype_index][ortholog_index] = 1
-                #else:
-                    #continue
-
-        #print(phenotype_list[0])
-        #print(ortholog_phenotype_matrix)
-        #print(len(phenotype_ortholog_matrix))
-        #a = numpy.matrix(phenotype_list, ortholog_list)
-        #print(str(numpy.sum(phenotype_ortholog_matrix)))
-
         print('INFO: Done assembling phenotype-ortholog matrices.')
 
-
+        # Save all files to disk.
         with open('inter/phenolog_gene_cand/phenotype_list.txt', 'wb') as handle:
             pickle.dump(phenotype_list, handle)
         with open('inter/phenolog_gene_cand/ortholog_list.txt', 'wb') as handle:
@@ -2330,28 +2304,21 @@ class main():
         return (ortholog_phenotype_matrix, phenotype_list, ortholog_list)
 
     def assemble_ortholog_phenotype_matrix_alternate(self, limit=None):
-        # To speed things up, going to assemble from already assembled phenotype-ortholog hash
+        """
+        This function assembles the ortholog-phenotype matrix to be used in gene candidate predictions.
+        It utilizes the already created phenotype-ortholog hashes for each species.
+        It then saves the phenotype list, the ortholog list, and the ortholog-phenotype matrix to disk.
+        This version includes an optional limit
+        """
 
         print('INFO: Assembling phenotype-ortholog matrices.')
-        #How to do this?
-
-
-
-        # Create gene list
-        # Convert to ortholog list (unique)
-        # Create phenotype-ortholog matrix filled with zeroes
-        # Cycle through table, set the phenotype-ortholog matrix
-
-        # Create gene-ortholog hash (Create list of genes, update with ortholog as value)
-        # Create phenotype list
-        # Cycle through
+        # Create the phenotype and ortholog lists from the existing phenotype-ortholog hashes for each species.
         phenotype_list = []
         ortholog_list = []
         phenotype_limit = limit
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
-            #print(species_a_pheno_gene_hash)
 
             phenotype_counter = 0
             for i in pheno_ortholog_hash:
@@ -2364,16 +2331,18 @@ class main():
                             ortholog_list.append(j)
                 else:
                     continue
+
         phenotype_list.sort()
         ortholog_list.sort()
         total_phenotypes = len(phenotype_list)
         print('INFO: Total number of phenotypes: '+str(total_phenotypes))
         total_orthologs = len(ortholog_list)
         print('INFO: Total number of orthologs: '+str(total_orthologs))
-        #print(phenotype_list[5])
-        #print(phenotype_list.index('ZP:0000007'))
-        #print(phenotype_list[5])
+
+        # Create the ortholog-phenotype matrix as a matrix of zeroes.
         ortholog_phenotype_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
+
+        # Now, for each species, enter a 1 at each matrix coordinate corresponding to a phenotype and an associated ortholog.
         for x in ['inter/hpo/human_pheno_ortholog_hash.txt', 'inter/zfin/zebrafish_pheno_ortholog_hash.txt', 'inter/mgi/mouse_pheno_ortholog_hash.txt']:
             with open(x, 'rb') as handle:
                 pheno_ortholog_hash = pickle.load(handle)
@@ -2388,15 +2357,9 @@ class main():
                 else:
                     continue
 
-        #print(phenotype_list[0])
-        #print(ortholog_phenotype_matrix)
-        #print(len(phenotype_ortholog_matrix))
-        #a = numpy.matrix(phenotype_list, ortholog_list)
-        #print(str(numpy.sum(phenotype_ortholog_matrix)))
-
         print('INFO: Done assembling phenotype-ortholog matrices.')
 
-
+        # Save all files to disk.
         with open('inter/phenolog_gene_cand/phenotype_list.txt', 'wb') as handle:
             pickle.dump(phenotype_list, handle)
         with open('inter/phenolog_gene_cand/ortholog_list.txt', 'wb') as handle:
@@ -3501,24 +3464,17 @@ def multiprocess_ext_fdr_calculation_mvz(comparison_list):
 
     species_a_genotype_id = comparison_list[0]
     species_a_phenotypes = read_only_mouse_geno_pheno_hash[comparison_list[0]]
-    #print(species_a_phenotypes)
     genotype_a_phenotype_count = len(species_a_phenotypes)
 
     # Genotype for species B
     species_b_genotype_id = comparison_list[1]
     species_b_phenotypes = read_only_zebrafish_geno_pheno_hash[comparison_list[1]]
-    #print(species_b_phenotypes)
     phenotype_matches = 0
     phenotype_non_matches = 0
-
-
     genotype_b_phenotype_count = len(species_b_phenotypes)
 
     for k in species_a_phenotypes:
         # Orthologs for species A
-        #ortholog_matches = 0
-        #ortholog_non_matches = 0
-
         species_a_phenotype = k
         for l in species_b_phenotypes:
             # Orthologs for species B
@@ -3558,7 +3514,7 @@ def multiprocess_ext_fdr_calculation_mvz(comparison_list):
 
 def multiprocess_matrix_comparisons(matrix_coordinates):
     """
-
+    This function processes
     :param matrix_coordinates:
     :return:
     """
@@ -3617,7 +3573,7 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
 
     m = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_i]))
     n = float(numpy.sum(read_only_ortholog_phenotype_matrix[phenotype_index_j]))
-    N = float(len_ortholog_list) # Should this be the length of the ortholog list, or total orthologs shared between the three species?
+    N = float(len_ortholog_list)
     c = float(ortholog_match)
     hyp_prob = (hypergeom.cdf(c, N, m, n))
     #weight_matrix[phenotype_index_i][phenotype_index_j] = hyp_prob
@@ -3726,7 +3682,7 @@ main = main()
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
+main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 
 #Processing completed!
 #Human Diseases = 9214
@@ -3861,7 +3817,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-
+'''
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3875,7 +3831,7 @@ del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-
+'''
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
