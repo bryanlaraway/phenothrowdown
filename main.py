@@ -1142,7 +1142,7 @@ class main():
         return
 
 
-    ####### PHENOLOG DATA PROCESSING #######
+    ####### PHENOLOG DATA PROCESSING ####### DOCUMENTATION COMPLETED
 
     def generate_random_data(self, pheno_gene_hash, common_orthologs, out_dir, limit=1000):
         """
@@ -1185,66 +1185,50 @@ class main():
 
     def set_stage_for_fdr_calculation(self):
         """
-
+        This function manages the calculation of the FDR for the phenolog calculations.
+        It sets up the multiprocessing of the 1000 random data sets,
+        calling out to the multiprocess_fdr_calculation function,
+        assembles the p-value for each random data set where 5% of the identified phenologs are significant,
+        and then returns the average p-value from this set, which will be used as the FDR cutoff for the
+        phenolog calculations on the real data set.
         :return:
         """
         print('INFO: Setting stage for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
-
         fdr_global_p_value_list = []
-
-        #print(hvm_common_orthologs)
-        #print(hvz_common_orthologs)
-        #print(mvz_common_orthologs)
 
         ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
 
-
             cores = (multiprocessing.cpu_count()-1)
-            #cores = 1
             pool = multiprocessing.Pool(processes=cores)
-
-            #multiprocessing.Semaphore(cores)
-            #jobs = []
-            #phenotype_iterable = []
-            #phenotype_counter = 0
-
-            #(comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
-            #phenotype_counter += 1
-            #print('Working on phenotype '+str(phenotype_counter)+' out of '+str(len(phenotype_list))+'.')
             print('INFO: Multiprocessing started')
-            #random_data_set_counter = []
-            #for i in range(1,5):
-                #random_data_set_counter.append(i)
-
             fdr_global_p_value_list = [pool.map(multiprocess_fdr_calculation, range(1,1001))]
-
-
-            #print('Processing results.')
-            comparison_list = []
-            #for p in results:
-                #fdr_p_value = p.get()
-                #fdr_global_p_value_list.append(fdr_p_value)
-
-            #print('Done processing results.')
 
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
-            fdr_global_p_value_list.sort()
+
             with open('inter/random/fdr/fdr_global_p_value_list.txt', 'wb') as handle:
                 pickle.dump(fdr_global_p_value_list, handle)
+            p_value_sum = float(0)
+            for x in fdr_global_p_value_list:
+                p_value_sum += x
+            fdr_cutoff = float(p_value_sum)/float(len(fdr_global_p_value_list))
+            print('The empirical FDR adjustment cutoff is '+str(fdr_cutoff)+'.')
 
-            global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
-            print('The empirical FDR adjustment cutoff is '+str(fdr_global_p_value_list[global_cutoff_position])+'.')
-
-        return fdr_global_p_value_list[global_cutoff_position]
+        return fdr_cutoff
 
     def assemble_partial_fdr(self):
         """
-
+        This function is used to assemble the p-values from saved files,
+        should the set_stage_for_fdr_calculation fail during processing or
+        the FDR calculations be divided across machines.
+        This function is used to assemble the p-values for each random data set
+        where 5% of the identified phenologs are significant,
+        and then returns the average p-value from this set, which will be used as the FDR cutoff for the
+        phenolog calculations on the real data set.
         :return:
         """
         with open('inter/random/fdr/fdr_999_global_p_value_list.txt', 'rb') as handle:
@@ -1259,13 +1243,11 @@ class main():
         fdr_global_p_value_list.append(fdr_extra_p_value[0])
         print(fdr_global_p_value_list)
         print(len(fdr_global_p_value_list))
-        #fdr_global_p_value_list.sort()
         p_value_sum = float(0)
         for x in range(0,1000):
             print(fdr_global_p_value_list[x])
             p_value_sum += fdr_global_p_value_list[x]
         fdr_cutoff = float(p_value_sum)/float(len(fdr_global_p_value_list))
-        #global_cutoff_position = math.ceil((len(fdr_global_p_value_list))*0.05) - 1
         print('The empirical FDR adjustment cutoff is '+str(fdr_cutoff)+'.')
 
         with open('inter/random/fdr/fdr_global_p_value_list.txt', 'wb') as handle:
@@ -1275,30 +1257,27 @@ class main():
 
     def perform_phenolog_calculations_for_fdr(self, species_a_po_hash, species_b_po_hash, shared_orthologs):
         """
-
-        :param species_a_po_hash:
-        :param species_b_po_hash:
-        :param shared_orthologs:
-        :return:
+        This function performs the phenolog calculations between
+        the phenotypes of two species from the random data sets.
+        For each cross-species pair of phenotypes, the associated orthologs are compared for matches.
+        If two phenotypes have one or more matching orthologs, the hypergeometric probability is calculated.
+        P-values are added to a list, which is returned after all phenotype comparisons are complete.
+        :param species_a_po_hash: The phenotype-ortholog hash for species A.
+        :param species_b_po_hash: The phenotype-ortholog hash for species B.
+        :param shared_orthologs: The file containing the orthologs shared between the two compared species.
+        :return: List of p-values from the hypergeometric probability calculation.
         """
-        #print('INFO: Performing phenolog calculations for FDR estimation.')
-        # Need to calculate phenologs for each pairwise species and combine in order to get a full
-        # set of phenologs for proper estimation of FDR.
 
-        line_counter = 0
-        failure_counter = 0
         total_ortholog_matches = 0
         total_ortholog_nonmatches = 0
-        ortholog_matches = 0
-        ortholog_non_matches = 0
-        phenotype_a_ortholog_count = 0
-        phenotype_b_ortholog_count = 0
+
         total_hyp_calcs = 0
         phenolog_p_value_list = []
 
         species_a_pheno_gene_hash = species_a_po_hash
         species_b_pheno_gene_hash = species_b_po_hash
-
+        # Iterate through the phenotypes for each species,
+        # determining the number of ortholog matches between the orthologs associated with each phenotype.
         for i in species_a_pheno_gene_hash:
             # Phenotype for species A
             species_a_phenotype_id = i
@@ -1310,76 +1289,45 @@ class main():
                 # Phenotype for species B
                 species_b_phenotype_id = j
                 species_b_orthologs = species_b_pheno_gene_hash[j]
-                #print(species_b_orthologs)
-                #ortholog_matches = 0
-                #ortholog_non_matches = 0
-
                 ortholog_matches = 0
                 ortholog_non_matches = 0
-
                 phenotype_b_ortholog_count = len(species_b_orthologs)
                 for k in species_a_orthologs:
                     # Orthologs for species A
-                    #ortholog_matches = 0
-                    #ortholog_non_matches = 0
-
                     species_a_ortholog = k
                     for l in species_b_orthologs:
                         # Orthologs for species B
                         species_b_ortholog = l
                         if species_a_ortholog == species_b_ortholog:
-                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                             ortholog_matches += 1
-                            #print(species_a_ortholog+' == '+species_b_ortholog)
                             total_ortholog_matches += 1
                         else:
-                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                             ortholog_non_matches += 1
                             total_ortholog_nonmatches += 1
 
                 if ortholog_matches > 0:
-                    #print('Matches: '+str(ortholog_matches))
-                    #print('Non-matches: '+str(ortholog_non_matches))
+                    # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+                    # N = total number of orthologs shared between species
+                    # n = nummber of orthologs in species A phenotype
+                    # m = nummber of orthologs in species B phenotype
+                    # c = number of common orthologs between phenotypes (ortholog matches)
                     m = float(phenotype_b_ortholog_count)
                     n = float(phenotype_a_ortholog_count)
                     N = float(shared_orthologs)
                     c = float(ortholog_matches)
                     prb = float(hypergeom.pmf(c, N, m, n))
-                    #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
-                    #print(prb)
                     phenolog_p_value_list.append(prb)
                     total_hyp_calcs += 1
         print('Total Matches: '+str(total_ortholog_matches))
         print('Total non-matches: '+str(total_ortholog_nonmatches))
         print('Total phenolog calculations: '+str(total_hyp_calcs))
 
-            # After the number of matching orthologs has been tallied, perform the
-            # hypergeometric probability calculation for the phenotype-gene data objects,
-            # then write the results to the output file.
-
-            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
-            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
-            # given that the ortholog lists for species a and species b may be of different sizes?
-            #TODO: Consult the phenolog paper on the question above.
-            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
-
-            # N = total number of orthologs shared between species
-            # n = nummber of orthologs in species A phenotype
-            # m = nummber of orthologs in species B phenotype
-            # c = number of common orthologs between phenotypes (ortholog matches)
-
-            # c =
-            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
-            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
-            # N = Number of type I objects drawn. (Number of matching orhtologs.)
-            #prb = hypergeom.cdf(x, M, n, N)
-
         return phenolog_p_value_list
 
     def perform_phenolog_calculations(self, inter1, inter2, out, shared_orthologs, fdr_cutoff):
         """
         This function performs the calculations to determine whether two phenotypes are phenologs
-        using the previously determined FDR cutoff. between two phenot
+        using the previously determined FDR cutoff.
         :param inter1:
         :param inter2:
         :param out:
@@ -1388,69 +1336,58 @@ class main():
         :return:
         """
         print('INFO: Performing phenolog calculations.')
-        line_counter = 0
-        failure_counter = 0
         total_ortholog_matches = 0
         total_ortholog_nonmatches = 0
-        ortholog_matches = 0
-        ortholog_non_matches = 0
-        phenotype_a_ortholog_count = 0
-        phenotype_b_ortholog_count = 0
 
         with open(inter1, 'rb') as handle:
             species_a_pheno_gene_hash = pickle.load(handle)
-        #print(species_a_pheno_gene_hash)
         with open(inter2, 'rb') as handle:
             species_b_pheno_gene_hash = pickle.load(handle)
-        #print(species_b_pheno_gene_hash)
         with open(shared_orthologs, 'rb') as handle:
             num_shared_orthologs = len(pickle.load(handle))
         with open(out, 'w', newline='') as outfile:
+            # Iterate through the phenotypes for each species,
+            # determining the number of ortholog matches between the orthologs associated with each phenotype.
             for i in species_a_pheno_gene_hash:
                 species_a_phenotype_id = i
                 species_a_orthologs = species_a_pheno_gene_hash[i]
-                #print(species_a_orthologs)
                 phenotype_a_ortholog_count = len(species_a_orthologs)
-
                 for j in species_b_pheno_gene_hash:
                     species_b_phenotype_id = j
                     species_b_orthologs = species_b_pheno_gene_hash[j]
-                    #print(species_b_orthologs)
                     ortholog_matches = 0
                     ortholog_non_matches = 0
-
                     phenotype_b_ortholog_count = len(species_b_orthologs)
                     for k in species_a_orthologs:
-
                         species_a_ortholog = k
                         for l in species_b_orthologs:
                             species_b_ortholog = l
-
                             if species_a_ortholog == species_b_ortholog:
-                                #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                                 ortholog_matches += 1
                                 total_ortholog_matches += 1
                             else:
-                                #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                                 ortholog_non_matches += 1
                                 total_ortholog_nonmatches += 1
 
                     if ortholog_matches > 0:
-                        #print('Matches: '+str(ortholog_matches))
-                        #print('Non-matches: '+str(ortholog_non_matches))
+                        # Perform the hypergeometric probability calculation.
+                        # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+                        # N = total number of orthologs shared between species
+                        # n = number of orthologs in species A phenotype
+                        # m = number of orthologs in species B phenotype
+                        # c = number of common orthologs between phenotypes (ortholog matches)
+
                         m = float(phenotype_b_ortholog_count)
                         n = float(phenotype_a_ortholog_count)
                         N = float(num_shared_orthologs)
                         c = float(ortholog_matches)
                         prb = float(hypergeom.pmf(c, N, m, n))
-                        #FIXME: less than or equal or just less than?
                         if prb <= fdr_cutoff:
                             significance = 'Significant'
                         else:
                             significance = 'Not Significant'
-                        #print(prb)
-                        # Required output : phenotype a/b, species a/b, gene list a/b, probability, fdr adjusted probability?
-                        #sequence = (species_a_phenotype_id, phenotype_a_ortholog_count, species_b_phenotype_id, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
+
+                        # For each calculation, write the output to a file in JSON format.
                         sequence = (species_a_phenotype_id, species_a_orthologs, phenotype_a_ortholog_count, species_b_phenotype_id, species_b_orthologs, phenotype_b_ortholog_count, num_shared_orthologs, ortholog_matches, prb, fdr_cutoff, significance)
                         json.dump(sequence, outfile)
                         outfile.write('\n')
@@ -1458,54 +1395,13 @@ class main():
             print('Total Matches: '+str(total_ortholog_matches))
             print('Total non-matches: '+str(total_ortholog_nonmatches))
 
-            #prb = "{:.2E}".format(Decimal(hypergeom.cdf(24, 5000, 47, 174)))
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(0, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(1, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(2, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(3, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(4, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(5, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(6, 5000, 7, 12)
-            #print(prb)
-            #prb = 1 - hypergeom.cdf(7, 5000, 7, 12)
-            #print(prb)
-                # After the number of matching orthologs has been tallied, perform the
-                # hypergeometric probability calculation for the phenotype-gene data objects,
-                # then write the results to the output file.
-
-                # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
-                # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
-                # given that the ortholog lists for species a and species b may be of different sizes?
-                #TODO: Consult the phenolog paper on the question above.
-                # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
-
-                # N = total number of orthologs shared between species
-                # n = nummber of orthologs in species A phenotype
-                # m = nummber of orthologs in species B phenotype
-                # c = number of common orthologs between phenotypes (ortholog matches)
-
-                # c =
-                # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
-                # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
-                # N = Number of type I objects drawn. (Number of matching orhtologs.)
-                #prb = hypergeom.cdf(x, M, n, N)
         return
 
     def assemble_significant_phenologs(self):
         """
-
+        This function assembles the significant phenologs from the files of phenologs for species pairs.
         :return:
         """
-        #json = open('out/phenolog/human_vs_mouse.txt')
-        #data = json.loads(json)
-        #json_lines = []
         with open('inter/phenolog/all_significant_phenologs.txt', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             with open('inter/phenolog/hvm_significant_phenologs.txt', 'w', newline='') as csvfile2:
@@ -1520,7 +1416,6 @@ class main():
                             combo_ab = phenotype_a+'_'+phenotype_b
                             combo_ba = phenotype_b+'_'+phenotype_a
                             output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
             with open('inter/phenolog/hvz_significant_phenologs.txt', 'w', newline='') as csvfile2:
@@ -1535,7 +1430,6 @@ class main():
                             combo_ab = phenotype_a+'_'+phenotype_b
                             combo_ba = phenotype_b+'_'+phenotype_a
                             output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
             with open('inter/phenolog/mvz_significant_phenologs.txt', 'w', newline='') as csvfile2:
@@ -1550,7 +1444,6 @@ class main():
                             combo_ab = phenotype_a+'_'+phenotype_b
                             combo_ba = phenotype_b+'_'+phenotype_a
                             output_row = (phenotype_a, phenotype_b, combo_ab, combo_ba)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
 
@@ -1558,12 +1451,10 @@ class main():
 
     def assemble_significant_phenologs_with_scores(self):
         """
-
+        This function assembles the significant phenologs from the files of phenologs for species pairs,
+        with the associated hypergeometric probabilty p-values.
         :return:
         """
-        #json = open('out/phenolog/human_vs_mouse.txt')
-        #data = json.loads(json)
-        #json_lines = []
         with open('out/phenolog/all_significant_phenologs_scored.txt', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
             with open('out/phenolog/hvm_significant_phenologs_scored.txt', 'w', newline='') as csvfile2:
@@ -1580,7 +1471,6 @@ class main():
                             ortholog_matches = phenolog_data[7]
                             probability = phenolog_data[8]
                             output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
             print('INFO: Done assembling human-mouse phenologs.')
@@ -1598,7 +1488,6 @@ class main():
                             ortholog_matches = phenolog_data[7]
                             probability = phenolog_data[8]
                             output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
             print('INFO: Done assembling human-zebrafish phenologs.')
@@ -1616,7 +1505,6 @@ class main():
                             ortholog_matches = phenolog_data[7]
                             probability = phenolog_data[8]
                             output_row = (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count, ortholog_matches, probability)
-                            #print('found one')
                             csvwriter.writerow(output_row)
                             csvwriter2.writerow(output_row)
             print('INFO: Done assembling mouse-zebrafish phenologs.')
@@ -2250,7 +2138,7 @@ class main():
         return
 
 
-    ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES #######
+    ####### PHENOLOG ORTHOLOG PHENOTYPE MATRICES ####### DOCUMENTATION COMPLETED
 
     def assemble_ortholog_phenotype_matrix(self):
         """
