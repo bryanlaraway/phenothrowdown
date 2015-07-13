@@ -2976,6 +2976,11 @@ def increment():
         print('INFO: Processing comparison '+str(counter.value))
 
 def keyfunc(row):
+    """
+    This function is used by itertools in the chunking of OWLSim queries.
+    :param row:
+    :return:
+    """
     return row[0]
 
 
@@ -2984,7 +2989,9 @@ def keyfunc(row):
 
 def multiprocess_owlsim_queries(row):
     """
-
+    This function is used by the process_owlsim_queries function.
+    It takes the passed in row and divides into individual variables,
+    feeds the URL request to the local instance of the OWLSim server
     :param row:
     :return:
     """
@@ -2995,29 +3002,14 @@ def multiprocess_owlsim_queries(row):
         response = urllib.request.urlopen(query_url, timeout=1000)
         reader = codecs.getreader("utf-8")
         data = json.load(reader(response))
-        #print(data)
-        #print('#####')
-        #print('query successful')
         results = data['results']
         maxIC = data['results'][0]['maxIC']
         simJ = data['results'][0]['simJ']
         ICCS = data['results'][0]['bmaSymIC']
         simIC = data['results'][0]['simGIC']
-        #print(results)
         query_flag = 'success'
         sequence = (comparison_id, entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-        #lock.acquire()
-        #json.dump(sequence, outfile)
-        #outfile.write('\n')
-        #lock.release()
 
-        #print(sequence)
-        #print('failed here')
-        #row = str.join(sequence)
-
-        #print(row)
-        #owlsimwriter.writerow(row)
-        #print('query processing completed')
 
     except Exception:
         #print('Processing of OWLSim query failed.')
