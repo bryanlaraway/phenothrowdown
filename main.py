@@ -3971,3 +3971,4 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
 
 
+#http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0002169&b=ZP:0000411&b=ZP:0002713&b=ZP:&b=ZP:&b=ZP:0000692&b=ZP:0000054&b=ZP:0000043&b=ZP:0000038&b=ZP:0000737&b=ZP:&b=ZP:0001192&b=ZP:&b=3300
