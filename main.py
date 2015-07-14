@@ -1577,8 +1577,138 @@ class main():
         print('INFO: Assembled mouse-zebrafish phenologs.')
         return
 
+    def annotate_significant_phenologs_with_scores_and_labels(self):
+        with open('inter/ontologies/hp_hash.txt', 'rb') as handle:
+            hp_hash = pickle.load(handle)
+        with open('raw/hpo/dvp.pr_nlx_151835_2', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                # Read in a row and split into individual variables
+                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
+                 gene_label, v_uid, v_uuid, v_lastmodified) = row
+                if phenotype_id not in hp_hash:
+                    hp_hash[phenotype_id] = phenotype_label
+        with open('inter/ontologies/mp_hash.txt', 'rb') as handle:
+            mp_hash = pickle.load(handle)
+        with open('inter/ontologies/zp_hash.txt', 'rb') as handle:
+            zp_hash = pickle.load(handle)
+
+        with open('out/phenolog/all_significant_phenologs_labelled_scored.txt', 'w', newline='') as csvoutfile:
+            csvwriter = csv.writer(csvoutfile, delimiter='\t', quotechar='\"')
+            with open('out/phenolog/all_significant_phenologs_scored.txt', 'r') as csvreadfile:
+                filereader = csv.reader(csvreadfile, delimiter='\t', quotechar='\"')
+                for row in filereader:
+
+                    (phenotype_a, phenotype_a_ortholog_count, phenotype_b, phenotype_b_ortholog_count,
+                     ortholog_matches, probability) = row
+                    if re.match('HP:.*', phenotype_a):
+                        phenotype_a_label = hp_hash[phenotype_a]
+                    elif re.match('MP:.*', phenotype_a):
+                        phenotype_a_label = mp_hash[phenotype_a]
+                    elif re.match('ZP:.*', phenotype_a):
+                        phenotype_a_label = zp_hash[phenotype_a]
+                    else:
+                        phenotype_a_label = ''
+                        print('INFO: No label found for '+phenotype_a+'.')
+
+                    if re.match('HP:.*', phenotype_b):
+                        phenotype_b_label = hp_hash[phenotype_b]
+                    elif re.match('MP:.*', phenotype_b):
+                        phenotype_b_label = mp_hash[phenotype_b]
+                    elif re.match('ZP:.*', phenotype_b):
+                        phenotype_b_label = zp_hash[phenotype_b]
+                    else:
+                        phenotype_b_label = ''
+                        print('INFO: No label found for '+phenotype_b+'.')
+
+                    output_row = (phenotype_a, phenotype_a_label, phenotype_a_ortholog_count, phenotype_b, phenotype_b_label, phenotype_b_ortholog_count, ortholog_matches, probability)
+                    csvwriter.writerow(output_row)
+
+        return
+
 
     ####### PHENOLOG EXTENSION DATA PROCESSING #######
+
+    def parse_zp(self, raw, inter):
+        """
+        This function parses the zebrafish phenotype ontology to
+        obtain a hash of zebrafish phenotypes and their associated labels.
+        This phenotype hash will be used to generate random zebrafish genotype-phenotype data sets.
+        :param raw: The zebrafish phenotype ontology.
+        :param inter: The output file for the zebrafish phenotype hash.
+        :return:
+        """
+        zp_hash = {}
+        line_counter = 0
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                line_counter += 1
+                (zp_id, zp_label, extra_1, extra_2, extra_3, extra_4, extra_5, extra_6) = row
+
+                if zp_id not in zp_hash:
+                    zp_hash[zp_id] = zp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(zp_hash, handle)
+
+        return
+
+    def parse_mp(self, raw, inter):
+        """
+        This function parses the mouse phenotype ontology to
+        obtain a hash of mouse phenotypes and their associated labels.
+        This phenotype hash will be used to generate random mouse genotype-phenotype data sets.
+        :param raw: The mouse phenotype ontology.
+        :param inter: The output file for the mouse phenotype hash.
+        :return:
+        """
+        mp_hash = {}
+        with open(raw, 'r') as handle:
+            for line in handle:
+                if re.match('id:.*', line.rstrip()):
+                    mp_id = line.rstrip()
+                    mp_id = re.sub('id: ', '', mp_id)
+                    next_line = next(handle)
+                    if re.match('name:.*', next_line.rstrip()):
+                        mp_label = next_line.rstrip()
+                        mp_label = re.sub('name: ', '', mp_label)
+                        if mp_id not in mp_hash:
+                            mp_hash[mp_id] = mp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(mp_hash, handle)
+
+        return
+
+    def parse_hp(self, raw, inter):
+        """
+        This function parses the human phenotype ontology to
+        obtain a hash of human phenotypes and their associated labels.
+        This phenotype hash will be used to generate random human genotype-phenotype data sets.
+        :param raw: The human phenotype ontology.
+        :param inter: The output file for the human phenotype hash.
+        :return:
+        """
+
+        hp_hash = {}
+        with open(raw, 'r') as handle:
+            for line in handle:
+                if re.match('id:.*', line.rstrip()):
+                    hp_id = line.rstrip()
+                    hp_id = re.sub('id: ', '', hp_id)
+                    next_line = next(handle)
+                    if re.match('name:.*', next_line.rstrip()):
+                        hp_label = next_line.rstrip()
+                        hp_label = re.sub('name: ', '', hp_label)
+                        if hp_id not in hp_hash:
+                            hp_hash[hp_id] = hp_label
+
+        with open(inter, 'wb') as handle:
+            pickle.dump(hp_hash, handle)
+
+        return
 
     def set_stage_for_extension_fdr_calculation(self, limit=1000):
         """
@@ -1624,21 +1754,18 @@ class main():
 
     def generate_human_random_ext_data(self):
         """
-
+        This function handles the multiprocessing setup of the creation of
+        random human data sets for the phenolog extension FDR calculations.
+        It calls out to the multiprocess_generate_random_human_ext_data function.
         :return:
         """
         print('INFO: Creating random data sets.')
-
-
             ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
-
             cores = (multiprocessing.cpu_count()-1)
             pool = multiprocessing.Pool(processes=cores)
             print('INFO: Multiprocessing started')
-
             pool.map(multiprocess_generate_random_human_ext_data, range(1,1001))
-
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
 
@@ -1646,21 +1773,18 @@ class main():
 
     def generate_mouse_random_ext_data(self):
         """
-
+        This function handles the multiprocessing setup of the creation of
+        random mouse data sets for the phenolog extension FDR calculations.
+        It calls out to the multiprocess_generate_random_mouse_ext_data function.
         :return:
         """
         print('INFO: Creating random data sets.')
-
-
             ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
-
             cores = (multiprocessing.cpu_count()-1)
             pool = multiprocessing.Pool(processes=cores)
             print('INFO: Multiprocessing started')
-
             pool.map(multiprocess_generate_random_mouse_ext_data, range(1,1001))
-
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
 
@@ -1668,21 +1792,18 @@ class main():
 
     def generate_zebrafish_random_ext_data(self):
         """
-
+        This function handles the multiprocessing setup of the creation of
+        random zebrafish data sets for the phenolog extension FDR calculations.
+        It calls out to the multiprocess_generate_random_zebrafish_ext_data function.
         :return:
         """
         print('INFO: Creating random data sets.')
-
-
             ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
-
             cores = (multiprocessing.cpu_count()-1)
             pool = multiprocessing.Pool(processes=cores)
             print('INFO: Multiprocessing started')
-
             pool.map(multiprocess_generate_random_zebrafish_ext_data, range(1,1001))
-
             print('INFO: Multiprocessing completed')
             ###### END MULTIPROCESSING INSERT ######
 
@@ -1700,18 +1821,11 @@ class main():
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
 
-        line_counter = 0
-        failure_counter = 0
         comparison_counter = 0
         total_phenotype_matches = 0
         total_phenotype_nonmatches = 0
-        phenotype_matches = 0
-        phenotype_non_matches = 0
-        genotype_a_phenotype_count = 0
-        genotype_b_phenotype_count = 0
         total_hyp_calcs = 0
         phenolog_ext_p_value_list = []
-
         species_a_geno_pheno_hash = species_a_gp_hash
         species_b_geno_pheno_hash = species_b_gp_hash
 
@@ -1722,50 +1836,39 @@ class main():
             # Genotype for species A
             species_a_genotype_id = i
             species_a_phenotypes = species_a_geno_pheno_hash[i]
-            #print(species_a_phenotypes)
             genotype_a_phenotype_count = len(species_a_phenotypes)
 
             for j in species_b_geno_pheno_hash:
                 # Genotype for species B
                 species_b_genotype_id = j
                 species_b_phenotypes = species_b_geno_pheno_hash[j]
-                #print(species_b_phenotypes)
-                #phenotype_matches = 0
-                #phenotype_non_matches = 0
-
                 phenotype_matches = 0
                 phenotype_non_matches = 0
-
                 genotype_b_phenotype_count = len(species_b_phenotypes)
-
                 comparison_counter += 1
                 if re.match('.*000000', str(comparison_counter)):
                     print('INFO: Processing comparison '+str(comparison_counter)+' out of '+str(total_comparisons)+' total comparisons to perform.')
                 for k in species_a_phenotypes:
                     # Orthologs for species A
-                    #ortholog_matches = 0
-                    #ortholog_non_matches = 0
-
                     species_a_phenotype = k
                     for l in species_b_phenotypes:
                         # Orthologs for species B
                         species_b_phenotype = l
-
                         ab_combo = species_a_phenotype+'_'+species_b_phenotype
                         ba_combo = species_b_phenotype+'_'+species_a_phenotype
                         if ab_combo in shared_phenologs or ba_combo in shared_phenologs:
-                            #print('species a ortholog:'+species_a_ortholog+' matches species b ortholog:'+species_b_ortholog)
                             phenotype_matches += 1
-                            #print(species_a_ortholog+' == '+species_b_ortholog)
                             total_phenotype_matches += 1
                         else:
-                            #print('species a ortholog:'+species_a_ortholog+' does not match species b ortholog:'+species_b_ortholog)
                             phenotype_non_matches += 1
                             total_phenotype_nonmatches += 1
 
                 if phenotype_matches > 0:
-                    #print('Matches: '+str(ortholog_matches))
-                    #print('Non-matches: '+str(ortholog_non_matches))
+                    # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
+                    # N = total number of phenologs shared between species
+                    # n = number of phenotypes in species A disease/genotype
+                    # m = number of phenotypes in species B disease/genotype
+                    # c = number of common phenotypes between disease/genotype (phenotype matches)
                     m = float(genotype_b_phenotype_count)
                     n = float(genotype_a_phenotype_count)
                     N = float(len(shared_phenologs))
@@ -1779,44 +1882,23 @@ class main():
         print('Total non-matches: '+str(total_phenotype_nonmatches))
         print('Total phenolog calculations: '+str(total_hyp_calcs))
 
-            # After the number of matching orthologs has been tallied, perform the
-            # hypergeometric probability calculation for the phenotype-gene data objects,
-            # then write the results to the output file.
 
-            # Essentially, in comparing the ortholog lists we are seeing how many matches we get for a given set of
-            # orthologs from phenotype B, with a certain number of draws. So, does this calculation need to be run in both directions,
-            # given that the ortholog lists for species a and species b may be of different sizes?
-            #TODO: Consult the phenolog paper on the question above.
-            # Relevent SciPy documentation: http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.stats.hypergeom.html#scipy.stats.hypergeom
-
-            # N = total number of orthologs shared between species
-            # n = nummber of orthologs in species A phenotype
-            # m = nummber of orthologs in species B phenotype
-            # c = number of common orthologs between phenotypes (ortholog matches)
-
-            # c =
-            # M = Total number of objects. (Global number of orthologs for species A? All possible phenologs that could be drawn?)
-            # n = Total number of type I objects. (Total number of orthologs in the list for phenotype B?)
-            # N = Number of type I objects drawn. (Number of matching orhtologs.)
-            #prb = hypergeom.cdf(x, M, n, N)
 
         return phenolog_ext_p_value_list
 
     def perform_phenolog_calculations_for_ext_fdr_hvz(self, species_a_gp_hash, species_b_gp_hash, out_file):
+        """
+        This function
+        and sends the
+        :param species_a_gp_hash:
+        :param species_b_gp_hash:
+        :param out_file:
+        :return:
+        """
+
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
-
-        #line_counter = 0
-        #failure_counter = 0
-        #comparison_counter = 0
-        #total_phenotype_matches = 0
-        #total_phenotype_nonmatches = 0
-        #phenotype_matches = 0
-        #phenotype_non_matches = 0
-        #genotype_a_phenotype_count = 0
-        #genotype_b_phenotype_count = 0
-        #total_hyp_calcs = 0
 
         phenolog_ext_p_value_list = []
 
@@ -1827,37 +1909,25 @@ class main():
         print('INFO: '+str(total_comparisons)+' total comparisons to perform.')
 
         print('INFO: Assembling disease/genotype comparison list.')
-
         comparison_list = []
-
         for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
             comparison_list.append(element)
-
-
         print('INFO: Done assembling disease/genotype comparison list.')
 
+        ###### MULTIPROCESSING INSERT ######
         if __name__ == '__main__':
-
             cores = (multiprocessing.cpu_count()-1)
             pool = multiprocessing.Pool(processes=cores)
-
             print('INFO: Starting multiprocessing.')
-
             for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_hvz, comparison_list, chunksize=100):
                 if results is not None:
                     phenolog_ext_p_value_list.append(results)
-                    #print(results)
-
                 del results
+        ###### END MULTIPROCESSING INSERT ######
 
-
-            #print('INFO: Done processing results for phenotype '+str(input_phenotype_index_i+1)+' out of '+str(len(phenotype_list))+'.')
         print('INFO: Done with multiprocessing.')
         with open(out_file, 'wb') as handle:
             pickle.dump(phenolog_ext_p_value_list, handle)
-        #print('Total Matches: '+str(total_phenotype_matches))
-        #print('Total non-matches: '+str(total_phenotype_nonmatches))
-        #print('Total phenolog calculations: '+str(total_hyp_calcs))
 
         del phenolog_ext_p_value_list
         del comparison_list
@@ -1868,17 +1938,6 @@ class main():
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
-
-        #line_counter = 0
-        #failure_counter = 0
-        #comparison_counter = 0
-        #total_phenotype_matches = 0
-        #total_phenotype_nonmatches = 0
-        #phenotype_matches = 0
-        #phenotype_non_matches = 0
-        #genotype_a_phenotype_count = 0
-        #genotype_b_phenotype_count = 0
-        #total_hyp_calcs = 0
 
         phenolog_ext_p_value_list = []
 
@@ -1927,17 +1986,6 @@ class main():
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
         # set of phenologs for proper estimation of FDR.
-
-        #line_counter = 0
-        #failure_counter = 0
-        #comparison_counter = 0
-        #total_phenotype_matches = 0
-        #total_phenotype_nonmatches = 0
-        #phenotype_matches = 0
-        #phenotype_non_matches = 0
-        #genotype_a_phenotype_count = 0
-        #genotype_b_phenotype_count = 0
-        #total_hyp_calcs = 0
 
         phenolog_ext_p_value_list = []
 
@@ -2070,71 +2118,6 @@ class main():
         print('Total matches: '+str(total_phenotype_matches))
         print('Total non-matches: '+str(total_phenotype_nonmatches))
         print('Total phenolog extension calculations: '+str(total_hyp_calcs))
-        return
-
-    def parse_zp(self, raw, inter):
-        zp_hash = {}
-        line_counter = 0
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            for row in filereader:
-                line_counter += 1
-                (zp_id, zp_label, extra_1, extra_2, extra_3, extra_4, extra_5, extra_6) = row
-
-                if zp_id not in zp_hash:
-                    zp_hash[zp_id] = zp_label
-
-        with open(inter, 'wb') as handle:
-            pickle.dump(zp_hash, handle)
-
-
-
-        return
-
-    def parse_mp(self, raw, inter):
-        mp_hash = {}
-        with open(raw, 'r') as handle:
-            for line in handle:
-                #print(line)
-                if re.match('id:.*', line.rstrip()):
-                    mp_id = line.rstrip()
-                    mp_id = re.sub('id: ', '', mp_id)
-                    #print(mp_id)
-                    next_line = next(handle)
-                    if re.match('name:.*', next_line.rstrip()):
-                        mp_label = next_line.rstrip()
-                        mp_label = re.sub('name: ', '', mp_label)
-                        #print(mp_label)
-
-                        if mp_id not in mp_hash:
-                            mp_hash[mp_id] = mp_label
-
-        with open(inter, 'wb') as handle:
-            pickle.dump(mp_hash, handle)
-
-        return
-
-    def parse_hp(self, raw, inter):
-        hp_hash = {}
-        with open(raw, 'r') as handle:
-            for line in handle:
-                #print(line)
-                if re.match('id:.*', line.rstrip()):
-                    hp_id = line.rstrip()
-                    hp_id = re.sub('id: ', '', hp_id)
-                    #print(hp_id)
-                    next_line = next(handle)
-                    if re.match('name:.*', next_line.rstrip()):
-                        hp_label = next_line.rstrip()
-                        hp_label = re.sub('name: ', '', hp_label)
-                        #print(hp_label)
-
-                        if hp_id not in hp_hash:
-                            hp_hash[hp_id] = hp_label
-
-        with open(inter, 'wb') as handle:
-            pickle.dump(hp_hash, handle)
-
         return
 
 
@@ -3015,15 +2998,17 @@ def multiprocess_fdr_calculation(i):
 
 def multiprocess_generate_random_human_ext_data(x):
     """
-
-    :param x:
+    This function creates random data sets for the determination of the FDR cutoff for
+    the significant genotype/disease comparisons of the phenolog extension.
+    It takes as input the real species-specific pheontype hash and the disease-phenotype hash for human.
+    It creates a random disease-phenotype hash using the real disease-phenotype hash as a guide.
+    This allows for the creation of a random data set of similar size and shape
+    (same number of diseases with the same number of associated phenotypes for each disease).
+    :param x: Number for the random data set.
     :return:
     """
-
     random_geno_pheno_hash = {}
-
     phenotypes = []
-
     with open('inter/ontologies/hp_hash.txt', 'rb') as handle:
         phenotype_hash = pickle.load(handle)
     for i in phenotype_hash:
@@ -3031,23 +3016,15 @@ def multiprocess_generate_random_human_ext_data(x):
             phenotypes.append(i)
     with open('inter/hpo/human_disease_phenotype_hash.txt', 'rb') as handle:
         geno_pheno_hash = pickle.load(handle)
-
     random.shuffle(phenotypes)
-
     for i in geno_pheno_hash:
         random_geno_pheno_hash[i] = []
         ortholog_list_length = len(geno_pheno_hash[i])
-        #print(ortholog_list_length)
         phenotype_draw = phenotypes
         random.shuffle(phenotype_draw)
-        #random_orthologs = random.sample(orthologs)
-        #test_pheno_ortholog_hash[i].append(random_orthologs)
-
         for j in geno_pheno_hash[i]:
             random.shuffle(phenotype_draw)
             random_geno_pheno_hash[i].append(phenotype_draw[0])
-
-
     with open(('inter/random/human/random_ext_'+str(x)+'.txt'), 'wb') as handle:
         pickle.dump(random_geno_pheno_hash, handle)
     print('Completed human random data set '+str(x)+' out of 1000.')
@@ -3055,15 +3032,16 @@ def multiprocess_generate_random_human_ext_data(x):
 
 def multiprocess_generate_random_mouse_ext_data(x):
     """
-
-    :param x:
+    This function creates random data sets for the determination of the FDR cutoff for
+    the significant genotype/disease comparisons of the phenolog extension.
+    It takes as input the real species-specific pheontype hash and the genotype-phenotype hash for mouse.
+    It creates a random genotype-phenotype hash using the real genotype-phenotype hash as a guide.
+    This allows for the creation of a random data set of similar size and shape
+    (same number of genotypes with the same number of associated phenotypes for each genotype).
     :return:
     """
-
     random_geno_pheno_hash = {}
-
     phenotypes = []
-
     with open('inter/ontologies/mp_hash.txt', 'rb') as handle:
         phenotype_hash = pickle.load(handle)
     for i in phenotype_hash:
@@ -3071,23 +3049,15 @@ def multiprocess_generate_random_mouse_ext_data(x):
             phenotypes.append(i)
     with open('inter/mgi/mouse_genotype_phenotype_hash.txt', 'rb') as handle:
         geno_pheno_hash = pickle.load(handle)
-
     random.shuffle(phenotypes)
-
     for i in geno_pheno_hash:
         random_geno_pheno_hash[i] = []
         ortholog_list_length = len(geno_pheno_hash[i])
-        #print(ortholog_list_length)
         phenotype_draw = phenotypes
         random.shuffle(phenotype_draw)
-        #random_orthologs = random.sample(orthologs)
-        #test_pheno_ortholog_hash[i].append(random_orthologs)
-
         for j in geno_pheno_hash[i]:
             random.shuffle(phenotype_draw)
             random_geno_pheno_hash[i].append(phenotype_draw[0])
-
-
     with open(('inter/random/mouse/random_ext_'+str(x)+'.txt'), 'wb') as handle:
         pickle.dump(random_geno_pheno_hash, handle)
     print('Completed mouse random data set '+str(x)+' out of 1000.')
@@ -3095,11 +3065,15 @@ def multiprocess_generate_random_mouse_ext_data(x):
 
 def multiprocess_generate_random_zebrafish_ext_data(x):
     """
-
-    :param x:
+    This function creates random data sets for the determination of the FDR cutoff for
+    the significant genotype/disease comparisons of the phenolog extension.
+    It takes as input the real species-specific pheontype hash and the genotype-phenotype hash for zebrafish.
+    It creates a random genotype-phenotype hash using the real genotype-phenotype hash as a guide.
+    This allows for the creation of a random data set of similar size and shape
+    (same number of genotypes with the same number of associated phenotypes for each genotype).
+    :param x: Number for the random data set.
     :return:
     """
-
     random_geno_pheno_hash = {}
     phenotypes = []
     with open('inter/ontologies/zp_hash.txt', 'rb') as handle:
@@ -3113,16 +3087,11 @@ def multiprocess_generate_random_zebrafish_ext_data(x):
     for i in geno_pheno_hash:
         random_geno_pheno_hash[i] = []
         ortholog_list_length = len(geno_pheno_hash[i])
-        #print(ortholog_list_length)
         phenotype_draw = phenotypes
         random.shuffle(phenotype_draw)
-        #random_orthologs = random.sample(orthologs)
-        #test_pheno_ortholog_hash[i].append(random_orthologs)
         for j in geno_pheno_hash[i]:
             random.shuffle(phenotype_draw)
             random_geno_pheno_hash[i].append(phenotype_draw[0])
-
-
     with open(('inter/random/zebrafish/random_ext_'+str(x)+'.txt'), 'wb') as handle:
         pickle.dump(random_geno_pheno_hash, handle)
     print('Completed zebrafish random data set '+str(x)+' out of 1000.')
@@ -3570,7 +3539,7 @@ main = main()
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
 # Compare mouse genotype phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
-main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
+#main.perform_owlsim_queries('inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_queries', 'out/owlsim/mouse_genotype_zebrafish_genotype', 'mouse_genotype_zebrafish_genotype_results', 97)
 
 #Processing completed!
 #Human Diseases = 9214
@@ -3625,7 +3594,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.assemble_significant_phenologs()
 #main.assemble_significant_phenologs_with_scores()
-
+main.annotate_significant_phenologs_with_scores_and_labels()
 
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
@@ -3641,7 +3610,7 @@ fdr_cutoff = 0.004426898733810069
 #main.generate_mouse_random_ext_data()
 #main.generate_zebrafish_random_ext_data()
 
-#Assemble the phenlog lookup files.
+#Assemble the phenolog lookup files.
 #main.assemble_hvm_phenologs()
 #main.assemble_hvz_phenologs()
 #main.assemble_mvz_phenologs()
