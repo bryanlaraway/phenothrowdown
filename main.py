@@ -3594,7 +3594,7 @@ fdr_cutoff = 0.004426898733810069
 
 #main.assemble_significant_phenologs()
 #main.assemble_significant_phenologs_with_scores()
-main.annotate_significant_phenologs_with_scores_and_labels()
+#main.annotate_significant_phenologs_with_scores_and_labels()
 
 
 ####### PHENOLOG EXTENSION FDR CALCULATION #######
@@ -3674,7 +3674,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-'''
+
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3688,7 +3688,7 @@ del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-'''
+
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
