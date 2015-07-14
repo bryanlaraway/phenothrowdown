@@ -2844,7 +2844,6 @@ def multiprocess_owlsim_queries(row):
         query_flag = 'success'
         sequence = (comparison_id, entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
 
-
     except Exception:
         #print('Processing of OWLSim query failed.')
         #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
@@ -2856,14 +2855,14 @@ def multiprocess_owlsim_queries(row):
         query_flag = 'fail'
 
         sequence = (comparison_id, entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
-        #lock.acquire()
-        #json.dump(sequence, outfile)
-        #outfile.write('\n')
-        #lock.release()
 
     return (sequence)
 
 class multithread_owlsim_queries(Thread):
+    """
+    This class is for the multithreading of OWLSim queries, currently unused.
+    """
+
     def __init__(self, url, name):
         Thread.__init__(self)
         self.name = name
@@ -2872,6 +2871,7 @@ class multithread_owlsim_queries(Thread):
 
     def run(self):
         """
+        This is a currently unused function used in the multithreading approach for OWLSim queries.
         """
         print('INFO: Performing an OWLSim query.')
         (comparison_id, query_url, entity_a, entity_a_attributes, entity_b, entity_b_attributes) = tuple
@@ -2893,14 +2893,6 @@ class multithread_owlsim_queries(Thread):
             #json.dump(sequence, outfile)
             #outfile.write('\n')
 
-            #print(sequence)
-            #print('failed here')
-            #row = str.join(sequence)
-
-            #print(row)
-            #owlsimwriter.writerow(row)
-            #print('query processing completed')
-
         except Exception:
             #print('Processing of OWLSim query failed.')
             #Creating an empty set of metrics for failed queries (queries with unresolved IRIs).
@@ -2913,8 +2905,6 @@ class multithread_owlsim_queries(Thread):
             sequence = (entity_a, entity_a_attributes, entity_b, entity_b_attributes, maxIC, simJ, ICCS, simIC, query_flag)
             #json.dump(sequence, outfile)
             #outfile.write('\n')
-
-
 
         return (sequence)
 
@@ -3187,13 +3177,11 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
 
     species_a_genotype_id = comparison_list[0]
     species_a_phenotypes = read_only_human_geno_pheno_hash[comparison_list[0]]
-    #print(species_a_phenotypes)
     genotype_a_phenotype_count = len(species_a_phenotypes)
 
     # Genotype for species B
     species_b_genotype_id = comparison_list[1]
     species_b_phenotypes = read_only_zebrafish_geno_pheno_hash[comparison_list[1]]
-    #print(species_b_phenotypes)
     phenotype_matches = 0
     phenotype_non_matches = 0
 
@@ -3202,9 +3190,6 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
 
     for k in species_a_phenotypes:
         # Orthologs for species A
-        #ortholog_matches = 0
-        #ortholog_non_matches = 0
-
         species_a_phenotype = k
         for l in species_b_phenotypes:
             # Orthologs for species B
@@ -3223,17 +3208,11 @@ def multiprocess_ext_fdr_calculation_hvz(comparison_list):
                 total_phenotype_nonmatches += 1
 
     if phenotype_matches > 0:
-        #print('Matches: '+str(ortholog_matches))
-        #print('Non-matches: '+str(ortholog_non_matches))
         m = float(genotype_b_phenotype_count)
         n = float(genotype_a_phenotype_count)
         N = float(len(read_only_hvz_phenologs))
         c = float(phenotype_matches)
         prb = float(hypergeom.pmf(c, N, m, n))
-        #print(str(c)+', '+str(N)+', '+str(m)+', '+str(n))
-        #print(prb)
-        #phenolog_ext_p_value_list.append(prb)
-        #total_hyp_calcs += 1
 
         return prb
     else:
