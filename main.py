@@ -232,7 +232,6 @@ class main():
 
     ####### PHENOLOG PHENOTYPE TO GENE/ORTHOLOG #######
 
-
     def trim_panther_data(self, inter, taxons):
         """
         This function trims the PANTHER flat file from NIF/DISCO for a given taxon,
@@ -1045,6 +1044,7 @@ class main():
             print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
         # Example URL format: http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
+        # Local server URL format: http://0.0.0.0:9031/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
         base_url = 'http://0.0.0.0:9031/compareAttributeSets?'
         print('INFO: Assembling phenotypic profile comparison queries.')
         file_name = interfile_directory+'/'+interfile_prefix+'_'+str(file_counter)+'.txt'
@@ -1106,7 +1106,7 @@ class main():
         print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
         # Cycle through the OWLSim query files to feed queries to the OWLSim server.
-        for x in range(62, num_files+1): #1, num_files+1
+        for x in range(1, num_files+1): #1, num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -1929,6 +1929,15 @@ class main():
         with open(out_file, 'wb') as handle:
             pickle.dump(phenolog_ext_p_value_list, handle)
 
+        print('INFO: Sorting p-values for random data set '+str(i)+'.')
+        fdr_p_value_list.sort()
+        with open('inter/random/fdr/fdr_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
+            pickle.dump(fdr_p_value_list, handle)
+        #print(fdr_p_value_list)
+        cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
+        #print(fdr_p_value_list[cutoff_position])
+        fdr_cutoff_value = fdr_p_value_list[cutoff_position]
+
         del phenolog_ext_p_value_list
         del comparison_list
         gc.collect()
@@ -2029,6 +2038,19 @@ class main():
         comparison_list = None
         gc.collect()
         return #phenolog_ext_p_value_list
+
+    def identify_significance_threshold_for_random_data_set(self, raw, out):
+        """
+        This function opens a saved p-value list from a processed random phenolog extension data set,
+        sorts the list, identifies the p-value where 5% of the matches would be significant,
+        and saves this value to a new file.
+        :return:
+        """
+        with open(raw, 'rb') as handle:
+           phenolog_ext_p_value_list = pickle.load(handle)
+
+
+        return
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
         print('INFO: Performing phenolog extension calculations.')
@@ -2797,6 +2819,8 @@ class main():
 
         return
 
+    #TODO: Write function for assembling multiple gene candidate predictions for disease/genotype phenotypic profiles.
+
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
 
@@ -3504,7 +3528,7 @@ main = main()
 #Mouse Genotypes = 56427
 #Total comparisons = 519,918,378
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
-#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
+main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
 
 #Process completed!
 #Human Diseases = 9214
@@ -3513,7 +3537,7 @@ main = main()
 # Compare human disease phenotypic profiles & zebrafish genotype phenotypic profiles via OWLSim.
 #main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/zfin/zebrafish_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_queries', 'out/owlsim/human_disease_zebrafish_genotype', 'human_disease_zebrafish_genotype_results', 16)
 
-#Processing...
+#Processing completed!
 #Mouse genotype = 56427
 #zebrafish genotype = 8535
 #Total comparisons = 481,604,445
@@ -3653,7 +3677,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-
+'''
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3661,13 +3685,13 @@ with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as han
 with open('inter/random/zebrafish/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
     read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
 print('INFO: Processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(sys.argv[1])+'.txt'
+p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_value_'+str(sys.argv[1])+'.txt'
 main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-
+'''
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
