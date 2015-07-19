@@ -1928,8 +1928,9 @@ class main():
         print('INFO: Done with multiprocessing.')
         with open(out_file, 'wb') as handle:
             pickle.dump(phenolog_ext_p_value_list, handle)
-
+        '''
         print('INFO: Sorting p-values for random data set '+str(i)+'.')
+
         fdr_p_value_list.sort()
         with open('inter/random/fdr/fdr_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
             pickle.dump(fdr_p_value_list, handle)
@@ -1937,6 +1938,7 @@ class main():
         cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
         #print(fdr_p_value_list[cutoff_position])
         fdr_cutoff_value = fdr_p_value_list[cutoff_position]
+        '''
 
         del phenolog_ext_p_value_list
         del comparison_list
@@ -2039,16 +2041,27 @@ class main():
         gc.collect()
         return #phenolog_ext_p_value_list
 
-    def identify_significance_threshold_for_random_data_set(self, raw, out):
+    def identify_significance_threshold_for_random_hvz_data_set(self):
         """
         This function opens a saved p-value list from a processed random phenolog extension data set,
         sorts the list, identifies the p-value where 5% of the matches would be significant,
         and saves this value to a new file.
         :return:
         """
-        with open(raw, 'rb') as handle:
-           phenolog_ext_p_value_list = pickle.load(handle)
 
+        for i in range(1, 586):
+            raw = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
+            out = 'inter/phenolog_ext/hvz_p_values/hvz_threshold/threshold_'+str(i)+'.txt'
+            with open(raw, 'rb') as handle:
+               phenolog_ext_p_value_list = pickle.load(handle)
+
+            phenolog_ext_p_value_list.sort()
+            #print(fdr_p_value_list)
+            cutoff_position = math.ceil((len(phenolog_ext_p_value_list))*0.05) - 1
+            print(phenolog_ext_p_value_list[cutoff_position])
+            fdr_cutoff_value = phenolog_ext_p_value_list[cutoff_position]
+            with open(out, 'wb') as handle:
+                pickle.dump(fdr_cutoff_value, handle)
 
         return
 
@@ -3528,7 +3541,7 @@ main = main()
 #Mouse Genotypes = 56427
 #Total comparisons = 519,918,378
 # Compare human disease phenotypic profiles & mouse genotype phenotypic profiles via OWLSim.
-main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
+#main.perform_owlsim_queries('inter/hpo/human_disease_phenotype_hash.txt', 'inter/mgi/mouse_genotype_phenotype_hash.txt', 'inter/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_queries', 'out/owlsim/human_disease_mouse_genotype', 'human_disease_mouse_genotype_results', 104)
 
 #Process completed!
 #Human Diseases = 9214
@@ -3677,7 +3690,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-'''
+
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3685,13 +3698,13 @@ with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as han
 with open('inter/random/zebrafish/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
     read_only_zebrafish_geno_pheno_hash = pickle.load(handle)
 print('INFO: Processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_value_'+str(sys.argv[1])+'.txt'
+p_value_out_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(sys.argv[1])+'.txt'
 main.perform_phenolog_calculations_for_ext_fdr_hvz(read_only_human_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash, p_value_out_file)
 del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-'''
+
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
@@ -3722,6 +3735,10 @@ read_only_zebrafish_geno_pheno_hash = None
 gc.collect()
 print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1])+'.')
 '''
+
+
+
+#main.identify_significance_threshold_for_random_hvz_data_set()
 
 
 #main.perform_phenolog_calculations_for_ext_fdr(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
