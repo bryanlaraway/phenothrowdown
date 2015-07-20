@@ -2064,9 +2064,9 @@ class main():
                mvz_p_value_list = pickle.load(handle)
             for x in hvm_p_value_list:
                 phenolog_ext_p_value_list.append(x)
-            for y in hvm_p_value_list:
+            for y in hvz_p_value_list:
                 phenolog_ext_p_value_list.append(y)
-            for z in hvm_p_value_list:
+            for z in mvz_p_value_list:
                 phenolog_ext_p_value_list.append(z)
 
             phenolog_ext_p_value_list.sort()
