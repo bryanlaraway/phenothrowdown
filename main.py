@@ -2735,14 +2735,35 @@ class main():
 
         #Test phenotype index choose 0
         #y = 7
-        for y in range(0, len(phenotype_list)):
+        for y in range(0, 5):  # len(phenotype_list)
 
             test_phenotype = ortholog_phenotype_matrix[y]
+            if re.match('HP:.*',test_phenotype):
+                phenotype_filter = 'HP'
+            elif re.match('MP:.*',test_phenotype):
+                phenotype_filter = 'MP'
+            elif re.match('ZP:.*',test_phenotype):
+                phenotype_filter = 'ZP'
+            else:
+                print('ERROR: Unknown phenotype prefix for '+test_phenotype+'.')
+                break
+
             test_distance_slice = distance_matrix[y]
+
+            # The following code will set distance values to zero in the test distance slice
+            # if the matching phenotype is from the same species as the test phenotype.
+            for x in test_distance_slice:
+                if x != y:
+                    match_phenotype = ortholog_phenotype_matrix[x]
+                    print(match_phenotype)
+                    match_phenotype = re.sub(':.*', '', match_phenotype)
+                    if phenotype_filter == match_phenotype:
+                        test_distance_slice[x] = 0
+
             intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
 
             #test_distance_slice[0] = 'X'
-            test_weight_slice = weight_matrix[0]
+            #test_weight_slice = weight_matrix[0]
             #test_weight_slice[0] = 'X'
 
             #print(test_phenotype)
