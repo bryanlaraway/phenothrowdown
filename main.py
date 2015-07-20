@@ -2041,7 +2041,7 @@ class main():
         gc.collect()
         return #phenolog_ext_p_value_list
 
-    def identify_significance_threshold_for_random_data_set(self):
+    def identify_significance_threshold_for_random_data_sets(self):
         """
         This function opens saved p-value lists for each species pair from
         a processed random phenolog extension data set, sorts the list,
@@ -2074,7 +2074,7 @@ class main():
             cutoff_position = math.ceil((len(phenolog_ext_p_value_list))*0.05) - 1
             print(phenolog_ext_p_value_list[cutoff_position])
             fdr_cutoff_value = phenolog_ext_p_value_list[cutoff_position]
-            with open(out, 'wb') as handle:
+            with open(out_file, 'wb') as handle:
                 pickle.dump(fdr_cutoff_value, handle)
 
         return
