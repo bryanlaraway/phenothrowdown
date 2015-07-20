@@ -2738,6 +2738,7 @@ class main():
         for y in range(0, 5):  # len(phenotype_list)
 
             test_phenotype = ortholog_phenotype_matrix[y]
+            print('Test phenotype: '+test_phenotype)
             if re.match('HP:.*',test_phenotype):
                 phenotype_filter = 'HP'
             elif re.match('MP:.*',test_phenotype):
@@ -2755,7 +2756,7 @@ class main():
             for x in test_distance_slice:
                 if x != y:
                     match_phenotype = ortholog_phenotype_matrix[x]
-                    print(match_phenotype)
+                    print('Match phenotype: '+match_phenotype)
                     match_phenotype = re.sub(':.*', '', match_phenotype)
                     if phenotype_filter == match_phenotype:
                         test_distance_slice[x] = 0
