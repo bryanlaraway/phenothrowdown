@@ -30,6 +30,7 @@ from threading import Thread
 #import threading
 from ctypes import c_int
 from queue import Queue
+from collections import *
 #import matplotlib.pyplot as plt
 
 
@@ -55,9 +56,9 @@ class main():
 
     # Required table from NIF/DISCO
     tables = [
-        'dvp.pr_nlx_151835_1',  # HPO: Annoations:DiseasePhenotypes view
-        'dvp.pr_nlx_151835_2',  # HPO: Annoations:Phenotype to gene view
-        'dvp.pr_nlx_151835_3',  # HPO: Annoations:Disease to gene
+        'dvp.pr_nlx_151835_1',  # HPO: Annotations:DiseasePhenotypes view
+        'dvp.pr_nlx_151835_2',  # HPO: Annotations:Phenotype to gene view
+        'dvp.pr_nlx_151835_3',  # HPO: Annotations:Disease to gene
         'dvp.pr_nif_0000_00096_5',  # MGI:MouseGenotypes
         'dvp.pr_nif_0000_00096_6',  # MGI:MousePhenotypes
         'dvp.pr_nif_0000_21427_10',  # ZFIN:Genotype-Phenotype
@@ -1106,7 +1107,7 @@ class main():
         print('INFO: '+str(comparison_count)+' phenotypic profile comparisons to process.')
 
         # Cycle through the OWLSim query files to feed queries to the OWLSim server.
-        for x in range(7, num_files+1): #1, num_files+1
+        for x in range(10, num_files+1): #1, num_files+1
             interfile = interfile_directory+'/'+interfile_prefix+'_'+str(x)+'.txt'
             outfile = outfile_directory+'/'+outfile_prefix+'_'+str(x)+'.txt'
 
@@ -1139,6 +1140,24 @@ class main():
                     print('INFO: Multiprocessing completed')
                     ###### END MULTIPROCESSING INSERT ######
 
+        return
+
+    def trim_owlsim_output(self):
+        """
+        This function will take the results from the OWLSim queries, trim any unsuccessful queries,
+        and return a file or files of successful queries.
+        :return:
+        """
+
+        return
+
+    def assemble_owlsim_gene_candidates(self):
+        """
+        This function will take a trimmed set of OWLSim queries,
+        assemble gene candidate scores for a disease/genotype,
+        sort the results, and write the results to an output file.
+        :return:
+        """
         return
 
 
@@ -2050,7 +2069,7 @@ class main():
         :return:
         """
 
-        for i in range(1, 586):
+        for i in range(1, 10):
             phenolog_ext_p_value_list = []
             hvm_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(i)+'.txt'
             hvz_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
@@ -2735,31 +2754,34 @@ class main():
 
         #Test phenotype index choose 0
         #y = 7
-        for y in range(0, 5):  # len(phenotype_list)
+        for y in range(0, len(phenotype_list)):  # len(phenotype_list)
 
             test_phenotype = ortholog_phenotype_matrix[y]
-            print('Test phenotype: '+test_phenotype)
-            if re.match('HP:.*',test_phenotype):
+            test_phenotype_id = phenotype_list[y]
+            print('Test phenotype: '+test_phenotype_id)
+            if re.match('HP:.*',test_phenotype_id):
                 phenotype_filter = 'HP'
-            elif re.match('MP:.*',test_phenotype):
+            elif re.match('MP:.*',test_phenotype_id):
                 phenotype_filter = 'MP'
-            elif re.match('ZP:.*',test_phenotype):
+            elif re.match('ZP:.*',test_phenotype_id):
                 phenotype_filter = 'ZP'
             else:
-                print('ERROR: Unknown phenotype prefix for '+test_phenotype+'.')
+                print('ERROR: Unknown phenotype prefix for '+str(test_phenotype_id)+'.')
                 break
 
             test_distance_slice = distance_matrix[y]
+            #print(test_distance_slice)
 
             # The following code will set distance values to zero in the test distance slice
             # if the matching phenotype is from the same species as the test phenotype.
-            for x in test_distance_slice:
+            for x in range(0, len(phenotype_list)):
                 if x != y:
-                    match_phenotype = ortholog_phenotype_matrix[x]
-                    print('Match phenotype: '+match_phenotype)
-                    match_phenotype = re.sub(':.*', '', match_phenotype)
-                    if phenotype_filter == match_phenotype:
-                        test_distance_slice[x] = 0
+                    match_phenotype_id = phenotype_list[x]
+                    #print('Test phenotype: '+test_phenotype_id+', Match phenotype: '+match_phenotype_id)
+                    match_phenotype_prefix = re.sub(':.*', '', match_phenotype_id)
+                    if phenotype_filter == match_phenotype_prefix:
+                        #print('Setting distance to 0 for Test phenotype: '+test_phenotype_id+', Match phenotype: '+match_phenotype_id)
+                        test_distance_slice[x] = -1
 
             intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
 
@@ -2777,8 +2799,8 @@ class main():
                 if z != y:
                      nearest_neighbors.append(z)
             #print(intermediate_nearest_neighbors)
-            #print(nearest_neighbors)
             print('Input phenotype: '+phenotype_list[y])
+            print(nearest_neighbors)
             #print(ortholog_phenotype_matrix[y])
             #for m in nearest_neighbors:
                 #print('Nearest neighbor phenotype: '+phenotype_list[m])
@@ -2867,8 +2889,101 @@ class main():
 
 
         return
-
+    #TODO: Write function for ranking gene candidate predictions using phenotype_ortholog_candidate_hash.
     #TODO: Write function for assembling multiple gene candidate predictions for disease/genotype phenotypic profiles.
+
+    def assemble_model_level_phenolog_gene_candidate_predictions(self):
+        """
+        This function assembles phenolog gene candidate predictions for single phenotypes into a collection of
+        gene candidate predictions for a disease/genotype by assembling all gene candidates from the phenotypes
+        present in the disease/genotype phenotypic profile.
+        """
+        raw = 'out/phenolog_gene_cand/phenolog_ortholog_candidate_prediction_hash.txt'
+        with open(raw, 'rb') as handle:
+            phenolog_ortholog_prediction_hash = pickle.load(handle)
+
+        human_file = 'inter/hpo/human_disease_phenotype_hash.txt'
+        with open(human_file, 'rb') as handle:
+            human_disease_phenotype_hash = pickle.load(handle)
+        mouse_file = 'inter/mgi/mouse_genotype_phenotype_hash.txt'
+        with open(mouse_file, 'rb') as handle:
+            mouse_genotype_phenotype_hash = pickle.load(handle)
+        zebrafish_file = 'inter/zfin/zebrafish_genotype_phenotype_hash.txt'
+        with open(zebrafish_file, 'rb') as handle:
+            zebrafish_genotype_phenotype_hash = pickle.load(handle)
+
+        human_outfile = 'out/phenolog_gene_cand/human_disease_ortholog_candidates.txt'
+        mouse_outfile = 'out/phenolog_gene_cand/mouse_genotype_ortholog_candidates.txt'
+        zebrafish_outfile = 'out/phenolog_gene_cand/zebrafish_genotype_ortholog_candidates.txt'
+
+        with open(human_outfile, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            for i in human_disease_phenotype_hash:
+                disease_id = i
+                phenotype_ids = human_disease_phenotype_hash[disease_id]
+                phenotype_gene_candidate_hash = {}
+                phenotype_counter = 0
+
+                for j in phenotype_ids:
+                    try:
+                        if phenotype_counter == 0:
+                            phenotype_gene_candidate_hash = phenolog_ortholog_prediction_hash[j]
+                            phenotype_counter += 1
+                        else:
+                            phenotype_gene_candidate_hash.update(phenolog_ortholog_prediction_hash[j])
+                    except:
+                        print('No gene candidate predictions for phenotype '+str(j)+'.')
+
+                phenotype_gene_candidate_hash = OrderedDict(sorted(phenotype_gene_candidate_hash.items(), reverse=True, key=lambda t: t[1]))
+                output_row = (disease_id, phenotype_gene_candidate_hash)
+                csvwriter.writerow(output_row)
+
+        with open(mouse_outfile, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            for i in mouse_genotype_phenotype_hash:
+                genotype_id = i
+                phenotype_ids = mouse_genotype_phenotype_hash[genotype_id]
+                phenotype_gene_candidate_hash = {}
+                phenotype_counter = 0
+
+                for j in phenotype_ids:
+                    try:
+                        if phenotype_counter == 0:
+                            phenotype_gene_candidate_hash = phenolog_ortholog_prediction_hash[j]
+                            phenotype_counter += 1
+                        else:
+                            phenotype_gene_candidate_hash.update(phenolog_ortholog_prediction_hash[j])
+                    except:
+                        print('No gene candidate predictions for phenotype '+str(j)+'.')
+
+                phenotype_gene_candidate_hash = OrderedDict(sorted(phenotype_gene_candidate_hash.items(), reverse=True, key=lambda t: t[1]))
+                output_row = (genotype_id, phenotype_gene_candidate_hash)
+                csvwriter.writerow(output_row)
+
+        with open(zebrafish_outfile, 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            for i in zebrafish_genotype_phenotype_hash:
+                genotype_id = i
+                phenotype_ids = zebrafish_genotype_phenotype_hash[genotype_id]
+                phenotype_gene_candidate_hash = {}
+                phenotype_counter = 0
+
+                for j in phenotype_ids:
+                    try:
+                        if phenotype_counter == 0:
+                            phenotype_gene_candidate_hash = phenolog_ortholog_prediction_hash[j]
+                            phenotype_counter += 1
+                        else:
+                            phenotype_gene_candidate_hash.update(phenolog_ortholog_prediction_hash[j])
+                    except:
+                        print('No gene candidate predictions for phenotype '+str(j)+'.')
+
+                phenotype_gene_candidate_hash = OrderedDict(sorted(phenotype_gene_candidate_hash.items(), reverse=True, key=lambda t: t[1]))
+                output_row = (genotype_id, phenotype_gene_candidate_hash)
+                csvwriter.writerow(output_row)
+
+        #print(phenolog_ortholog_prediction_hash['HP:0000002'])
+        return
 
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
@@ -3726,7 +3841,7 @@ for i in range(1, 1001):
 
 # The next three code snippets process the phenolog extension calculations to determine the FDR using an external bash script.
 # This gets around the memory management issue.
-
+'''
 with open('inter/phenolog/hvz_phenolog_combo.txt', 'rb') as handle:
     read_only_hvz_phenologs = set(pickle.load(handle))
 with open('inter/random/human/random_ext_'+str(sys.argv[1])+'.txt', 'rb') as handle:
@@ -3740,7 +3855,7 @@ del read_only_human_geno_pheno_hash
 del read_only_zebrafish_geno_pheno_hash
 gc.collect()
 print('INFO: Done processing human vs zebrafish random data set '+str(sys.argv[1])+'.')
-
+'''
 '''
 with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
     read_only_hvm_phenologs = set(pickle.load(handle))
@@ -3819,7 +3934,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.create_phenolog_gene_candidate_prediction_matrix()
 #main.assemble_phenolog_gene_candidate_predictions()
 
-
+main.assemble_model_level_phenolog_gene_candidate_predictions()
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
@@ -3833,3 +3948,4 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0002169&b=ZP:0000411&b=ZP:0002713&b=ZP:&b=ZP:&b=ZP:0000692&b=ZP:0000054&b=ZP:0000043&b=ZP:0000038&b=ZP:0000737&b=ZP:&b=ZP:0001192&b=ZP:&b=3300
+# Local server URL format: http://0.0.0.0:9031/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
