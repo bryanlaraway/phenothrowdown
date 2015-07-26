@@ -231,6 +231,63 @@ class main():
 
     ####### NIF DATA ASSEMBLY #######
 
+    ####### ID TO LABEL ASSEMBLY #######
+
+
+    def assemble_nif_hpo_phenotype_id_to_label(self, limit=None):
+        """This function assembles a hash for human phenotype IDs and their labels from the NIF/DISCO flat data file"""
+
+        print('INFO:Assembling human phenotype ID to label hash.')
+
+        # Set up counters and open required files.
+        line_counter = 0
+        raw = 'raw/hpo/dvp.pr_nlx_151835_2'
+        inter = 'inter/hpo/human_pheno_id_to_label_hash.txt'
+        hpo_phenotype_id_to_label_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.')
+            row_count = limit
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+
+                # Read in a row and split into individual variables
+                line_counter += 1
+                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
+                 gene_label, v_uid, v_uuid, v_lastmodified) = row
+                print('INFO: Processing human phenotype row '+str(line_counter)+' out of '+str(row_count)+'.')
+
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                if gene_id == '' or gene_id is None:
+                    continue
+
+                # Convert NCBIGene ID prefix.
+                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
+
+                # If phenotype is not in the phenotype to gene hash, add phenotype to hash.
+                if phenotype_id not in hpo_phenotype_id_to_label_hash:
+                    hpo_phenotype_id_to_label_hash[phenotype_id] = phenotype_label
+
+                if limit is not None and line_counter > limit:
+                    break
+
+        # Dump files to disk.
+        with open(inter, 'wb') as handle:
+            pickle.dump(hpo_phenotype_id_to_label_hash, handle)
+
+
+        print('INFO: Done assembling human phenotype ID to label hash.')
+        print('INFO: '+str(len(hpo_phenotype_id_to_label_hash.keys()))+' human phenotypes present.')
+        return
+
+
     ####### PHENOLOG PHENOTYPE TO GENE/ORTHOLOG #######
 
     def trim_panther_data(self, inter, taxons):
@@ -2803,6 +2860,19 @@ class main():
             phenotype_list = pickle.load(handle)
         with open('inter/phenolog_gene_cand/ortholog_list.txt', 'rb') as handle:
             ortholog_list = pickle.load(handle)
+        with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
+            human_phenotype_gene_hash = pickle.load(handle)
+        with open('inter/mgi/mouse_pheno_gene_hash.txt', 'rb') as handle:
+            mouse_phenotype_gene_hash = pickle.load(handle)
+        with open('inter/zfin/zebrafish_pheno_gene_hash.txt', 'rb') as handle:
+            zebrafish_phenotype_gene_hash = pickle.load(handle)
+        phenotype_gene_hash = {}
+        phenotype_gene_hash.update(human_phenotype_gene_hash)
+        phenotype_gene_hash.update(mouse_phenotype_gene_hash)
+        phenotype_gene_hash.update(zebrafish_phenotype_gene_hash)
+
+        with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
+            phenotype_list = pickle.load(handle)
 
         phenotype_ortholog_prediction_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
 
@@ -2810,53 +2880,68 @@ class main():
         # Pass in phenotype indice
         # Get the slice for the phenotype indice.
         # Create a clone of the slice, sort, and get the value of the top k entries.
+        with open('out/phenolog_gene_cand/nearest_neighbor_phenotypes.txt', 'w', newline='\n') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            for y in range(0, len(phenotype_list)):
 
-        for y in range(0, len(phenotype_list)):
+                test_phenotype_id = phenotype_list[y]
+                print('Test phenotype: '+test_phenotype_id)
+                if re.match('HP:.*',test_phenotype_id):
+                    phenotype_filter = 'HP'
+                elif re.match('MP:.*',test_phenotype_id):
+                    phenotype_filter = 'MP'
+                elif re.match('ZP:.*',test_phenotype_id):
+                    phenotype_filter = 'ZP'
+                else:
+                    print('ERROR: Unknown phenotype prefix for '+str(test_phenotype_id)+'.')
+                    break
 
-            test_phenotype_id = phenotype_list[y]
-            print('Test phenotype: '+test_phenotype_id)
-            if re.match('HP:.*',test_phenotype_id):
-                phenotype_filter = 'HP'
-            elif re.match('MP:.*',test_phenotype_id):
-                phenotype_filter = 'MP'
-            elif re.match('ZP:.*',test_phenotype_id):
-                phenotype_filter = 'ZP'
-            else:
-                print('ERROR: Unknown phenotype prefix for '+str(test_phenotype_id)+'.')
-                break
+                test_distance_slice = distance_matrix[y]
 
-            test_distance_slice = distance_matrix[y]
+                # The following code will set distance values to zero in the test distance slice
+                # if the matching phenotype is from the same species as the test phenotype.
+                for x in range(0, len(phenotype_list)):
+                    if x != y:
+                        match_phenotype_id = phenotype_list[x]
+                        match_phenotype_prefix = re.sub(':.*', '', match_phenotype_id)
+                        if phenotype_filter == match_phenotype_prefix:
+                            test_distance_slice[x] = -1
 
-            # The following code will set distance values to zero in the test distance slice
-            # if the matching phenotype is from the same species as the test phenotype.
-            for x in range(0, len(phenotype_list)):
-                if x != y:
-                    match_phenotype_id = phenotype_list[x]
-                    match_phenotype_prefix = re.sub(':.*', '', match_phenotype_id)
-                    if phenotype_filter == match_phenotype_prefix:
-                        test_distance_slice[x] = -1
+                intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
 
-            intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
+                nearest_neighbors = []
+                nearest_neighbor_ids = []
+                nearest_neighbor_labels = []
+                # This will print out the phenotype IDs for the k nearest neighbors
+                for z in intermediate_nearest_neighbors:
+                    if z != y:
+                        nearest_neighbors.append(z)
+                        nearest_neighbor_ids.append(phenotype_list[z])
+                for i in nearest_neighbor_ids:
+                    nearest_neighbor_label = 0
+                print('Input phenotype: '+phenotype_list[y])
+                print('Nearest neighbor phenotypes: '+str(nearest_neighbor_ids)+'.')
+                print(nearest_neighbors)
+                #for i in nearest_neighbor_ids:
 
-            nearest_neighbors = []
-            # This will print out the phenotype IDs for the k nearest neighbors
-            for z in intermediate_nearest_neighbors:
-                if z != y:
-                     nearest_neighbors.append(z)
-            print('Input phenotype: '+phenotype_list[y])
-            print(nearest_neighbors)
 
-            # Next I need to take those k nearest neighbor phenotypes, and calculate the probability that
-            # ortholog i is associated with phenotype j based on those k phenotypes,
-            # using the phenotype matrix and weight matrix.
-            # Take the sum
+                # For nearest neighbor output file: phenotype_id, phenotype_label, nn-phenotype_ids, nn-phenotype_labels
 
-            # i in nearest neighbors is the phenotype index
-            for i in nearest_neighbors:
-                nearby_phenotype = ortholog_phenotype_matrix[i]
-                for j in range(0, len(nearby_phenotype)):
-                    if ortholog_phenotype_matrix[i][j] != 0:
-                        phenotype_ortholog_prediction_matrix[y][j] += weight_matrix[i][j]*ortholog_phenotype_matrix[i][j]
+
+                output_row = (phenotype_list[y], nearest_neighbor_ids, phenotype_ortholog_candidate_hash[phenotype_id])
+                csvwriter.writerow(output_row)
+
+                # Next I need to take those k nearest neighbor phenotypes, and calculate the probability that
+                # ortholog i is associated with phenotype j based on those k phenotypes,
+                # using the phenotype matrix and weight matrix.
+                # Take the sum
+
+                # i in nearest neighbors is the phenotype index
+                for i in nearest_neighbors:
+                    nearby_phenotype = ortholog_phenotype_matrix[i]
+                    for j in range(0, len(nearby_phenotype)):
+                        if ortholog_phenotype_matrix[i][j] != 0:
+                            phenotype_ortholog_prediction_matrix[y][j] += weight_matrix[i][j]*ortholog_phenotype_matrix[i][j]
 
         numpy.save('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
         numpy.savetxt('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.txt', phenotype_ortholog_prediction_matrix)
@@ -2999,6 +3084,15 @@ class main():
 
         #print(phenolog_ortholog_prediction_hash['HP:0000002'])
         return
+
+
+    def assemble_nearest_neighbor_phenotypes_with_genes(self):
+
+
+
+
+        return
+
 
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
@@ -3635,6 +3729,11 @@ main = main()
 
 
 ####### DATA ASSEMBLY VIA  NIF/DISCO #######
+
+# Assemble the phenotype ID to label files.
+main.assemble_nif_hpo_phenotype_id_to_label()
+
+
 # Assemble the phenotype to gene files for phenologs.
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
 #main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
@@ -3715,7 +3814,7 @@ main = main()
 #main.trim_owlsim_output('out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_', 'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_trimmed_results_')
 #main.assemble_owlsim_gene_candidates('out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_', 'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_predictions.txt')
 
-main.assemble_owlsim_gene_candidate_alternate()
+#main.assemble_owlsim_gene_candidate_alternate()
 ####### PHENOLOG FDR CALCULATION #######
 
 # Generate random data sets for each organism using common orthologs between the other organisms.
