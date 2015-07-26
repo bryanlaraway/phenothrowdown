@@ -287,6 +287,128 @@ class main():
         print('INFO: '+str(len(hpo_phenotype_id_to_label_hash.keys()))+' human phenotypes present.')
         return
 
+    def assemble_nif_zfin_phenotype_id_to_label(self, limit=None):
+        """This function assembles a hash for zebrafish phenotype IDs and their labels from the NIF/DISCO flat data file"""
+
+        print('INFO:Assembling zebrafish phenotype to ortholog data.')
+
+        # Set up counters and open required files.
+        line_counter = 0
+        raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
+        inter = 'inter/zfin/zebrafish_phenotype_id_to_label_hash.txt'
+        zfin_phenotype_id_to_label_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.' )
+            row_count = limit
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+
+                # Read in a row and split into individual variables.
+                line_counter += 1
+                (e_uid, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_num, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 extrinsic_genotype_id, extrinsic_genotype_label, extrinsic_genotype_label_html, phenotype_id,
+                 phenotype_label, phenotype_modifier, implicated_gene_ids, implicated_gene_labels, start_stage_id,
+                 start_stage_zfin_id, start_stage_label, end_stage_id ,end_stage_zfin_id, end_stage_label, stages,
+                 genomic_background_id, genomic_background_num, genomic_background_label,
+                 affected_structure_or_process_1_superterm_id, affected_structure_or_process_1_superterm_name,
+                 affected_structure_or_process_1_subterm_id, affected_structure_or_process_1_subterm_name,
+                 quality_id, quality_label, affected_structure_or_process_2_superterm_id,
+                 affected_structure_or_process_2_superterm_name, affected_structure_or_process_2_subterm_id,
+                 affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
+                 evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
+                 taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
+
+                # Skip phenotypes without IDs and phenotypes with no associated genes.
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                if implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
+
+                # If phenotype is not in the phenotype to gene hash, add phenotype to hash.
+                if phenotype_id not in zfin_phenotype_id_to_label_hash:
+                    zfin_phenotype_id_to_label_hash[phenotype_id] = [phenotype_label]
+
+                if limit is not None and line_counter > limit:
+                    break
+
+        # Dump data to files.
+        with open(inter, 'wb') as handle:
+            pickle.dump(zfin_phenotype_id_to_label_hash, handle)
+
+        print('INFO: Done assembling zebrafish phenotype to gene/ortholog data.')
+        print('INFO: '+str(len(zfin_phenotype_id_to_label_hash.keys()))+' zebrafish phenotypes present.')
+        return
+
+    def assemble_nif_mgi_phenotype_id_to_label(self, limit=None):
+        """This function assembles a hash for mouse phenotype IDs and their labels from the NIF/DISCO flat data file"""
+
+        print('INFO:Assembling mouse phenotype to gene/ortholog data.')
+
+        # Set up counters and open required files.
+        line_counter = 0
+        raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
+        inter = 'inter/mgi/mouse_phenotype_id_to_label_hash.txt'
+        mgi_phenotype_id_to_label_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' mouse phenotype rows to process.')
+        if limit is not None:
+            print('Only parsing first '+str(limit)+' rows.')
+            row_count = limit
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+
+                # Read in a row and split into individual variables
+                line_counter += 1
+                (annotation_id, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 genomic_variation_complement_id, genomic_variation_complement_label,
+                 genomic_variation_complement_label_html, implicated_gene_ids, implicated_gene_labels,
+                 implicated_sequence_alteration_ids, implicated_sequence_alteration_labels, genomic_background_id,
+                 genomic_background_label, phenotype_id, phenotype_label, phenotype_description_free_text,
+                 phenotype_modifier, evidence_code_id, evidence_code_symbol, evidence_code_label, environment_id,
+                 environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
+                 e_uid, v_uid, v_uuid, v_lastmodified) = row
+                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
+
+                # Skip phenotypes without IDs and phenotypes with no associated genes.
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                if implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
+
+                # Split the implicated genes list.
+                genes = implicated_gene_ids.split(',')
+
+                # If phenotype is not in the phenotype to gene hash, add phenotype to hash.
+                if phenotype_id not in mgi_phenotype_id_to_label_hash:
+                    mgi_phenotype_id_to_label_hash[phenotype_id] = phenotype_label
+
+                if limit is not None and line_counter > limit:
+                    break
+
+        # Dump data to files.
+        with open(inter, 'wb') as handle:
+            pickle.dump(mgi_phenotype_id_to_label_hash, handle)
+
+        print('INFO: Done assembling mouse phenotype to gene/ortholog data.')
+        print('INFO: '+str(len(mgi_phenotype_id_to_label_hash.keys()))+' mouse phenotypes present.')
+
+        return
+
 
     ####### PHENOLOG PHENOTYPE TO GENE/ORTHOLOG #######
 
@@ -3731,8 +3853,9 @@ main = main()
 ####### DATA ASSEMBLY VIA  NIF/DISCO #######
 
 # Assemble the phenotype ID to label files.
-main.assemble_nif_hpo_phenotype_id_to_label()
-
+#main.assemble_nif_hpo_phenotype_id_to_label()
+#main.assemble_nif_mgi_phenotype_id_to_label()
+#main.assemble_nif_zfin_phenotype_id_to_label()
 
 # Assemble the phenotype to gene files for phenologs.
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
