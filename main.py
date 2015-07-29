@@ -232,8 +232,7 @@ class main():
 
     ####### NIF DATA ASSEMBLY #######
 
-    ####### ID TO LABEL ASSEMBLY #######
-
+    ####### PHENOTYPE ID TO LABEL ASSEMBLY #######
 
     def assemble_nif_hpo_phenotype_id_to_label(self, limit=None):
         """This function assembles a hash for human phenotype IDs and their labels from the NIF/DISCO flat data file"""
@@ -408,6 +407,184 @@ class main():
         print('INFO: Done assembling mouse phenotype to gene/ortholog data.')
         print('INFO: '+str(len(mgi_phenotype_id_to_label_hash.keys()))+' mouse phenotypes present.')
 
+        return
+
+
+    ####### GENE ID TO LABEL ASSEMBLY #######
+
+    def assemble_nif_mgi_gene_id_to_label(self):
+        """This function assembles mouse gene id to gene labels from the NIF/DISCO flat data file"""
+
+        print('INFO:Assembling mouse gene ID to label hash.')
+
+        # Set up counters and open required files.
+        line_counter = 0
+        raw = 'raw/mgi/dvp.pr_nif_0000_00096_6'
+        inter = 'inter/mgi/mouse_gene_id_to_label_hash.txt'
+        gene_id_to_label_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' mouse rows to process.')
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+
+                # Read in a row and split into individual variables
+                line_counter += 1
+                (annotation_id, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 genomic_variation_complement_id, genomic_variation_complement_label,
+                 genomic_variation_complement_label_html, implicated_gene_ids, implicated_gene_labels,
+                 implicated_sequence_alteration_ids, implicated_sequence_alteration_labels, genomic_background_id,
+                 genomic_background_label, phenotype_id, phenotype_label, phenotype_description_free_text,
+                 phenotype_modifier, evidence_code_id, evidence_code_symbol, evidence_code_label, environment_id,
+                 environment_label, publication_id, publication_label, publication_url, taxon_id, taxon_label,
+                 e_uid, v_uid, v_uuid, v_lastmodified) = row
+                #print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
+
+                if implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
+
+                # Split the implicated genes list.
+                genes = implicated_gene_ids.split(',')
+                gene_labels = implicated_gene_labels.split(',')
+                #print(genes)
+                # If gene is not in the gene ID to label hash, add gene to hash.
+                for gene in genes:
+                    if gene not in gene_id_to_label_hash:
+                        gene_index = genes.index(gene)
+                        #print(gene_index)
+                        gene_id_to_label_hash[gene] = gene_labels[gene_index]
+
+
+        # Dump data to files.
+        with open(inter, 'wb') as handle:
+            pickle.dump(gene_id_to_label_hash, handle)
+
+        print('INFO: Done assembling mouse gene ID to label hash.')
+
+        return
+
+    def assemble_nif_zfin_gene_id_to_label(self):
+        print('INFO:Assembling zebrafish gene ID to label hash.')
+        line_counter = 0
+        raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
+        inter = 'inter/zfin/zebrafish_gene_id_to_label_hash.txt'
+        gene_id_to_label_hash = {}
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' zebrafish gene to phenotype rows to process.')
+        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, effective_genotype_id, effective_genotype_label, effective_genotype_label_html,
+                 intrinsic_genotype_id, intrinsic_genotype_num, intrinsic_genotype_label, intrinsic_genotype_label_html,
+                 extrinsic_genotype_id, extrinsic_genotype_label, extrinsic_genotype_label_html, phenotype_id,
+                 phenotype_label, phenotype_modifier, implicated_gene_ids, implicated_gene_labels, start_stage_id,
+                 start_stage_zfin_id, start_stage_label, end_stage_id ,end_stage_zfin_id, end_stage_label, stages,
+                 genomic_background_id, genomic_background_num, genomic_background_label,
+                 affected_structure_or_process_1_superterm_id, affected_structure_or_process_1_superterm_name,
+                 affected_structure_or_process_1_subterm_id, affected_structure_or_process_1_subterm_name,
+                 quality_id, quality_label, affected_structure_or_process_2_superterm_id,
+                 affected_structure_or_process_2_superterm_name, affected_structure_or_process_2_subterm_id,
+                 affected_structure_or_process_2_subterm_name, environment_id, environment_label, evidence_code_id,
+                 evidence_code_symbol, evidence_code_label, publication_id, publication_label, publication_url,
+                 taxon_id, taxon_label, v_uid, v_uuid, v_lastmodified) = row
+
+                # Skip phenotypes without IDs and phenotypes with no associated genes.
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                if implicated_gene_ids == '' or implicated_gene_ids is None:
+                    continue
+
+                # Split the implicated genes list.
+                genes = implicated_gene_ids.split(',')
+
+                gene_labels = implicated_gene_labels.split(',')
+                #print(genes)
+                # If gene is not in the gene ID to label hash, add gene to hash.
+                for gene in genes:
+                    if gene not in gene_id_to_label_hash:
+                        gene_index = genes.index(gene)
+                        #print(gene_index)
+                        gene_id_to_label_hash[gene] = gene_labels[gene_index]
+
+        # Dump data to files.
+        with open(inter, 'wb') as handle:
+            pickle.dump(gene_id_to_label_hash, handle)
+
+        print('INFO: Done assembling zebrafish gene to label hash.')
+
+        return
+
+    def assemble_nif_hpo_gene_id_to_label(self):
+        print('INFO:Assembling human gene ID to label hash.')
+        line_counter = 0
+        failure_counter = 0
+        raw1 = 'raw/hpo/dvp.pr_nlx_151835_3'
+        raw2 = 'raw/hpo/dvp.pr_nlx_151835_2'
+        inter = 'inter/hpo/human_gene_id_to_label_hash.txt'
+        gene_id_to_label_hash = {}
+        with open(raw1, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human disease to gene rows to process.')
+        with open(raw1, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader,None)
+            for row in filereader:
+                line_counter += 1
+                (e_uid, disease_id, disorder_name, disorder_database_link, gene_id,
+                 gene_num, gene_label, v_uid, v_uuid, v_lastmodified) = row
+                #print(disease_id)
+
+                # Convert NCBIGene ID prefix.
+                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
+                #print(genes)
+                if gene_id not in gene_id_to_label_hash:
+                    gene_id_to_label_hash[gene_id] = gene_label
+                    #print(hpo_phenotype_to_gene_hash[genotype_id])
+
+        # Set up counters and open required files.
+        line_counter = 0
+        with open(raw2, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            row_count = sum(1 for row in filereader)
+            row_count = row_count - 1
+            print(str(row_count)+' human phenotype rows to process.')
+        with open(raw2, 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+
+                # Read in a row and split into individual variables
+                line_counter += 1
+                (e_uid, phenotype_id, phenotype_label, gene_id, gene_num,
+                 gene_label, v_uid, v_uuid, v_lastmodified) = row
+
+                if phenotype_id == '' or phenotype_id is None:
+                    continue
+                if gene_id == '' or gene_id is None:
+                    continue
+
+                # Convert NCBIGene ID prefix.
+                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
+                if gene_id not in gene_id_to_label_hash:
+                    gene_id_to_label_hash[gene_id] = gene_label
+
+        # Dump files to disk.
+        with open(inter, 'wb') as handle:
+            pickle.dump(gene_id_to_label_hash, handle)
+
+        print('INFO: Done assembling human gene ID to label hash.')
         return
 
 
@@ -816,7 +993,7 @@ class main():
         return
 
 
-    ####### OWLSIM GENOTYPE TO PHENOTYPE #######
+    ####### OWLSIM GENOTYPE/GENE TO PHENOTYPE #######
 
     def assemble_nif_zfin_genotype_to_phenotype(self, limit=None):
         #TODO: Assuming want to filter out to intrinsic genotypes only?
@@ -934,6 +1111,9 @@ class main():
                 (e_uid, disease_id, disorder_name, disorder_database_link, gene_id,
                  gene_num, gene_label, v_uid, v_uuid, v_lastmodified) = row
                 print(disease_id)
+
+                # Convert NCBIGene ID prefix.
+                gene_id = re.sub('NCBI_gene:', 'NCBIGene:', gene_id)
 
                 #print(genes)
                 if disease_id not in hpo_disease_to_gene_hash:
@@ -1506,28 +1686,73 @@ class main():
 
         return
 
-
     def assemble_owlsim_top_20_gene_candidates(self):
+
+        disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
         with open(human_disease_list_file, 'rb') as handle:
             human_disease_list = pickle.load(handle)
 
-        with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/ORPHANET_2812.txt', 'rb') as handle:
-            human_disease_gene_prediction_hash = pickle.load(handle)
+
+        with open('inter/hpo/human_gene_id_to_label_hash.txt', 'rb') as handle:
+            human_gene_id_to_label_hash = pickle.load(handle)
+        with open('inter/mgi/mouse_gene_id_to_label_hash.txt', 'rb') as handle:
+            mouse_gene_id_to_label_hash = pickle.load(handle)
+        with open('inter/zfin/zebrafish_gene_id_to_label_hash.txt', 'rb') as handle:
+            zebrafish_gene_id_to_label_hash = pickle.load(handle)
+        gene_id_to_label_hash = {}
+        gene_id_to_label_hash.update(human_gene_id_to_label_hash)
+        gene_id_to_label_hash.update(mouse_gene_id_to_label_hash)
+        gene_id_to_label_hash.update(zebrafish_gene_id_to_label_hash)
+
         #print(human_disease_gene_prediction_hash)
-        disease_id = 'ORPHANET:2812'
+        #disease_id = 'ORPHANET:2824'
+        for disease_id in disease_subset:
+            with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id)+'.txt', 'rb') as handle:
+                human_disease_gene_prediction_hash = pickle.load(handle)
+            #disease_id = re.sub('_', ':', x)
+
+            top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
+            top_20_iccs = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['ICCS'])
+            top_20_sim_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simIC'])
+            top_20_sim_j = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simJ'])
+            #print(top_20_max_ic)
+            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/maxic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                for gene_candidate_id in top_20_max_ic:
+                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'])
+                    csvwriter.writerow(output_row)
+                    #print('Gene candidate: '+str(gene_candidate)+', MaxIC:'+str(human_disease_gene_prediction_hash[gene_candidate]['maxIC']))
+            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/iccs/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                for gene_candidate_id in top_20_iccs:
+                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'])
+                    csvwriter.writerow(output_row)
+            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                for gene_candidate_id in top_20_sim_ic:
+                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['simIC'])
+                    csvwriter.writerow(output_row)
+            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simj/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                for gene_candidate_id in top_20_sim_j:
+                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['simJ'])
+                    csvwriter.writerow(output_row)
 
 
-        top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
-        top_20_iccs = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['ICCS'])
-        top_20_sim_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['SimIC'])
-        top_20_sim_j = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['SimJ'])
-        print(top_20_max_ic)
-        for i in top_20_max_ic:
-            print('Gene candidate: '+str(i)+', MaxIC:'+str(human_disease_gene_prediction_hash[i]['maxIC']))
-        #intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
+
+        #with open('inter/phenolog/all_significant_phenologs.txt', 'w', newline='') as csvfile:
+            #csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            #csvwriter.writerow(output_row)
+
+
         return
+
 
     ####### PHENOLOG DATA PROCESSING ####### DOCUMENTATION COMPLETED
 
@@ -2332,6 +2557,70 @@ class main():
         gc.collect()
         return #phenolog_ext_p_value_list
 
+    def perform_phenolog_calculations_for_ext_fdr_hvz_alternate(self, species_a_gp_hash, species_b_gp_hash, out_file):
+        """
+        This function
+        and sends the
+        :param species_a_gp_hash:
+        :param species_b_gp_hash:
+        :param out_file:
+        :return:
+        """
+
+        #print('INFO: Performing phenolog calculations for FDR estimation.')
+        # Need to calculate phenologs for each pairwise species and combine in order to get a full
+        # set of phenologs for proper estimation of FDR.
+
+        phenolog_ext_p_value_list = []
+
+        species_a_geno_pheno_hash = species_a_gp_hash
+        species_b_geno_pheno_hash = species_b_gp_hash
+
+        total_comparisons = (len(species_a_geno_pheno_hash))*(len(species_b_geno_pheno_hash))
+        print('INFO: '+str(total_comparisons)+' total comparisons to perform.')
+
+        print('INFO: Assembling disease/genotype comparison list.')
+        comparison_list = []
+        for element in itertools.product(species_a_geno_pheno_hash,species_b_geno_pheno_hash):
+            comparison_list.append(element)
+        print('INFO: Done assembling disease/genotype comparison list.')
+
+        ###### MULTIPROCESSING INSERT ######
+        if __name__ == '__main__':
+            cores = (multiprocessing.cpu_count()-1)
+            pool = multiprocessing.Pool(processes=cores)
+            print('INFO: Starting multiprocessing.')
+            with open(out_file, 'w', newline='') as csvfile:
+                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+
+
+                for results in pool.imap_unordered(multiprocess_ext_fdr_calculation_hvz, comparison_list, chunksize=100):
+                    if results is not None:
+                        output_row = (results)
+                        csvwriter.writerow(output_row)
+                    del results
+        ###### END MULTIPROCESSING INSERT ######
+
+        print('INFO: Done with multiprocessing.')
+        #with open(out_file, 'wb') as handle:
+            #pickle.dump(phenolog_ext_p_value_list, handle)
+        '''
+        print('INFO: Sorting p-values for random data set '+str(i)+'.')
+
+        fdr_p_value_list.sort()
+        with open('inter/random/fdr/fdr_p_value_list_random_set_'+str(i)+'.txt', 'wb') as handle:
+            pickle.dump(fdr_p_value_list, handle)
+        #print(fdr_p_value_list)
+        cutoff_position = math.ceil((len(fdr_p_value_list))*0.05) - 1
+        #print(fdr_p_value_list[cutoff_position])
+        fdr_cutoff_value = fdr_p_value_list[cutoff_position]
+        '''
+
+        del phenolog_ext_p_value_list
+        del comparison_list
+        gc.collect()
+        return #phenolog_ext_p_value_list
+
     def perform_phenolog_calculations_for_ext_fdr_hvm(self, species_a_gp_hash, species_b_gp_hash, out_file):
         #print('INFO: Performing phenolog calculations for FDR estimation.')
         # Need to calculate phenologs for each pairwise species and combine in order to get a full
@@ -2437,12 +2726,13 @@ class main():
         :return:
         """
 
-        for i in range(1, 10):
+        for i in range(2, 3):
+            print('INFO: Starting cutoff determination for data set '+str(i)+'.')
             phenolog_ext_p_value_list = []
             hvm_file = 'inter/phenolog_ext/hvm_p_values/hvm_p_values_'+str(i)+'.txt'
             hvz_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_'+str(i)+'.txt'
             mvz_file = 'inter/phenolog_ext/mvz_p_values/mvz_p_values_'+str(i)+'.txt'
-            out_file = 'inter/phenolog_ext/threshold_p_value_'+str(i)+'.txt'
+            out_file = 'inter/phenolog_ext/p_value_cutoffs/threshold_p_value_'+str(i)+'.txt'
             with open(hvm_file, 'rb') as handle:
                hvm_p_value_list = pickle.load(handle)
             with open(hvz_file, 'rb') as handle:
@@ -2450,20 +2740,48 @@ class main():
             with open(mvz_file, 'rb') as handle:
                mvz_p_value_list = pickle.load(handle)
             for x in hvm_p_value_list:
-                phenolog_ext_p_value_list.append(x)
+                phenolog_ext_p_value_list.append(float(x))
+                #print(x)
             for y in hvz_p_value_list:
-                phenolog_ext_p_value_list.append(y)
+                phenolog_ext_p_value_list.append(float(y))
+                #print(y)
             for z in mvz_p_value_list:
-                phenolog_ext_p_value_list.append(z)
-
+                phenolog_ext_p_value_list.append(float(z))
+                #print(z)
+            print('INFO: Sorting p values.')
             phenolog_ext_p_value_list.sort()
             #print(fdr_p_value_list)
             cutoff_position = math.ceil((len(phenolog_ext_p_value_list))*0.05) - 1
             print(phenolog_ext_p_value_list[cutoff_position])
-            fdr_cutoff_value = phenolog_ext_p_value_list[cutoff_position]
+            print('Initial cutoff posiiton: '+str(cutoff_position)+'.')
+            fdr_cutoff_value = float(phenolog_ext_p_value_list[cutoff_position])
+            while fdr_cutoff_value == 0.0:
+                cutoff_position += 1
+                fdr_cutoff_value = float(phenolog_ext_p_value_list[cutoff_position])
+            print('Total number of p-values: '+str(len(phenolog_ext_p_value_list))+'.')
+
+            print(phenolog_ext_p_value_list[cutoff_position])
             with open(out_file, 'wb') as handle:
                 pickle.dump(fdr_cutoff_value, handle)
+            print('INFO: Finished cutoff determination for data set '+str(i)+'.')
+            with open(out_file, 'rb') as handle:
+                final_cutoff = pickle.load(handle)
+            print('Adjusted cutoff positon: '+str(cutoff_position)+'.')
+            print(final_cutoff)
+        return
 
+    def count_zeroes(self):
+
+        hvz_file = 'inter/phenolog_ext/hvz_p_values/hvz_p_values_2.txt'
+        with open(hvz_file, 'rb') as handle:
+           hvz_p_value_list = pickle.load(handle)
+        count = 0
+        for y in hvz_p_value_list:
+            if y == 0.0:
+                count += 1
+        print('Number of zeroes: '+str(count)+'.')
+        print('5 percent cutoff: '+str(len(hvz_p_value_list) * .05)+'.')
+        print('Total p-values:'+str(len(hvz_p_value_list))+'.')
         return
 
     def perform_phenolog_ext_calculations(self, inter1, inter2, out, shared_phenologs, ext_fdr_cutoff):
@@ -3267,6 +3585,9 @@ class main():
         return
 
 
+#disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
+
+
 counter = multiprocessing.Value(c_int)
 counter_lock = multiprocessing.Lock()
 
@@ -3908,6 +4229,10 @@ main = main()
 #main.assemble_nif_mgi_phenotype_id_to_label()
 #main.assemble_nif_zfin_phenotype_id_to_label()
 
+#main.assemble_nif_mgi_gene_id_to_label()
+#main.assemble_nif_zfin_gene_id_to_label()
+#main.assemble_nif_hpo_gene_id_to_label()
+
 # Assemble the phenotype to gene files for phenologs.
 #main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
 #main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
@@ -3989,7 +4314,7 @@ main = main()
 #main.assemble_owlsim_gene_candidates('out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_', 'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_predictions.txt')
 
 #main.assemble_owlsim_gene_candidate_alternate()
-main.assemble_owlsim_top_20_gene_candidates()
+#main.assemble_owlsim_top_20_gene_candidates()
 
 
 ####### PHENOLOG FDR CALCULATION #######
@@ -4147,17 +4472,16 @@ gc.collect()
 print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1])+'.')
 '''
 
-
-
-#main.identify_significance_threshold_for_random_hvz_data_set()
-
+#main.identify_significance_threshold_for_random_data_sets()
+#main.count_zeroes()
 
 #main.perform_phenolog_calculations_for_ext_fdr(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_hvm_phenolog_calculations_for_ext_fdr_alternate(read_only_human_geno_pheno_hash, read_only_mouse_geno_pheno_hash)
 #main.perform_mvz_phenolog_calculations_for_ext_fdr_alternate(read_only_mouse_geno_pheno_hash, read_only_zebrafish_geno_pheno_hash)
 
-
-
+#with open('inter/phenolog/hvm_phenolog_combo.txt', 'rb') as handle:
+#    read_only_hvz_phenologs = set(pickle.load(handle))
+#print(len(read_only_hvz_phenologs))
 # Made up FDR for testing purposes.
 #ext_fdr_cutoff = 0.00022089684117479534
 
@@ -4191,8 +4515,8 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
-#main.create_phenolog_gene_candidate_prediction_matrix()
-#main.assemble_phenolog_gene_candidate_predictions()
+main.create_phenolog_gene_candidate_prediction_matrix()
+main.assemble_phenolog_gene_candidate_predictions_for_phenotypes()
 
 #main.assemble_model_level_phenolog_gene_candidate_predictions()
 
@@ -4200,7 +4524,7 @@ elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 #TODO: Make sure and have the ability to filter between single-gene genotypes and multi-gene genotypes.
-
+#
 # URL Format for OWLSim queries:
 #http://owlsim.monarchinitiative.org/compareAttributeSets?a=HP:0001263&b=MP:0010864
 # URL format for mutliple phenotypes:
