@@ -31,6 +31,7 @@ from threading import Thread
 from ctypes import c_int
 from queue import Queue
 from collections import *
+from functools import reduce
 #import matplotlib.pyplot as plt
 
 
@@ -242,7 +243,7 @@ class main():
         # Set up counters and open required files.
         line_counter = 0
         raw = 'raw/hpo/dvp.pr_nlx_151835_2'
-        inter = 'inter/hpo/human_pheno_id_to_label_hash.txt'
+        inter = 'inter/hpo/human_phenotype_id_to_label_hash.txt'
         hpo_phenotype_id_to_label_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
@@ -335,7 +336,7 @@ class main():
 
                 # If phenotype is not in the phenotype to gene hash, add phenotype to hash.
                 if phenotype_id not in zfin_phenotype_id_to_label_hash:
-                    zfin_phenotype_id_to_label_hash[phenotype_id] = [phenotype_label]
+                    zfin_phenotype_id_to_label_hash[phenotype_id] = phenotype_label
 
                 if limit is not None and line_counter > limit:
                     break
@@ -1401,6 +1402,7 @@ class main():
         """
         #output_file = 'out/owlsim/human_disease_gene_candidate_predictions/'+str()+'.txt'
         #with open(output_file, 'w', newline='') as outfile:
+        human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
         human_disease_list = []
         current_disease = ''
         hvm_directory =  'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_'
@@ -1419,7 +1421,7 @@ class main():
                     if query_flag == 'success':
                         if current_disease == '':
                             current_disease = entity_a
-                            output_file = 'out/owlsim/human_disease_gene_candidate_predictions/'+str(entity_a)+'.txt'
+                            output_file = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(entity_a)+'.txt'
                             human_disease_list.append(entity_a)
                             human_disease_gene_prediction_hash = {}
                             entity_b_hash = {'maxIC' : maxIC, 'simJ' : simJ, 'ICCS' : ICCS, 'simIC' : simIC}
@@ -1433,7 +1435,7 @@ class main():
                                 with open(output_file, 'wb') as outfile:
                                     pickle.dump(human_disease_gene_prediction_hash, outfile)
                                 current_disease = entity_a
-                                output_file = 'out/owlsim/human_disease_gene_candidate_predictions/'+str(entity_a)+'.txt'
+                                output_file = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(entity_a)+'.txt'
                                 if entity_a not in human_disease_list:
                                     human_disease_list.append(entity_a)
                                     human_disease_gene_prediction_hash = {}
@@ -1462,7 +1464,7 @@ class main():
                     if query_flag == 'success':
                         if current_disease == '':
                             current_disease = entity_a
-                            output_file = 'out/owlsim/human_disease_gene_candidate_predictions/'+str(entity_a)+'.txt'
+                            output_file = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(entity_a)+'.txt'
                             human_disease_list.append(entity_a)
                             human_disease_gene_prediction_hash = {}
                             entity_b_hash = {'maxIC' : maxIC, 'simJ' : simJ, 'ICCS' : ICCS, 'simIC' : simIC}
@@ -1476,7 +1478,7 @@ class main():
                                 with open(output_file, 'wb') as outfile:
                                     pickle.dump(human_disease_gene_prediction_hash, outfile)
                                 current_disease = entity_a
-                                output_file = 'out/owlsim/human_disease_gene_candidate_predictions/'+str(entity_a)+'.txt'
+                                output_file = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(entity_a)+'.txt'
                                 if entity_a not in human_disease_list:
                                     human_disease_list.append(entity_a)
                                     human_disease_gene_prediction_hash = {}
@@ -1499,8 +1501,29 @@ class main():
                             #json.dump(write_data, outfile)
                             #outfile.write('\n')
                             #print(query_flag)
+            with open(human_disease_list_file, 'wb') as outfile:
+                pickle.dump(human_disease_list, outfile)
+
+        return
 
 
+    def assemble_owlsim_top_20_gene_candidates(self):
+
+        human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
+        with open(human_disease_list_file, 'rb') as handle:
+            human_disease_list = pickle.load(handle)
+
+        with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/ORPHANET_2812.txt', 'rb') as handle:
+            human_disease_gene_prediction_hash = pickle.load(handle)
+        #print(human_disease_gene_prediction_hash)
+        disease_id = 'ORPHANET:2812'
+
+
+        top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
+        print(top_20_max_ic)
+        for i in top_20_max_ic:
+            print('Gene candidate: '+str(i)+', MaxIC:'+str(human_disease_gene_prediction_hash[i]['maxIC']))
+        #intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
         return
 
     ####### PHENOLOG DATA PROCESSING ####### DOCUMENTATION COMPLETED
@@ -2993,6 +3016,20 @@ class main():
         phenotype_gene_hash.update(mouse_phenotype_gene_hash)
         phenotype_gene_hash.update(zebrafish_phenotype_gene_hash)
 
+
+        with open('inter/hpo/human_phenotype_id_to_label_hash.txt', 'rb') as handle:
+            human_phenotype_id_to_label_hash = pickle.load(handle)
+        with open('inter/mgi/mouse_phenotype_id_to_label_hash.txt', 'rb') as handle:
+            mouse_phenotype_id_to_label_hash = pickle.load(handle)
+        with open('inter/zfin/zebrafish_phenotype_id_to_label_hash.txt', 'rb') as handle:
+            zebrafish_phenotype_id_to_label_hash = pickle.load(handle)
+        phenotype_id_to_label_hash = {}
+        phenotype_id_to_label_hash.update(human_phenotype_id_to_label_hash)
+        phenotype_id_to_label_hash.update(mouse_phenotype_id_to_label_hash)
+        phenotype_id_to_label_hash.update(zebrafish_phenotype_id_to_label_hash)
+
+
+
         with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
             phenotype_list = pickle.load(handle)
 
@@ -3030,7 +3067,8 @@ class main():
                             test_distance_slice[x] = -1
 
                 intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
-
+                phenotype_id = phenotype_list[y]
+                phenotype_label = phenotype_id_to_label_hash[phenotype_id]
                 nearest_neighbors = []
                 nearest_neighbor_ids = []
                 nearest_neighbor_labels = []
@@ -3040,17 +3078,19 @@ class main():
                         nearest_neighbors.append(z)
                         nearest_neighbor_ids.append(phenotype_list[z])
                 for i in nearest_neighbor_ids:
-                    nearest_neighbor_label = 0
+                    #nearest_neighbor_label = 0
+                    nearest_neighbor_labels.append(phenotype_id_to_label_hash[i])
                 print('Input phenotype: '+phenotype_list[y])
                 print('Nearest neighbor phenotypes: '+str(nearest_neighbor_ids)+'.')
                 print(nearest_neighbors)
                 #for i in nearest_neighbor_ids:
+                    #nearest_neighbor_labels.append(phenotype_id_to_label_hash[i])
 
 
                 # For nearest neighbor output file: phenotype_id, phenotype_label, nn-phenotype_ids, nn-phenotype_labels
 
 
-                output_row = (phenotype_list[y], nearest_neighbor_ids, phenotype_ortholog_candidate_hash[phenotype_id])
+                output_row = (phenotype_list[y], phenotype_label, nearest_neighbor_ids, nearest_neighbor_labels)
                 csvwriter.writerow(output_row)
 
                 # Next I need to take those k nearest neighbor phenotypes, and calculate the probability that
@@ -3070,7 +3110,7 @@ class main():
 
         return
 
-    def assemble_phenolog_gene_candidate_predictions(self):
+    def assemble_phenolog_gene_candidate_predictions_for_phenotypes(self):
         """
 
         """
@@ -3211,6 +3251,14 @@ class main():
     def assemble_nearest_neighbor_phenotypes_with_genes(self):
 
 
+        return
+
+    def assemble_gene_candidates_for_diseases_max_score(self):
+
+
+        return
+
+    def assemble_gene_candidates_for_diseases_combined_score(self):
 
 
         return
@@ -3938,6 +3986,9 @@ main = main()
 #main.assemble_owlsim_gene_candidates('out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_', 'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_predictions.txt')
 
 #main.assemble_owlsim_gene_candidate_alternate()
+main.assemble_owlsim_top_20_gene_candidates()
+
+
 ####### PHENOLOG FDR CALCULATION #######
 
 # Generate random data sets for each organism using common orthologs between the other organisms.
