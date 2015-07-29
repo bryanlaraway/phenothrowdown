@@ -1520,6 +1520,9 @@ class main():
 
 
         top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
+        top_20_iccs = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['ICCS'])
+        top_20_sim_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['SimIC'])
+        top_20_sim_j = heapq.nlargest(20, human_disease_gene_prediction_hash, key = lambda k:human_disease_gene_prediction_hash[k]['SimJ'])
         print(top_20_max_ic)
         for i in top_20_max_ic:
             print('Gene candidate: '+str(i)+', MaxIC:'+str(human_disease_gene_prediction_hash[i]['maxIC']))
