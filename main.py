@@ -1688,7 +1688,7 @@ class main():
 
     def assemble_owlsim_top_20_gene_candidates(self):
 
-        disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
+        disease_subset = ['OMIM_157900', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_209900', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
         with open(human_disease_list_file, 'rb') as handle:
@@ -1722,26 +1722,34 @@ class main():
                 csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                 for gene_candidate_id in top_20_max_ic:
                     gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'])
+                    max_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'], 2))+')'
+                    #output_row = (gene_candidate_id, gene_candidate_label, max_ic)
+                    output_row = (gene_candidate_label, max_ic)
                     csvwriter.writerow(output_row)
                     #print('Gene candidate: '+str(gene_candidate)+', MaxIC:'+str(human_disease_gene_prediction_hash[gene_candidate]['maxIC']))
             with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/iccs/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                 for gene_candidate_id in top_20_iccs:
                     gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'])
+                    iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
+                    #output_row = (gene_candidate_id, gene_candidate_label, iccs)
+                    output_row = (gene_candidate_label, iccs)
                     csvwriter.writerow(output_row)
             with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                 for gene_candidate_id in top_20_sim_ic:
                     gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['simIC'])
+                    sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
+                    #output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
+                    output_row = (gene_candidate_label, sim_ic)
                     csvwriter.writerow(output_row)
             with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simj/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                 for gene_candidate_id in top_20_sim_j:
                     gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    output_row = (gene_candidate_id, gene_candidate_label, human_disease_gene_prediction_hash[gene_candidate_id]['simJ'])
+                    sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
+                    #output_row = (gene_candidate_id, gene_candidate_label, sim_j)
+                    output_row = (gene_candidate_label, sim_j)
                     csvwriter.writerow(output_row)
 
 
@@ -4229,6 +4237,7 @@ main = main()
 #main.assemble_nif_mgi_phenotype_id_to_label()
 #main.assemble_nif_zfin_phenotype_id_to_label()
 
+# Assemble the gene ID to label files.
 #main.assemble_nif_mgi_gene_id_to_label()
 #main.assemble_nif_zfin_gene_id_to_label()
 #main.assemble_nif_hpo_gene_id_to_label()
@@ -4314,7 +4323,7 @@ main = main()
 #main.assemble_owlsim_gene_candidates('out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_results_', 'out/owlsim/human_disease_mouse_gene/human_disease_mouse_gene_predictions.txt')
 
 #main.assemble_owlsim_gene_candidate_alternate()
-#main.assemble_owlsim_top_20_gene_candidates()
+main.assemble_owlsim_top_20_gene_candidates()
 
 
 ####### PHENOLOG FDR CALCULATION #######
@@ -4515,8 +4524,8 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #main.merge_matrices()
-main.create_phenolog_gene_candidate_prediction_matrix()
-main.assemble_phenolog_gene_candidate_predictions_for_phenotypes()
+#main.create_phenolog_gene_candidate_prediction_matrix()
+#main.assemble_phenolog_gene_candidate_predictions_for_phenotypes()
 
 #main.assemble_model_level_phenolog_gene_candidate_predictions()
 
