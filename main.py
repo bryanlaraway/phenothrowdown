@@ -3628,8 +3628,12 @@ class main():
         # combine the gene candidate predictions (selectively update the score if it is greater than the prior score),
         # and then return the top 20 scoring gene candidates.
 
+        # Does it make sense to drop out the genes that are currently associated with the disease of interest?
 
-
+        with open('inter/phenolog_gene_cand/nearest_neighbor_hash.txt', 'rb') as handle:
+            nearest_neighbor_hash = pickle.load(handle)
+        with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
+            human_phenotype_gene_hash = pickle.load(handle)
         with open('inter/hpo/human_gene_id_to_label_hash.txt', 'rb') as handle:
             human_gene_id_to_label_hash = pickle.load(handle)
         with open('inter/mgi/mouse_gene_id_to_label_hash.txt', 'rb') as handle:
