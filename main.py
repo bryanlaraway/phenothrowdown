@@ -4779,7 +4779,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.assemble_ortholog_phenotype_matrix()
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
-#main.create_empty_phenolog_gene_candidate_matrices()
+main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 
