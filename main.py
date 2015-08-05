@@ -44,9 +44,9 @@ getcontext().prec = 500
 #print(getcontext())
 #Selected distinct PANTHER IDs from the NIF/DISCO tables.
 #TODO: See about getting these numbers from the Panther table to allow for dynamic updating with file updates.
-#total_human_mouse_orthologs = 5625
-#total_human_zebrafish_orthologs = 5212
-#total_mouse_zebrafish_orthologs = 5210
+#total_human_mouse_orthologs = 5625, with LDO = 5729
+#total_human_zebrafish_orthologs = 5212, with LDO = 5750
+#total_mouse_zebrafish_orthologs = 5210, with LDO = 5748
 #TODO: Need to pass phenotype/gene labels for identification, or look them up upon final output.
 
 
@@ -664,7 +664,7 @@ class main():
                 gene_label_b, proteinb, orthology_class, orthology_class_label, ancestor_taxon, panther_id,
                 e_uid, v_uid, v_uuid, v_lastmodified) = row
 
-                if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
+                if (taxon_id_a in taxons or taxon_id_b in taxons) and (orthology_class_label == 'Least Diverged Ortholog' or orthology_class_label == 'Ortholog'):
                     if panther_id not in common_orthologs:
                         common_orthologs.append(panther_id)
                         ortholog_counter += 1
@@ -702,7 +702,7 @@ class main():
         """This function assembles zebrafish phenotype to gene associations from the NIF/DISCO flat data file"""
 
         print('INFO:Assembling zebrafish phenotype to ortholog data.')
-
+        gene_to_ortholog_hash = {}
         # Set up counters and open required files.
         line_counter = 0
         raw = 'raw/zfin/dvp.pr_nif_0000_21427_10'
@@ -761,13 +761,20 @@ class main():
                 for gene in genes:
                     if gene not in zfin_phenotype_to_gene_hash[phenotype_id]:
                         zfin_phenotype_to_gene_hash[phenotype_id].append(gene)
+                        if gene not in gene_to_ortholog_hash:
 
-                        # Convert genes to orthologs using zebrafish-trimmed PANTHER table as lookup.
-                        panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                            # Convert genes to orthologs using zebrafish-trimmed PANTHER table as lookup.
+                            panther_id = self.get_ortholog(gene, 'inter/panther/panther_zebrafish.txt')
+                            gene_to_ortholog_hash[gene] = panther_id
 
-                        # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
-                        if panther_id != 'fail' and panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
-                            zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                            # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
+                            if panther_id != 'fail' and panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                        else:
+                            panther_id = gene_to_ortholog_hash[gene]
+                            if panther_id != 'fail' and panther_id not in zfin_phenotype_to_ortholog_hash[phenotype_id]:
+                                zfin_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+
 
                 if limit is not None and line_counter > limit:
                     break
@@ -777,6 +784,8 @@ class main():
             pickle.dump(zfin_phenotype_to_gene_hash, handle)
         with open(inter2, 'wb') as handle:
             pickle.dump(zfin_phenotype_to_ortholog_hash, handle)
+        with open('inter/zfin/zebrafish_gene_to_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(gene_to_ortholog_hash, handle)
 
         print('INFO: Done assembling zebrafish phenotype to gene/ortholog data.')
         print('INFO: '+str(len(zfin_phenotype_to_gene_hash.keys()))+' zebrafish phenotypes present.')
@@ -794,6 +803,7 @@ class main():
         inter2 = 'inter/mgi/mouse_pheno_ortholog_hash.txt'
         mgi_phenotype_to_gene_hash = {}
         mgi_phenotype_to_ortholog_hash = {}
+        gene_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -842,12 +852,19 @@ class main():
                     if gene not in mgi_phenotype_to_gene_hash[phenotype_id]:
                         mgi_phenotype_to_gene_hash[phenotype_id].append(gene)
 
-                        # Convert genes to orthologs using mouse-trimmed PANTHER table as lookup.
-                        panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
+                        if gene not in gene_to_ortholog_hash:
 
-                        # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
-                        if panther_id != 'fail' and panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
-                            mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                            # Convert genes to orthologs using mouse-trimmed PANTHER table as lookup.
+                            panther_id = self.get_ortholog(gene,'inter/panther/panther_mouse.txt')
+                            gene_to_ortholog_hash[gene] = panther_id
+
+                            # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
+                            if panther_id != 'fail' and panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                        else:
+                            panther_id = gene_to_ortholog_hash[gene]
+                            if panther_id != 'fail' and panther_id not in mgi_phenotype_to_ortholog_hash[phenotype_id]:
+                                mgi_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
 
                 if limit is not None and line_counter > limit:
                     break
@@ -857,7 +874,8 @@ class main():
             pickle.dump(mgi_phenotype_to_gene_hash, handle)
         with open(inter2, 'wb') as handle:
             pickle.dump(mgi_phenotype_to_ortholog_hash, handle)
-
+        with open('inter/mgi/mouse_gene_to_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(gene_to_ortholog_hash, handle)
         print('INFO: Done assembling mouse phenotype to gene/ortholog data.')
         print('INFO: '+str(len(mgi_phenotype_to_gene_hash.keys()))+' mouse phenotypes present.')
 
@@ -875,6 +893,7 @@ class main():
         inter2 = 'inter/hpo/human_pheno_ortholog_hash.txt'
         hpo_phenotype_to_gene_hash = {}
         hpo_phenotype_to_ortholog_hash = {}
+        gene_to_ortholog_hash = {}
         with open(raw, 'r', encoding="iso-8859-1") as csvfile:
             filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
             row_count = sum(1 for row in filereader)
@@ -914,11 +933,18 @@ class main():
                 if gene_id not in hpo_phenotype_to_gene_hash[phenotype_id]:
                     hpo_phenotype_to_gene_hash[phenotype_id].append(gene_id)
 
-                    # Convert genes to orthologs using human-trimmed PANTHER table as lookup.
-                    panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                    if gene_id not in gene_to_ortholog_hash:
 
-                    # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
-                    if panther_id != 'fail' and panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
+                        # Convert genes to orthologs using human-trimmed PANTHER table as lookup.
+                        panther_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                        gene_to_ortholog_hash[gene_id] = panther_id
+
+                        # If ortholog is not in the phenotype to ortholog hash, add ortholog to hash.
+                        if panther_id != 'fail' and panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
+                            hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
+                    else:
+                        panther_id = gene_to_ortholog_hash[gene_id]
+                        if panther_id != 'fail' and panther_id not in hpo_phenotype_to_ortholog_hash[phenotype_id]:
                             hpo_phenotype_to_ortholog_hash[phenotype_id].append(panther_id)
 
                 if limit is not None and line_counter > limit:
@@ -929,6 +955,8 @@ class main():
             pickle.dump(hpo_phenotype_to_gene_hash, handle)
         with open(inter2, 'wb') as handle:
             pickle.dump(hpo_phenotype_to_ortholog_hash, handle)
+        with open('inter/hpo/human_gene_to_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(gene_to_ortholog_hash, handle)
 
         print('INFO: Done assembling human phenotype to gene/ortholog data.')
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
@@ -3288,7 +3316,7 @@ class main():
             print('INFO: Assembling phenotype matrix coordinates.')
 
             xcounter = 0
-            for x in range(22000, len(phenotype_list)): #len(phenotype_list)
+            for x in range(0, len(phenotype_list)): #len(phenotype_list)
                 xcounter += 1
                 i = phenotype_list[x]
                 input_phenotype_index_i = phenotype_list.index(i)
@@ -4462,11 +4490,10 @@ main = main()
 
 
 ####### DATA ASSEMBLY VIA SCIGRAPH #######
-# I have abaondoned using SciGraph in favor of the flat tables from NIF/DISCO, as the URL queries were too slow.
+# I have abandoned using SciGraph in favor of the flat tables from NIF/DISCO, as the URL queries were too slow.
 #main._assemble_human_disease_to_phenotype(limit)
 #main._assemble_mouse_genotype_to_phenotype(limit)
 #main.assemble_zebrafish_genotype_to_phenotype(limit)
-
 
 
 ####### DATA ASSEMBLY VIA  NIF/DISCO #######
@@ -4482,9 +4509,9 @@ main = main()
 #main.assemble_nif_hpo_gene_id_to_label()
 
 # Assemble the phenotype to gene files for phenologs.
-#main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed.
-#main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days)
-#main.assemble_nif_hpo_phenotype_to_gene(limit)  # Completed on full data set in 75.5 hours.
+#main.assemble_nif_zfin_phenotype_to_gene(limit)  # Completed in 3.22 days, 85118 rows processed. With hash speed improvement, 8 hours.
+#main.assemble_nif_mgi_phenotype_to_gene(limit)  # # Completed on full data set in 175.3 hours (7.3 days) With hash speed improvement, 11.5 hours.
+#main.assemble_nif_hpo_phenotype_to_gene(limit)  # Completed on full data set in 75.5 hours. With hash speed improvement, 128 minutes.
 #main.assemble_nif_animalqtl_phenotype_to_gene(limit)
 
 # Assemble the files for OWLSim queries and phenolog extension.
@@ -4754,7 +4781,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
-#main.populate_phenolog_gene_candidate_matrices_alternate()
+main.populate_phenolog_gene_candidate_matrices_alternate()
 
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
@@ -4770,7 +4797,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 #main.assemble_nearest_neighbor_phenotypes_hash()
 
-main.assemble_phenolog_gene_candidates_for_diseases()
+#main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 #with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
