@@ -4776,7 +4776,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 
-#main.assemble_ortholog_phenotype_matrix()
+main.assemble_ortholog_phenotype_matrix()
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
 main.create_empty_phenolog_gene_candidate_matrices()
