@@ -4781,10 +4781,10 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.create_phenolog_gene_candidate_matrices()
 #main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
-main.populate_phenolog_gene_candidate_matrices_alternate()
-
-#read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
 #main.populate_phenolog_gene_candidate_matrices_alternate()
+
+read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
+main.populate_phenolog_gene_candidate_matrices_alternate()
 
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 #read_only_ortholog_phenotype_matrix = numpy.load('inter/phenolog_gene_cand/ortholog_phenotype_matrix.npy')
