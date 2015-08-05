@@ -4421,8 +4421,8 @@ def multiprocess_matrix_comparisons(matrix_coordinates):
     :return:
     """
 
-    #Total number of orthologs is 2905. Hard coding to remove multiple openings of the ortholog_list.txt file.
-    len_ortholog_list = 2905
+    #Total number of orthologs is 3572. Hard coding to remove multiple openings of the ortholog_list.txt file.
+    len_ortholog_list = 3572
 
     phenotype_index_i = matrix_coordinates[0]
     phenotype_index_j = matrix_coordinates[1]
@@ -4776,10 +4776,10 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 #This process requires multi-processing due to the large number of comparisons that need to be performed.
 
-main.assemble_ortholog_phenotype_matrix()
+#main.assemble_ortholog_phenotype_matrix()
 #main.assemble_ortholog_phenotype_matrix_alternate(100)
 #main.create_phenolog_gene_candidate_matrices()
-main.create_empty_phenolog_gene_candidate_matrices()
+#main.create_empty_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices()
 #main.populate_phenolog_gene_candidate_matrices_alternate()
 
