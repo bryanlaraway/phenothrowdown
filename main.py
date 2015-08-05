@@ -623,7 +623,7 @@ class main():
                     e_uid, v_uid, v_uuid, v_lastmodified) = row
 
                     #Currently filtering on the big three taxons, and ortholog relations only.
-                    if (taxon_id_a in taxons or taxon_id_b in taxons) and orthology_class_label == 'Ortholog':
+                    if (taxon_id_a in taxons or taxon_id_b in taxons) and (orthology_class_label == 'Least Diverged Ortholog' or orthology_class_label == 'Ortholog'):
                         output_row = (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,
                         proteina, panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,
                         gene_label_b, proteinb, orthology_class, orthology_class_label, panther_id)
@@ -3384,7 +3384,7 @@ class main():
         phenotype_id_to_label_hash.update(human_phenotype_id_to_label_hash)
         phenotype_id_to_label_hash.update(mouse_phenotype_id_to_label_hash)
         phenotype_id_to_label_hash.update(zebrafish_phenotype_id_to_label_hash)
-
+        nearest_neighbor_hash = {}
 
 
         with open('inter/phenolog_gene_cand/phenotype_list.txt', 'rb') as handle:
@@ -3446,8 +3446,9 @@ class main():
 
                 # For nearest neighbor output file: phenotype_id, phenotype_label, nn-phenotype_ids, nn-phenotype_labels
 
-
-                output_row = (phenotype_list[y], phenotype_label, nearest_neighbor_ids, nearest_neighbor_labels)
+                if phenotype_id not in nearest_neighbor_hash:
+                    nearest_neighbor_hash[phenotype_id] = nearest_neighbor_ids
+                output_row = (phenotype_id, phenotype_label, nearest_neighbor_ids, nearest_neighbor_labels)
                 csvwriter.writerow(output_row)
 
                 # Next I need to take those k nearest neighbor phenotypes, and calculate the probability that
@@ -3462,6 +3463,8 @@ class main():
                         if ortholog_phenotype_matrix[i][j] != 0:
                             phenotype_ortholog_prediction_matrix[y][j] += weight_matrix[i][j]*ortholog_phenotype_matrix[i][j]
 
+        with open('inter/phenolog_gene_cand/nearest_neighbor_hash.txt', 'wb') as handle:
+            pickle.dump(nearest_neighbor_hash, handle)
         numpy.save('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.npy', phenotype_ortholog_prediction_matrix)
         numpy.savetxt('inter/phenolog_gene_cand/phenotype_ortholog_prediction_matrix.txt', phenotype_ortholog_prediction_matrix)
 
@@ -3606,7 +3609,7 @@ class main():
 
 
     def assemble_nearest_neighbor_phenotypes_hash(self):
-
+        # NOTE: This results in a string-based list, and not the python list expected.
         nearest_neighbor_hash = {}
 
         with open('out/phenolog_gene_cand/nearest_neighbor_phenotypes.txt', 'r', newline='\n') as csvfile:
@@ -3634,6 +3637,16 @@ class main():
             nearest_neighbor_hash = pickle.load(handle)
         with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
             human_phenotype_gene_hash = pickle.load(handle)
+        with open('inter/mgi/mouse_pheno_gene_hash.txt', 'rb') as handle:
+            mouse_phenotype_to_gene_hash = pickle.load(handle)
+        with open('inter/zfin/zebrafish_pheno_gene_hash.txt', 'rb') as handle:
+            zebrafish_phenotype_to_gene_hash = pickle.load(handle)
+        phenotype_to_gene_hash = {}
+        phenotype_to_gene_hash.update(human_phenotype_gene_hash)
+        phenotype_to_gene_hash.update(mouse_phenotype_to_gene_hash)
+        phenotype_to_gene_hash.update(zebrafish_phenotype_to_gene_hash)
+
+
         with open('inter/hpo/human_gene_id_to_label_hash.txt', 'rb') as handle:
             human_gene_id_to_label_hash = pickle.load(handle)
         with open('inter/mgi/mouse_gene_id_to_label_hash.txt', 'rb') as handle:
@@ -3653,17 +3666,54 @@ class main():
         with open(human_file, 'rb') as handle:
             human_disease_phenotype_hash = pickle.load(handle)
 
-        disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
+        disease_subset = ['OMIM_272120', 'OMIM_614592'] #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         for i in disease_subset:
+            print('Processing disease ID '+str(i)+'.')
             human_max_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_max/'+str(i)+'.txt'
             human_additive_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_additive/'+str(i)+'.txt'
             disease_id = re.sub('_', ':', i)
 
             phenotype_ids = human_disease_phenotype_hash[disease_id]
+            #print(phenotype_ids)
             max_phenotype_gene_candidate_hash = {}
             additive_phenotype_gene_candidate_hash = {}
             phenotype_counter = 0
+            gene_list = []
+            nearest_neighbor_phenotypes = []
+            for x in phenotype_ids:
+                nearest_neighbor_phenotypes = nearest_neighbor_hash[x]
+                for y in nearest_neighbor_phenotypes:
+                    #print(y)
+                    associated_genes = phenotype_to_gene_hash[y]
+                    #print(associated_genes)
+                    for z in associated_genes:
+                        #print(z)
+                        if z not in gene_list:
+                            gene_list.append(z)
+            orthogroup_to_gene_hash = {}
+            #print(gene_list)
+            for x in gene_list:
+                if re.match('MGI:.*', x):
+                    panther_id =  self.get_ortholog(x, 'inter/panther/panther_mouse.txt')
+                elif re.match('ZFIN:.*', x):
+                    panther_id =  self.get_ortholog(x, 'inter/panther/panther_zebrafish.txt')
+                elif re.match('NCBIGene:.*', x):
+                    panther_id =  self.get_ortholog(x, 'inter/panther/panther_human.txt')
+                if panther_id != 'fail' and panther_id not in orthogroup_to_gene_hash:
+                    orthogroup_to_gene_hash[panther_id] = [x]
+                elif panther_id != 'fail' and x not in orthogroup_to_gene_hash[panther_id]:
+                    orthogroup_to_gene_hash[panther_id].append(x)
+
+
+            '''
+            nearest_neighbor_gene_hash = {}
+            nearest_neighbor_gene_to_ortholog_hash = {}
+            for x in nearest_neighbor_phenotypes:
+                nearest_neighbor_gene_hash[x] = human_phenotype_gene_hash[x]
+                for y in nearest_neighbor_gene_hash[x]:
+                    nearest_neighbor_gene_to_ortholog_hash[y] = self.get_ortholog(y, 'inter/panther/panther_hmz_trio.txt')
+            '''
 
             for j in phenotype_ids:
                 for k in phenolog_ortholog_prediction_hash[j]:
@@ -3683,17 +3733,23 @@ class main():
             with open(human_max_outfile, 'w', newline='') as csvfile:
                 csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
 
-                for gene_candidate_id in top_20_max:
-                    #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
-                    output_row = (gene_candidate_id, score)
+                for orthogroup_candidate_id in top_20_max:
+                    gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
+                    gene_candidate_labels = []
+                    for x in gene_candidate_ids:
+                        gene_candidate_labels.append(gene_id_to_label_hash[x])
+                    score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                    output_row = (gene_candidate_ids, gene_candidate_labels, score)
                     csvwriter.writerow(output_row)
             with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
                 csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_additive:
-                    #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
-                    output_row = (gene_candidate_id, score)
+                for orthogroup_candidate_id in top_20_additive:
+                    gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
+                    gene_candidate_labels = []
+                    for x in gene_candidate_ids:
+                        gene_candidate_labels.append(gene_id_to_label_hash[x])
+                    score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                    output_row = (gene_candidate_ids, gene_candidate_labels, score)
                     csvwriter.writerow(output_row)
 
         return
@@ -3704,8 +3760,6 @@ class main():
         # then grab the gene candidate predictions for those pheontypes,
         # combine the gene candidate predictions (selectively update the score if it is greater than the prior score),
         # and then return the top 20 scoring gene candidates.
-
-
 
         with open('inter/hpo/human_gene_id_to_label_hash.txt', 'rb') as handle:
             human_gene_id_to_label_hash = pickle.load(handle)
@@ -4716,7 +4770,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 #main.assemble_nearest_neighbor_phenotypes_hash()
 
-#main.assemble_phenolog_gene_candidates_for_diseases()
+main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 #with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
