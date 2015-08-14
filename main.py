@@ -32,7 +32,7 @@ from ctypes import c_int
 from queue import Queue
 from collections import *
 from functools import reduce
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 start_time = time.time()
@@ -3882,8 +3882,47 @@ class main():
         return
 
 
-    def assemble_gene_candidates_for_diseases_combined_score(self):
 
+    ####### OMIM ASSERTED GENE PROCESSING #######
+    def create_zfin_gene_to_ncbi_hash(self):
+
+        zfin_gene_to_ncbi_gene_hash = {}
+        ncbi_gene_to_zfin_gene_hash = {}
+        with open('raw/panther/zfin_to_ncbi.csv', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                (zfin_gene_id, ncbi_gene_id) = row
+                if zfin_gene_id not in zfin_gene_to_ncbi_gene_hash:
+                    zfin_gene_to_ncbi_gene_hash[zfin_gene_id] = ncbi_gene_id
+                if ncbi_gene_id not in ncbi_gene_to_zfin_gene_hash:
+                    ncbi_gene_to_zfin_gene_hash[ncbi_gene_id] = zfin_gene_id
+
+        with open('inter/zfin/zfin_gene_to_ncbi_gene_hash.txt', 'wb') as handle:
+            pickle.dump(zfin_gene_to_ncbi_gene_hash, handle)
+        with open('inter/zfin/ncbi_gene_to_zfin_gene_hash.txt', 'wb') as handle:
+            pickle.dump(ncbi_gene_to_zfin_gene_hash, handle)
+
+        return
+
+    def create_mgi_gene_to_ncbi_hash(self):
+
+        mgi_gene_to_ncbi_gene_hash = {}
+        ncbi_gene_to_mgi_gene_hash = {}
+        with open('raw/panther/mgi_to_ncbi.csv', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                (mgi_gene_id, ncbi_gene_id) = row
+                if mgi_gene_id not in mgi_gene_to_ncbi_gene_hash:
+                    mgi_gene_to_ncbi_gene_hash[mgi_gene_id] = ncbi_gene_id
+                if ncbi_gene_id not in ncbi_gene_to_mgi_gene_hash:
+                    ncbi_gene_to_mgi_gene_hash[ncbi_gene_id] = mgi_gene_id
+
+        with open('inter/mgi/mgi_gene_to_ncbi_gene_hash.txt', 'wb') as handle:
+            pickle.dump(mgi_gene_to_ncbi_gene_hash, handle)
+        with open('inter/mgi/ncbi_gene_to_mgi_gene_hash.txt', 'wb') as handle:
+            pickle.dump(ncbi_gene_to_mgi_gene_hash, handle)
 
         return
 
@@ -4841,10 +4880,15 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.assemble_gene_candidates_for_diseases_max_score()
 
 
-read_only_disease_subset = ['OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
-main.assemble_owlsim_top_20_gene_candidates()
-main.assemble_phenolog_gene_candidates_for_diseases()
-main.assemble_phenolog_orthogroup_candidates_for_diseases()
+#read_only_disease_subset = ['OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
+#main.assemble_owlsim_top_20_gene_candidates()
+#main.assemble_phenolog_gene_candidates_for_diseases()
+#main.assemble_phenolog_orthogroup_candidates_for_diseases()
+
+
+main.create_zfin_gene_to_ncbi_hash()
+main.create_mgi_gene_to_ncbi_hash()
+
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
