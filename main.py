@@ -3903,7 +3903,17 @@ class main():
         with open('inter/zfin/ncbi_gene_to_zfin_gene_hash.txt', 'wb') as handle:
             pickle.dump(ncbi_gene_to_zfin_gene_hash, handle)
 
+        with open('inter/zfin/zebrafish_gene_id_to_label_hash.txt', 'rb') as handle:
+            zebrafish_gene_id_to_label_hash = pickle.load(handle)
+        for gene_id in zebrafish_gene_id_to_label_hash:
+            try:
+                converted_id = zfin_gene_to_ncbi_gene_hash[gene_id]
+            except:
+                print('No NCBIGene ID for '+str(gene_id)+'.')
         return
+
+
+
 
     def create_mgi_gene_to_ncbi_hash(self):
 
@@ -4886,8 +4896,12 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 
+
+####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
+
+
 main.create_zfin_gene_to_ncbi_hash()
-main.create_mgi_gene_to_ncbi_hash()
+#main.create_mgi_gene_to_ncbi_hash()
 
 
 elapsed_time = time.time() - start_time
