@@ -3664,7 +3664,7 @@ class main():
 
         # Does it make sense to drop out the genes that are currently associated with the disease of interest?
 
-        phenolog_disorder_list = []
+        phenolog_disease_list = []
 
         with open('inter/phenolog_gene_cand/nearest_neighbor_hash.txt', 'rb') as handle:
             nearest_neighbor_hash = pickle.load(handle)
@@ -3810,13 +3810,13 @@ class main():
                         output_row =  (gene_candidate_ids, gene_candidate_labels, score)
                         #output_row = (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
                         csvwriter.writerow(output_row)
-                if i not in phenolog_disorder_list:
-                    phenolog_disorder_list.append(i)
+                if i not in phenolog_disease_list:
+                    phenolog_disease_list.append(i)
             except:
                 print('Phenolog gene andidate processing failed for disease ID '+str(i)+'.')
 
-        with open('inter/omim/phenolog_disorder_list.txt', 'wb') as handle:
-            pickle.dump(phenolog_disorder_list, handle)
+        with open('inter/omim/phenolog_disease_list.txt', 'wb') as handle:
+            pickle.dump(phenolog_disease_list, handle)
         return
 
     def assemble_phenolog_orthogroup_candidates_for_diseases(self):
@@ -4035,10 +4035,19 @@ class main():
     def assemble_complete_disease_list(self):
         with open('inter/omim/owlsim_disease_list.txt', 'rb') as handle:
             owlsim_disease_list = pickle.load(handle)
+        print(str(len(owlsim_disease_list)))
         with open('inter/omim/phenolog_disease_list.txt', 'rb') as handle:
             phenolog_disease_list = pickle.load(handle)
-
-        common_diseases = set(owlsim_disease_list) ^ set(phenolog_disease_list)
+        print(str(len(phenolog_disease_list)))
+        #common_diseases = set(owlsim_disease_list) ^ set(phenolog_disease_list)
+        common_diseases = []
+        for disease_id in owlsim_disease_list:
+            if disease_id in phenolog_disease_list and disease_id not in common_diseases:
+                common_diseases.append(disease_id)
+        for disease_id in phenolog_disease_list:
+            if disease_id in owlsim_disease_list and disease_id not in common_diseases:
+                common_diseases.append(disease_id)
+        print(str(len(common_diseases)))
         print(common_diseases)
         with open('inter/omim/common_disease_list.txt', 'wb') as handle:
             pickle.dump(common_diseases, handle)
@@ -4046,8 +4055,8 @@ class main():
 
     def assemble_owlsim_data_for_ROC(self):
 
-        with open('inter/omim/disorder_list.txt', 'rb') as handle:
-            morbid_disorder_list = pickle.load(handle)
+        with open('inter/omim/common_disease_list.txt', 'rb') as handle:
+            common_diseases_list = pickle.load(handle)
         with open('inter/mgi/mgi_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
             mgi_gene_to_ncbi_gene_hash = pickle.load(handle)
         with open('inter/zfin/zfin_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
@@ -4055,9 +4064,9 @@ class main():
         with open('inter/omim/ncbi_gene_to_mim_hash.txt', 'rb') as handle:
             ncbi_gene_to_mim_hash = pickle.load(handle)
 
-        for disorder in morbid_disorder_list:
+        for disease in common_diseases_list:
             try:
-                file_prefix = re.sub(':', '_', disorder)
+                file_prefix = re.sub(':', '_', disease)
                 filename = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(file_prefix)+'.txt'
                 #print(filename)
                 with open(filename, 'rb') as handle:
@@ -4065,7 +4074,7 @@ class main():
 
                     #print(human_disease_gene_prediction_hash)
             except:
-                print('No data available for disorder ID '+str(disorder)+'.')
+                print('No data available for disorder ID '+str(disease)+'.')
 
         return
 
@@ -5032,7 +5041,7 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
-main.phenolog_disease_list()
+main.assemble_complete_disease_list()
 
 ####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
 
