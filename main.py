@@ -4032,6 +4032,29 @@ class main():
 
         return
 
+    def convert_morbid_map_genes_to_orthologs(self):
+        disease_ortholog_association_id_list = []
+        with open('inter/omim/morbid_disease_to_ortholog.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+            with open('inter/omim/morbid_disease_to_gene.csv', 'r', encoding="iso-8859-1") as csvfile:
+                filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+                for row in filereader:
+                    (disease_gene_association_id, disorder_id, gene_id) = row
+                    try:
+                        ortholog_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                        disease_ortholog_association_id = disorder_id+'_'+ortholog_id
+                        output_row = (disease_ortholog_association_id, disorder_id, ortholog_id)
+                        csvwriter.writerow(output_row)
+                        if disease_ortholog_association_id not in disease_ortholog_association_id_list:
+                            disease_ortholog_association_id_list.append(disease_ortholog_association_id)
+                    except:
+                        print('No ortholog found for gene ID '+gene_id+'.')
+
+        with open('inter/omim/disorder_ortholog_association_id_list.txt', 'wb') as handle:
+            pickle.dump(disease_ortholog_association_id_list, handle)
+
+        return
+
     def assemble_complete_disease_list(self):
         with open('inter/omim/owlsim_disease_list.txt', 'rb') as handle:
             owlsim_disease_list = pickle.load(handle)
@@ -5041,9 +5064,9 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
-main.assemble_complete_disease_list()
+#main.assemble_complete_disease_list()
 
-####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
+####### OMIM ASSERTED MODELS #######
 
 
 #main.create_zfin_gene_to_ncbi_hash()
@@ -5051,6 +5074,7 @@ main.assemble_complete_disease_list()
 #main.create_mim_to_gene_hash()
 
 #main.convert_morbid_map_to_ncbi_gene()
+#main.convert_morbid_map_genes_to_orthologs()
 #main.assemble_owlsim_data_for_ROC()
 
 elapsed_time = time.time() - start_time
