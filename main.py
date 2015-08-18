@@ -1716,6 +1716,8 @@ class main():
 
     def assemble_owlsim_top_20_gene_candidates(self):
 
+        owlsim_disease_list = []
+
         disease_subset = read_only_disease_subset # ['OMIM_157900', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_209900', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
@@ -1737,82 +1739,86 @@ class main():
         #print(human_disease_gene_prediction_hash)
         #disease_id = 'ORPHANET:2824'
         for disease_id in disease_subset:
-            with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id)+'.txt', 'rb') as handle:
-                human_disease_gene_prediction_hash = pickle.load(handle)
-            #disease_id = re.sub('_', ':', x)
+            try:
+                disease_id = re.sub(':', '_', disease_id)
+                print('Processing disease ID '+str(disease_id)+'.')
+                with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id)+'.txt', 'rb') as handle:
+                    human_disease_gene_prediction_hash = pickle.load(handle)
+                #disease_id = re.sub('_', ':', x)
 
-            top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
-            top_20_iccs = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['ICCS'])
-            top_20_sim_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simIC'])
-            top_20_sim_j = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simJ'])
-            #print(top_20_max_ic)
-            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/maxic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_max_ic:
-                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    max_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'], 2))+')'
-                    #output_row = (gene_candidate_id, gene_candidate_label, max_ic)
-                    if re.match('MGI:.*', gene_candidate_id):
-                        species = '[Mouse]'
-                    elif re.match('ZFIN:.*', gene_candidate_id):
-                        species = '[Zebrafish]'
-                    else:
-                        print('Species not found.')
-                        species = 'Unknown'
-                    output_row = (gene_candidate_label, max_ic, species)
-                    csvwriter.writerow(output_row)
-                    #print('Gene candidate: '+str(gene_candidate)+', MaxIC:'+str(human_disease_gene_prediction_hash[gene_candidate]['maxIC']))
-            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/iccs/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_iccs:
-                    if re.match('MGI:.*', gene_candidate_id):
-                        species = '[Mouse]'
-                    elif re.match('ZFIN:.*', gene_candidate_id):
-                        species = '[Zebrafish]'
-                    else:
-                        print('Species not found.')
-                        species = 'Unknown'
-                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
-                    #output_row = (gene_candidate_id, gene_candidate_label, iccs)
-                    output_row = (gene_candidate_label, iccs, species)
-                    csvwriter.writerow(output_row)
-            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_sim_ic:
-                    if re.match('MGI:.*', gene_candidate_id):
-                        species = '[Mouse]'
-                    elif re.match('ZFIN:.*', gene_candidate_id):
-                        species = '[Zebrafish]'
-                    else:
-                        print('Species not found.')
-                        species = 'Unknown'
-                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
-                    #output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
-                    output_row = (gene_candidate_label, sim_ic, species)
-                    csvwriter.writerow(output_row)
-            with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simj/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_sim_j:
-                    if re.match('MGI:.*', gene_candidate_id):
-                        species = '[Mouse]'
-                    elif re.match('ZFIN:.*', gene_candidate_id):
-                        species = '[Zebrafish]'
-                    else:
-                        print('Species not found.')
-                        species = 'Unknown'
-                    gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
-                    #output_row = (gene_candidate_id, gene_candidate_label, sim_j)
-                    output_row = (gene_candidate_label, sim_j, species)
-                    csvwriter.writerow(output_row)
+                top_20_max_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['maxIC'])
+                top_20_iccs = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['ICCS'])
+                top_20_sim_ic = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simIC'])
+                top_20_sim_j = heapq.nlargest(20, human_disease_gene_prediction_hash, key=lambda k:human_disease_gene_prediction_hash[k]['simJ'])
+                #print(top_20_max_ic)
+                with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/maxic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                    for gene_candidate_id in top_20_max_ic:
+                        gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        max_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'], 2))+')'
+                        #output_row = (gene_candidate_id, gene_candidate_label, max_ic)
+                        if re.match('MGI:.*', gene_candidate_id):
+                            species = '[Mouse]'
+                        elif re.match('ZFIN:.*', gene_candidate_id):
+                            species = '[Zebrafish]'
+                        else:
+                            print('Species not found.')
+                            species = 'Unknown'
+                        output_row = (gene_candidate_label, max_ic, species)
+                        csvwriter.writerow(output_row)
+                        #print('Gene candidate: '+str(gene_candidate)+', MaxIC:'+str(human_disease_gene_prediction_hash[gene_candidate]['maxIC']))
+                with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/iccs/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                    for gene_candidate_id in top_20_iccs:
+                        if re.match('MGI:.*', gene_candidate_id):
+                            species = '[Mouse]'
+                        elif re.match('ZFIN:.*', gene_candidate_id):
+                            species = '[Zebrafish]'
+                        else:
+                            print('Species not found.')
+                            species = 'Unknown'
+                        gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
+                        #output_row = (gene_candidate_id, gene_candidate_label, iccs)
+                        output_row = (gene_candidate_label, iccs, species)
+                        csvwriter.writerow(output_row)
+                with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                    for gene_candidate_id in top_20_sim_ic:
+                        if re.match('MGI:.*', gene_candidate_id):
+                            species = '[Mouse]'
+                        elif re.match('ZFIN:.*', gene_candidate_id):
+                            species = '[Zebrafish]'
+                        else:
+                            print('Species not found.')
+                            species = 'Unknown'
+                        gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
+                        #output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
+                        output_row = (gene_candidate_label, sim_ic, species)
+                        csvwriter.writerow(output_row)
+                with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simj/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                    for gene_candidate_id in top_20_sim_j:
+                        if re.match('MGI:.*', gene_candidate_id):
+                            species = '[Mouse]'
+                        elif re.match('ZFIN:.*', gene_candidate_id):
+                            species = '[Zebrafish]'
+                        else:
+                            print('Species not found.')
+                            species = 'Unknown'
+                        gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
+                        #output_row = (gene_candidate_id, gene_candidate_label, sim_j)
+                        output_row = (gene_candidate_label, sim_j, species)
+                        csvwriter.writerow(output_row)
+                owlsim_disease_list.append(disease_id)
+            except:
+                print('OWLSim candidate processing failed for disease ID '+str(disease_id)+'.')
 
 
-
-        #with open('inter/phenolog/all_significant_phenologs.txt', 'w', newline='') as csvfile:
-            #csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-            #csvwriter.writerow(output_row)
+        with open('inter/omim/owlsim_disease_list.txt', 'wb') as handle:
+            pickle.dump(owlsim_disease_list, handle)
 
 
         return
@@ -3658,6 +3664,8 @@ class main():
 
         # Does it make sense to drop out the genes that are currently associated with the disease of interest?
 
+        phenolog_disorder_list = []
+
         with open('inter/phenolog_gene_cand/nearest_neighbor_hash.txt', 'rb') as handle:
             nearest_neighbor_hash = pickle.load(handle)
         with open('inter/hpo/human_pheno_gene_hash.txt', 'rb') as handle:
@@ -3706,101 +3714,109 @@ class main():
         disease_subset = read_only_disease_subset #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400'] #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         for i in disease_subset:
-            print('Processing disease ID '+str(i)+'.')
-            human_max_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_max/'+str(i)+'.txt'
-            human_additive_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_additive/'+str(i)+'.txt'
-            disease_id = re.sub('_', ':', i)
+            try:
+                i = re.sub(':', '_', i)
+                print('Processing disease ID '+str(i)+'.')
+                human_max_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_max/'+str(i)+'.txt'
+                human_additive_outfile = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/top_twenty_genes_additive/'+str(i)+'.txt'
+                disease_id = re.sub('_', ':', i)
 
-            phenotype_ids = human_disease_phenotype_hash[disease_id]
-            #print(phenotype_ids)
-            max_phenotype_gene_candidate_hash = {}
-            additive_phenotype_gene_candidate_hash = {}
-            phenotype_counter = 0
-            gene_list = []
-            cleared_phenotype_ids = []
-            nearest_neighbor_phenotypes = []
-            for x in phenotype_ids:
-                try:
-                    nearest_neighbor_phenotypes = nearest_neighbor_hash[x]
-                    cleared_phenotype_ids.append(x)
-                    for y in nearest_neighbor_phenotypes:
-                        #print(y)
-                        associated_genes = phenotype_to_gene_hash[y]
-                        #print(associated_genes)
-                        for z in associated_genes:
-                            #print(z)
-                            if z not in gene_list:
-                                gene_list.append(z)
-                except:
+                phenotype_ids = human_disease_phenotype_hash[disease_id]
+                #print(phenotype_ids)
+                max_phenotype_gene_candidate_hash = {}
+                additive_phenotype_gene_candidate_hash = {}
+                phenotype_counter = 0
+                gene_list = []
+                cleared_phenotype_ids = []
+                nearest_neighbor_phenotypes = []
+                for x in phenotype_ids:
+                    try:
+                        nearest_neighbor_phenotypes = nearest_neighbor_hash[x]
+                        cleared_phenotype_ids.append(x)
+                        for y in nearest_neighbor_phenotypes:
+                            #print(y)
+                            associated_genes = phenotype_to_gene_hash[y]
+                            #print(associated_genes)
+                            for z in associated_genes:
+                                #print(z)
+                                if z not in gene_list:
+                                    gene_list.append(z)
+                    except:
 
-                    print('No nearest neighbor phenotypes for phenotype '+str(x)+'.')
-            orthogroup_to_gene_hash = {}
-            #print(gene_list)
-            for x in gene_list:
-                try:
-                    panther_id = gene_to_ortholog_hash[x]
-                except:
-                    if re.match('MGI:.*', x):
-                        panther_id =  self.get_ortholog(x, 'inter/panther/panther_mouse.txt')
-                    elif re.match('ZFIN:.*', x):
-                        panther_id =  self.get_ortholog(x, 'inter/panther/panther_zebrafish.txt')
-                    elif re.match('NCBIGene:.*', x):
-                        panther_id =  self.get_ortholog(x, 'inter/panther/panther_human.txt')
-                if panther_id != 'fail' and panther_id not in orthogroup_to_gene_hash:
-                    orthogroup_to_gene_hash[panther_id] = [x]
-                elif panther_id != 'fail' and x not in orthogroup_to_gene_hash[panther_id]:
-                    orthogroup_to_gene_hash[panther_id].append(x)
-                #print(panther_id)
+                        print('No nearest neighbor phenotypes for phenotype '+str(x)+'.')
+                orthogroup_to_gene_hash = {}
+                #print(gene_list)
+                for x in gene_list:
+                    try:
+                        panther_id = gene_to_ortholog_hash[x]
+                    except:
+                        if re.match('MGI:.*', x):
+                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_mouse.txt')
+                        elif re.match('ZFIN:.*', x):
+                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_zebrafish.txt')
+                        elif re.match('NCBIGene:.*', x):
+                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_human.txt')
+                    if panther_id != 'fail' and panther_id not in orthogroup_to_gene_hash:
+                        orthogroup_to_gene_hash[panther_id] = [x]
+                    elif panther_id != 'fail' and x not in orthogroup_to_gene_hash[panther_id]:
+                        orthogroup_to_gene_hash[panther_id].append(x)
+                    #print(panther_id)
 
 
-            '''
-            nearest_neighbor_gene_hash = {}
-            nearest_neighbor_gene_to_ortholog_hash = {}
-            for x in nearest_neighbor_phenotypes:
-                nearest_neighbor_gene_hash[x] = human_phenotype_gene_hash[x]
-                for y in nearest_neighbor_gene_hash[x]:
-                    nearest_neighbor_gene_to_ortholog_hash[y] = self.get_ortholog(y, 'inter/panther/panther_hmz_trio.txt')
-            '''
+                '''
+                nearest_neighbor_gene_hash = {}
+                nearest_neighbor_gene_to_ortholog_hash = {}
+                for x in nearest_neighbor_phenotypes:
+                    nearest_neighbor_gene_hash[x] = human_phenotype_gene_hash[x]
+                    for y in nearest_neighbor_gene_hash[x]:
+                        nearest_neighbor_gene_to_ortholog_hash[y] = self.get_ortholog(y, 'inter/panther/panther_hmz_trio.txt')
+                '''
 
-            for j in cleared_phenotype_ids:
-                for k in phenolog_ortholog_prediction_hash[j]:
+                for j in cleared_phenotype_ids:
+                    for k in phenolog_ortholog_prediction_hash[j]:
 
-                    if k not in max_phenotype_gene_candidate_hash:
-                        max_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
-                        additive_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
-                    else:
-                        max_phenotype_gene_candidate_hash[k] = max(max_phenotype_gene_candidate_hash[k], phenolog_ortholog_prediction_hash[j][k])
-                        additive_phenotype_gene_candidate_hash[k] = (additive_phenotype_gene_candidate_hash[k]+phenolog_ortholog_prediction_hash[j][k])
-                    #try
-                    #except:
-                        #print('No gene candidate predictions for phenotype '+str(j)+'.')
-            top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
-            top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
+                        if k not in max_phenotype_gene_candidate_hash:
+                            max_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
+                            additive_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
+                        else:
+                            max_phenotype_gene_candidate_hash[k] = max(max_phenotype_gene_candidate_hash[k], phenolog_ortholog_prediction_hash[j][k])
+                            additive_phenotype_gene_candidate_hash[k] = (additive_phenotype_gene_candidate_hash[k]+phenolog_ortholog_prediction_hash[j][k])
+                        #try
+                        #except:
+                            #print('No gene candidate predictions for phenotype '+str(j)+'.')
+                top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
+                top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
 
-            with open(human_max_outfile, 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                with open(human_max_outfile, 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
 
-                for orthogroup_candidate_id in top_20_max:
-                    gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
-                    gene_candidate_labels = []
-                    for x in gene_candidate_ids:
-                        gene_candidate_labels.append(gene_id_to_label_hash[x])
-                    score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
-                    output_row =  (gene_candidate_ids, gene_candidate_labels, score)
-                    #output_row =  (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
-                    csvwriter.writerow(output_row)
-            with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
-                csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
-                for orthogroup_candidate_id in top_20_additive:
-                    gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
-                    gene_candidate_labels = []
-                    for x in gene_candidate_ids:
-                        gene_candidate_labels.append(gene_id_to_label_hash[x])
-                    score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
-                    output_row =  (gene_candidate_ids, gene_candidate_labels, score)
-                    #output_row = (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
-                    csvwriter.writerow(output_row)
+                    for orthogroup_candidate_id in top_20_max:
+                        gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
+                        gene_candidate_labels = []
+                        for x in gene_candidate_ids:
+                            gene_candidate_labels.append(gene_id_to_label_hash[x])
+                        score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        output_row =  (gene_candidate_ids, gene_candidate_labels, score)
+                        #output_row =  (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
+                        csvwriter.writerow(output_row)
+                with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
+                    csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
+                    for orthogroup_candidate_id in top_20_additive:
+                        gene_candidate_ids = orthogroup_to_gene_hash[orthogroup_candidate_id]
+                        gene_candidate_labels = []
+                        for x in gene_candidate_ids:
+                            gene_candidate_labels.append(gene_id_to_label_hash[x])
+                        score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        output_row =  (gene_candidate_ids, gene_candidate_labels, score)
+                        #output_row = (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
+                        csvwriter.writerow(output_row)
+                if i not in phenolog_disorder_list:
+                    phenolog_disorder_list.append(i)
+            except:
+                print('Phenolog gene andidate processing failed for disease ID '+str(i)+'.')
 
+        with open('inter/omim/phenolog_disorder_list.txt', 'wb') as handle:
+            pickle.dump(phenolog_disorder_list, handle)
         return
 
     def assemble_phenolog_orthogroup_candidates_for_diseases(self):
@@ -3832,58 +3848,62 @@ class main():
         disease_subset = read_only_disease_subset #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
         for i in disease_subset:
-            human_max_outfile = 'out/phenolog_gene_cand/human_disease_orthogroup_candidate_predictions/top_twenty_orthogroups_max/'+str(i)+'.txt'
-            human_additive_outfile = 'out/phenolog_gene_cand/human_disease_orthogroup_candidate_predictions/top_twenty_orthogroups_additive/'+str(i)+'.txt'
-            disease_id = re.sub('_', ':', i)
+            try:
+                i = re.sub(':', '_', i)
+                print('Processing disease ID '+str(i)+'.')
+                human_max_outfile = 'out/phenolog_gene_cand/human_disease_orthogroup_candidate_predictions/top_twenty_orthogroups_max/'+str(i)+'.txt'
+                human_additive_outfile = 'out/phenolog_gene_cand/human_disease_orthogroup_candidate_predictions/top_twenty_orthogroups_additive/'+str(i)+'.txt'
+                disease_id = re.sub('_', ':', i)
 
-            phenotype_ids = human_disease_phenotype_hash[disease_id]
-            max_phenotype_gene_candidate_hash = {}
-            additive_phenotype_gene_candidate_hash = {}
-            phenotype_counter = 0
-            cleared_phenotype_ids = []
-            for x in phenotype_ids:
-                try:
-                    test_hash = phenolog_ortholog_prediction_hash[x]
-                    cleared_phenotype_ids.append(x)
-                except:
-                    print('No nearest neighbor phenotype available for phenotype '+str(x)+'.')
+                phenotype_ids = human_disease_phenotype_hash[disease_id]
+                max_phenotype_gene_candidate_hash = {}
+                additive_phenotype_gene_candidate_hash = {}
+                phenotype_counter = 0
+                cleared_phenotype_ids = []
+                for x in phenotype_ids:
+                    try:
+                        test_hash = phenolog_ortholog_prediction_hash[x]
+                        cleared_phenotype_ids.append(x)
+                    except:
+                        print('No nearest neighbor phenotype available for phenotype '+str(x)+'.')
 
 
-            for j in cleared_phenotype_ids:
+                for j in cleared_phenotype_ids:
 
-                for k in phenolog_ortholog_prediction_hash[j]:
+                    for k in phenolog_ortholog_prediction_hash[j]:
 
-                    if k not in max_phenotype_gene_candidate_hash:
-                        max_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
-                        additive_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
-                    else:
-                        max_phenotype_gene_candidate_hash[k] = max(max_phenotype_gene_candidate_hash[k], phenolog_ortholog_prediction_hash[j][k])
-                        additive_phenotype_gene_candidate_hash[k] = (additive_phenotype_gene_candidate_hash[k]+phenolog_ortholog_prediction_hash[j][k])
+                        if k not in max_phenotype_gene_candidate_hash:
+                            max_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
+                            additive_phenotype_gene_candidate_hash[k] = phenolog_ortholog_prediction_hash[j][k]
+                        else:
+                            max_phenotype_gene_candidate_hash[k] = max(max_phenotype_gene_candidate_hash[k], phenolog_ortholog_prediction_hash[j][k])
+                            additive_phenotype_gene_candidate_hash[k] = (additive_phenotype_gene_candidate_hash[k]+phenolog_ortholog_prediction_hash[j][k])
 
-            top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
-            top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
+                top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
+                top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
 
-            with open(human_max_outfile, 'w', newline='') as csvfile:
-                csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
+                with open(human_max_outfile, 'w', newline='') as csvfile:
+                    csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
 
-                for gene_candidate_id in top_20_max:
-                    #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
-                    output_row = (gene_candidate_id, score)
-                    csvwriter.writerow(output_row)
-            with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
-                csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
-                for gene_candidate_id in top_20_additive:
-                    #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                    score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
-                    output_row = (gene_candidate_id, score)
-                    csvwriter.writerow(output_row)
+                    for gene_candidate_id in top_20_max:
+                        #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        output_row = (gene_candidate_id, score)
+                        csvwriter.writerow(output_row)
+                with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
+                    csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
+                    for gene_candidate_id in top_20_additive:
+                        #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
+                        score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        output_row = (gene_candidate_id, score)
+                        csvwriter.writerow(output_row)
+            except:
+                print('Phenolog ortholog candidate processing failed for disease ID '+str(i)+'.')
 
         return
 
-
-
     ####### OMIM ASSERTED GENE PROCESSING #######
+
     def create_zfin_gene_to_ncbi_hash(self):
 
         zfin_gene_to_ncbi_gene_hash = {}
@@ -3912,9 +3932,6 @@ class main():
                 print('No NCBIGene ID for '+str(gene_id)+'.')
         return
 
-
-
-
     def create_mgi_gene_to_ncbi_hash(self):
 
         mgi_gene_to_ncbi_gene_hash = {}
@@ -3933,6 +3950,122 @@ class main():
             pickle.dump(mgi_gene_to_ncbi_gene_hash, handle)
         with open('inter/mgi/ncbi_gene_to_mgi_gene_hash.txt', 'wb') as handle:
             pickle.dump(ncbi_gene_to_mgi_gene_hash, handle)
+
+        return
+
+    def create_mim_to_gene_hash(self):
+
+        mim_to_ncbi_gene_hash = {}
+        ncbi_gene_to_mim_hash = {}
+        with open('raw/omim/mim2gene.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                (mim_number, mim_entry_type, ncbi_gene_id, gene_symbol, ensembl_gene_id) = row
+                if mim_number not in mim_to_ncbi_gene_hash:
+                    mim_to_ncbi_gene_hash[mim_number] = ncbi_gene_id
+                if ncbi_gene_id not in ncbi_gene_to_mim_hash:
+                    ncbi_gene_to_mim_hash[ncbi_gene_id] = mim_number
+
+        with open('inter/omim/mim_to_ncbi_gene_hash.txt', 'wb') as handle:
+            pickle.dump(mim_to_ncbi_gene_hash, handle)
+        with open('inter/omim/ncbi_gene_to_mim_hash.txt', 'wb') as handle:
+            pickle.dump(ncbi_gene_to_mim_hash, handle)
+
+        return
+
+    def convert_morbid_map_to_ncbi_gene(self):
+
+        with open('inter/omim/mim_to_ncbi_gene_hash.txt', 'rb') as handle:
+            mim_to_ncbi_gene_hash = pickle.load(handle)
+        disorder_list = []
+        disorder_gene_association_id_list = []
+        morbid_disease_to_gene_hash = {}
+        with open('inter/omim/morbid_disease_to_gene.csv', 'w', encoding="iso-8859-1") as csvfile1:
+            csvwriter = csv.writer(csvfile1, delimiter='\t', quotechar='\"')
+            with open('raw/omim/morbidmap', 'r', encoding="iso-8859-1") as csvfile2:
+                filereader = csv.reader(csvfile2, delimiter='|', quotechar='\"')
+                next(filereader, None)
+                for row in filereader:
+                    #print(row)
+                    (disorder_number, gene_symbol, gene_mim_number, cytogenetic_location) = row
+                    #print(disorder_id)
+                    #Need to properly parse the disorder ID field.
+                    p = re.findall(r'(\d{6})', disorder_number)
+                    if len(p) == 1:
+                        disorder_id = 'OMIM:'+str(p[0])
+                        #print(disorder_id)
+                        try:
+                            gene_id = 'NCBIGene:'+str(mim_to_ncbi_gene_hash[gene_mim_number])
+                            disease_gene_association_id = disorder_id+'_'+gene_id
+                            output_row = (disease_gene_association_id, disorder_id, gene_id)
+                            csvwriter.writerow(output_row)
+                            if disease_gene_association_id not in disorder_gene_association_id_list:
+                                disorder_gene_association_id_list.append(disease_gene_association_id)
+                            if disorder_id not in disorder_list:
+                                disorder_list.append(disorder_id)
+                        except:
+                            print('No NCBIGene ID for '+str(gene_mim_number)+'.')
+
+
+                    elif len(p) == 0:
+                        continue
+                    else:
+                        print('More than one ID number.'+str(p))
+                        for disorder in p:
+                            disorder_id = 'OMIM:'+str(disorder)
+                            try:
+                                gene_id = 'NCBIGene:'+str(mim_to_ncbi_gene_hash[gene_mim_number])
+                                disease_gene_association_id = disorder_id+'_'+gene_id
+                                output_row = (disease_gene_association_id, disorder_id, gene_id)
+                                csvwriter.writerow(output_row)
+                                if disease_gene_association_id not in disorder_gene_association_id_list:
+                                    disorder_gene_association_id_list.append(disease_gene_association_id)
+                                if disorder_id not in disorder_list:
+                                    disorder_list.append(disorder_id)
+                            except:
+                                print('No NCBIGene ID for '+str(gene_mim_number)+'.')
+        with open('inter/omim/disorder_list.txt', 'wb') as handle:
+            pickle.dump(disorder_list, handle)
+        with open('inter/omim/disorder_gene_association_id_list.txt', 'wb') as handle:
+            pickle.dump(disorder_gene_association_id_list, handle)
+
+        return
+
+    def assemble_complete_disease_list(self):
+        with open('inter/omim/owlsim_disease_list.txt', 'rb') as handle:
+            owlsim_disease_list = pickle.load(handle)
+        with open('inter/omim/phenolog_disease_list.txt', 'rb') as handle:
+            phenolog_disease_list = pickle.load(handle)
+
+        common_diseases = set(owlsim_disease_list) ^ set(phenolog_disease_list)
+        print(common_diseases)
+        with open('inter/omim/common_disease_list.txt', 'wb') as handle:
+            pickle.dump(common_diseases, handle)
+        return
+
+    def assemble_owlsim_data_for_ROC(self):
+
+        with open('inter/omim/disorder_list.txt', 'rb') as handle:
+            morbid_disorder_list = pickle.load(handle)
+        with open('inter/mgi/mgi_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
+            mgi_gene_to_ncbi_gene_hash = pickle.load(handle)
+        with open('inter/zfin/zfin_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
+            zfin_gene_to_ncbi_gene_hash = pickle.load(handle)
+        with open('inter/omim/ncbi_gene_to_mim_hash.txt', 'rb') as handle:
+            ncbi_gene_to_mim_hash = pickle.load(handle)
+
+        for disorder in morbid_disorder_list:
+            try:
+                file_prefix = re.sub(':', '_', disorder)
+                filename = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(file_prefix)+'.txt'
+                #print(filename)
+                with open(filename, 'rb') as handle:
+                    human_disease_gene_prediction_hash = pickle.load(handle)
+
+                    #print(human_disease_gene_prediction_hash)
+            except:
+                print('No data available for disorder ID '+str(disorder)+'.')
 
         return
 
@@ -4891,18 +5024,25 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 
 #read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
+
+with open('inter/omim/disorder_list.txt', 'rb') as handle:
+    read_only_disease_subset = pickle.load(handle)
+#print(str(len(read_only_disease_subset)))
 #main.assemble_owlsim_top_20_gene_candidates()
 #main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
-
+main.phenolog_disease_list()
 
 ####### PHENOLOG GENE CANDIDATE PREDICTIONS #######
 
 
-main.create_zfin_gene_to_ncbi_hash()
+#main.create_zfin_gene_to_ncbi_hash()
 #main.create_mgi_gene_to_ncbi_hash()
+#main.create_mim_to_gene_hash()
 
+#main.convert_morbid_map_to_ncbi_gene()
+#main.assemble_owlsim_data_for_ROC()
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
