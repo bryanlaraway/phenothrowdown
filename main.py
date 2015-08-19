@@ -4150,7 +4150,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 human_to_mouse_ldo_hash[gene_id_a] = gene_id_b
                                 mouse_to_human_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in human_to_mouse_ortholog_hash:
                                     human_to_mouse_ortholog_hash[gene_id_a] = [gene_id_b]
@@ -4166,7 +4166,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 human_to_zebrafish_ldo_hash[gene_id_a] = gene_id_b
                                 zebrafish_to_human_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in human_to_zebrafish_ortholog_hash:
                                     human_to_zebrafish_ortholog_hash[gene_id_a] = [gene_id_b]
@@ -4185,7 +4185,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 mouse_to_zebrafish_ldo_hash[gene_id_a] = gene_id_b
                                 zebrafish_to_mouse_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in mouse_to_zebrafish_ortholog_hash:
                                     mouse_to_zebrafish_ortholog_hash[gene_id_a] = [gene_id_b]
@@ -4201,7 +4201,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 mouse_to_human_ldo_hash[gene_id_a] = gene_id_b
                                 human_to_mouse_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in mouse_to_human_ortholog_hash:
                                     mouse_to_human_ortholog_hash[gene_id_a] = [gene_id_b]
@@ -4220,7 +4220,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 zebrafish_to_mouse_ldo_hash[gene_id_a] = gene_id_b
                                 mouse_to_zebrafish_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in zebrafish_to_mouse_ortholog_hash:
                                     zebrafish_to_mouse_ortholog_hash[gene_id_a] = [gene_id_b]
@@ -4236,7 +4236,7 @@ class main():
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 zebrafish_to_human_ldo_hash[gene_id_a] = gene_id_b
                                 human_to_zebrafish_ldo_hash[gene_id_b] = gene_id_a
-                        elif orthology_class == 'O':
+                        if orthology_class == 'O' or orthology_class == 'LDO':
                             if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
                                 if gene_id_a not in zebrafish_to_human_ortholog_hash:
                                     zebrafish_to_human_ortholog_hash[gene_id_a] = [gene_id_b]
