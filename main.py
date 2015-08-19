@@ -4033,6 +4033,10 @@ class main():
         return
 
     def convert_morbid_map_genes_to_orthologs(self):
+
+        with open('inter/hpo/human_gene_to_ortholog_hash.txt', 'rb') as handle:
+            human_gene_to_ortholog_hash = pickle.load(handle)
+
         disease_ortholog_association_id_list = []
         with open('inter/omim/morbid_disease_to_ortholog.csv', 'w', newline='') as csvfile:
             csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
@@ -4041,17 +4045,29 @@ class main():
                 for row in filereader:
                     (disease_gene_association_id, disorder_id, gene_id) = row
                     try:
-                        ortholog_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                        ortholog_id = human_gene_to_ortholog_hash[gene_id]
                         disease_ortholog_association_id = disorder_id+'_'+ortholog_id
                         output_row = (disease_ortholog_association_id, disorder_id, ortholog_id)
                         csvwriter.writerow(output_row)
                         if disease_ortholog_association_id not in disease_ortholog_association_id_list:
                             disease_ortholog_association_id_list.append(disease_ortholog_association_id)
                     except:
-                        print('No ortholog found for gene ID '+gene_id+'.')
+                        try:
+                            ortholog_id = self.get_ortholog(gene_id,'inter/panther/panther_human.txt')
+                            if gene_id not in human_gene_to_ortholog_hash:
+                                human_gene_to_ortholog_hash[gene_id] = ortholog_id
+                            disease_ortholog_association_id = disorder_id+'_'+ortholog_id
+                            output_row = (disease_ortholog_association_id, disorder_id, ortholog_id)
+                            csvwriter.writerow(output_row)
+                            if disease_ortholog_association_id not in disease_ortholog_association_id_list:
+                                disease_ortholog_association_id_list.append(disease_ortholog_association_id)
+                        except:
+                            print('No ortholog found for gene ID '+gene_id+'.')
 
         with open('inter/omim/disorder_ortholog_association_id_list.txt', 'wb') as handle:
             pickle.dump(disease_ortholog_association_id_list, handle)
+        with open('inter/hpo/human_gene_to_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(human_gene_to_ortholog_hash, handle)
 
         return
 
@@ -4076,6 +4092,27 @@ class main():
             pickle.dump(common_diseases, handle)
         return
 
+    def assemble_ortholog_disease_list(self):
+        with open('inter/omim/owlsim_disease_list.txt', 'rb') as handle:
+            owlsim_disease_list = pickle.load(handle)
+        print(str(len(owlsim_disease_list)))
+        with open('inter/omim/phenolog_disease_list.txt', 'rb') as handle:
+            phenolog_disease_list = pickle.load(handle)
+        print(str(len(phenolog_disease_list)))
+        #common_diseases = set(owlsim_disease_list) ^ set(phenolog_disease_list)
+        common_diseases = []
+        for disease_id in owlsim_disease_list:
+            if disease_id in phenolog_disease_list and disease_id not in common_diseases:
+                common_diseases.append(disease_id)
+        for disease_id in phenolog_disease_list:
+            if disease_id in owlsim_disease_list and disease_id not in common_diseases:
+                common_diseases.append(disease_id)
+        print(str(len(common_diseases)))
+        print(common_diseases)
+        with open('inter/omim/common__ortholog_disease_list.txt', 'wb') as handle:
+            pickle.dump(common_diseases, handle)
+        return
+
     def assemble_owlsim_data_for_ROC(self):
 
         with open('inter/omim/common_disease_list.txt', 'rb') as handle:
@@ -4094,6 +4131,8 @@ class main():
                 #print(filename)
                 with open(filename, 'rb') as handle:
                     human_disease_gene_prediction_hash = pickle.load(handle)
+
+
 
                     #print(human_disease_gene_prediction_hash)
             except:
@@ -5059,6 +5098,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 
 with open('inter/omim/disorder_list.txt', 'rb') as handle:
     read_only_disease_subset = pickle.load(handle)
+
 #print(str(len(read_only_disease_subset)))
 #main.assemble_owlsim_top_20_gene_candidates()
 #main.assemble_phenolog_gene_candidates_for_diseases()
