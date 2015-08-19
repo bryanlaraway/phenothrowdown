@@ -4113,7 +4113,192 @@ class main():
             pickle.dump(common_diseases, handle)
         return
 
+    def create_ortholog_lookup_hashes(self):
+
+        human_to_mouse_ldo_hash = {}
+        human_to_mouse_ortholog_hash = {}
+        human_to_zebrafish_ldo_hash = {}
+        human_to_zebrafish_ortholog_hash = {}
+        mouse_to_human_ldo_hash = {}
+        mouse_to_human_ortholog_hash = {}
+        mouse_to_zebrafish_ldo_hash = {}
+        mouse_to_zebrafish_ortholog_hash = {}
+        zebrafish_to_human_ldo_hash = {}
+        zebrafish_to_human_ortholog_hash = {}
+        zebrafish_to_mouse_ldo_hash = {}
+        zebrafish_to_mouse_ortholog_hash = {}
+        row_count = 0
+        total_row_count = 0
+        with open('inter/panther/panther_hmz_trio.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                total_row_count += 1
+        print(str(total_row_count)+' rows to process.')
+        with open('inter/panther/panther_hmz_trio.txt', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                row_count += 1
+                print('Processing row '+str(row_count)+' out of '+str(total_row_count)+'.')
+                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina,
+                 panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb,
+                 orthology_class, orthology_class_label, panther_id) = row
+
+
+                if taxon_id_a == 'NCBITaxon:9606':
+                    if taxon_id_b == 'NCBITaxon:10090':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                human_to_mouse_ldo_hash[gene_id_a] = gene_id_b
+                                mouse_to_human_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in human_to_mouse_ortholog_hash:
+                                    human_to_mouse_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    human_to_mouse_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in mouse_to_human_ortholog_hash:
+                                    mouse_to_human_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    mouse_to_human_ortholog_hash[gene_id_b].append(gene_id_a)
+
+                    elif taxon_id_b == 'NCBITaxon:7955':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                human_to_zebrafish_ldo_hash[gene_id_a] = gene_id_b
+                                zebrafish_to_human_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in human_to_zebrafish_ortholog_hash:
+                                    human_to_zebrafish_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    human_to_zebrafish_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in zebrafish_to_human_ortholog_hash:
+                                    zebrafish_to_human_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    zebrafish_to_human_ortholog_hash[gene_id_b].append(gene_id_a)
+                    else:
+                        continue
+
+                elif taxon_id_a == 'NCBITaxon:10090':
+                    if taxon_id_b == 'NCBITaxon:7955':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                mouse_to_zebrafish_ldo_hash[gene_id_a] = gene_id_b
+                                zebrafish_to_mouse_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in mouse_to_zebrafish_ortholog_hash:
+                                    mouse_to_zebrafish_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    mouse_to_zebrafish_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in zebrafish_to_mouse_ortholog_hash:
+                                    zebrafish_to_mouse_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    zebrafish_to_mouse_ortholog_hash[gene_id_b].append(gene_id_a)
+
+                    elif taxon_id_b == 'NCBITaxon:9606':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                mouse_to_human_ldo_hash[gene_id_a] = gene_id_b
+                                human_to_mouse_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in mouse_to_human_ortholog_hash:
+                                    mouse_to_human_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    mouse_to_human_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in human_to_mouse_ortholog_hash:
+                                    human_to_mouse_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    human_to_mouse_ortholog_hash[gene_id_b].append(gene_id_a)
+                    else:
+                        continue
+
+                elif taxon_id_a == 'NCBITaxon:7955':
+                    if taxon_id_b == 'NCBITaxon:10090':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                zebrafish_to_mouse_ldo_hash[gene_id_a] = gene_id_b
+                                mouse_to_zebrafish_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in zebrafish_to_mouse_ortholog_hash:
+                                    zebrafish_to_mouse_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    zebrafish_to_mouse_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in mouse_to_zebrafish_ortholog_hash:
+                                    mouse_to_zebrafish_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    mouse_to_zebrafish_ortholog_hash[gene_id_b].append(gene_id_a)
+
+                    elif taxon_id_b == 'NCBITaxon:9606':
+                        if orthology_class == 'LDO':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                zebrafish_to_human_ldo_hash[gene_id_a] = gene_id_b
+                                human_to_zebrafish_ldo_hash[gene_id_b] = gene_id_a
+                        elif orthology_class == 'O':
+                            if re.match('NCBIGene:.*', gene_id_a) and re.match('NCBIGene:.*', gene_id_b):
+                                if gene_id_a not in zebrafish_to_human_ortholog_hash:
+                                    zebrafish_to_human_ortholog_hash[gene_id_a] = [gene_id_b]
+                                else:
+                                    zebrafish_to_human_ortholog_hash[gene_id_a].append(gene_id_a)
+                                if gene_id_b not in human_to_zebrafish_ortholog_hash:
+                                    human_to_zebrafish_ortholog_hash[gene_id_b] = [gene_id_a]
+                                else:
+                                    human_to_zebrafish_ortholog_hash[gene_id_b].append(gene_id_a)
+                    else:
+                        continue
+
+                else:
+                    continue
+
+        with open('inter/panther/human_to_mouse_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(human_to_mouse_ldo_hash, handle)
+        with open('inter/panther/human_to_mouse_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(human_to_mouse_ortholog_hash, handle)
+        with open('inter/panther/human_to_zebrafish_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(human_to_zebrafish_ldo_hash, handle)
+        with open('inter/panther/human_to_zebrafish_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(human_to_zebrafish_ortholog_hash, handle)
+        with open('inter/panther/mouse_to_human_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(mouse_to_human_ldo_hash, handle)
+        with open('inter/panther/mouse_to_human_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(mouse_to_human_ortholog_hash, handle)
+        with open('inter/panther/zebrafish_to_human_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(zebrafish_to_human_ldo_hash, handle)
+        with open('inter/panther/zebrafish_to_human_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(zebrafish_to_human_ortholog_hash, handle)
+        with open('inter/panther/mouse_to_zebrafish_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(mouse_to_zebrafish_ldo_hash, handle)
+        with open('inter/panther/mouse_to_zebrafish_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(mouse_to_zebrafish_ortholog_hash, handle)
+        with open('inter/panther/zebrafish_to_mouse_ldo_hash.txt', 'wb') as handle:
+            pickle.dump(zebrafish_to_mouse_ldo_hash, handle)
+        with open('inter/panther/zebrafish_to_mouse_ortholog_hash.txt', 'wb') as handle:
+            pickle.dump(zebrafish_to_mouse_ortholog_hash, handle)
+
+        return
+
+    def convert_omim_ncbi_gene_to_mgi_and_zfin(self):
+
+        with open('inter/omim/morbid_disease_to_gene.csv', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (panther_speciesa, taxon_id_a, speciesa, taxon_label_a, genea, gene_id_a, gene_label_a,proteina,
+                 panther_speciesb, taxon_id_b, speciesb, taxon_label_b, geneb, gene_id_b,gene_label_b, proteinb,
+                 orthology_class, orthology_class_label, panther_id) = row
+
+
+        return
+
+
+
     def assemble_owlsim_data_for_ROC(self):
+
+        # Have a common disease list for OMIM, OWLSim, and Phenologs.
+        # OWLSim and Phenolog gene predictions are in mouse/zebrafish gene IDs.
+        # Will need to convert those gene IDs to human NCBI Gene IDs through PANTHER.
+        # However, it would be faster to simply convert the OMIM Gene IDs to the corresponding MGI/ZFIN Gene IDs, right?
 
         with open('inter/omim/common_disease_list.txt', 'rb') as handle:
             common_diseases_list = pickle.load(handle)
@@ -4134,11 +4319,30 @@ class main():
 
 
 
+
                     #print(human_disease_gene_prediction_hash)
             except:
                 print('No data available for disorder ID '+str(disease)+'.')
 
         return
+
+
+
+    def assemble_ROC_score_lists(self):
+
+        max_ic_list = []
+        iccs_list = []
+        sim_ic_list = []
+        sim_j_list = []
+        phenolog_gene_score_list = []
+        phenolog_ortholog_score_list = []
+
+
+        with open('out/roc/owlsim_maxic_list.txt', 'wb') as handle:
+            pickle.dump(max_ic_list, handle)
+
+        return
+
 
 
 #disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
@@ -5115,7 +5319,10 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 
 #main.convert_morbid_map_to_ncbi_gene()
 #main.convert_morbid_map_genes_to_orthologs()
+main.create_ortholog_lookup_hashes()
 #main.assemble_owlsim_data_for_ROC()
+#main.assemble_ROC_score_lists()
+
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
