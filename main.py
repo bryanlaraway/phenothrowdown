@@ -4451,6 +4451,7 @@ class main():
                                         zebrafish_sim_j = human_disease_gene_prediction_hash[zfin_gene_id]['simJ']
                                     elif len(zebrafish_gene_ids) > 1:
                                         print('More than one ortholog gene ID found!')
+                                        # TODO: Need to handle multiple genes.
                                         for x in zebrafish_gene_ids:
                                             print(x)
                                             zfin_gene_id = ncbi_gene_to_zfin_gene_hash[x]
@@ -4486,6 +4487,7 @@ class main():
                                         mouse_sim_j = human_disease_gene_prediction_hash[mgi_gene_id]['simJ']
                                     elif len(mouse_gene_ids) > 1:
                                         print('More than one ortholog gene ID found!')
+                                        # TODO: Need to handle multiple genes.
                                         for x in mouse_gene_ids:
                                             print(x)
                                             mgi_gene_id = ncbi_gene_to_mgi_gene_hash[x]
@@ -4497,6 +4499,12 @@ class main():
 
                         except:
                             print('Trouble with disease '+str(disease_id))
+
+
+                    # TODO: Need to add phenolog data lookup here.
+
+
+
                     output_row = (disease_gene_association_id, disease_id, gene_id,
                                   zebrafish_max_ic, zebrafish_iccs, zebrafish_sim_ic, zebrafish_sim_j,
                                   mouse_max_ic, mouse_iccs, mouse_sim_ic, mouse_sim_j)
