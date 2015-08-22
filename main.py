@@ -3909,13 +3909,9 @@ class main():
                             max_phenotype_gene_candidate_hash[k] = max(max_phenotype_gene_candidate_hash[k], phenolog_ortholog_prediction_hash[j][k])
                             additive_phenotype_gene_candidate_hash[k] = (additive_phenotype_gene_candidate_hash[k]+phenolog_ortholog_prediction_hash[j][k])
 
-                top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
-                top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
-
                 with open(human_total_max_outfile, 'w', newline='') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-
-                    for gene_candidate_id in top_20_max:
+                    for gene_candidate_id in max_phenotype_gene_candidate_hash:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
                         score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
                         output_row = (gene_candidate_id, score)
@@ -3928,10 +3924,11 @@ class main():
                         output_row = (gene_candidate_id, score)
                         csvwriter.writerow(output_row)
 
+                top_20_max = heapq.nlargest(20, max_phenotype_gene_candidate_hash, key=lambda k:max_phenotype_gene_candidate_hash[k])
+                top_20_additive = heapq.nlargest(20, additive_phenotype_gene_candidate_hash, key=lambda k:additive_phenotype_gene_candidate_hash[k])
 
                 with open(human_max_outfile, 'w', newline='') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
-
                     for gene_candidate_id in top_20_max:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
                         score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
@@ -4551,10 +4548,14 @@ class main():
                     # TODO: Need to add phenolog data lookup here.
 
                     try:
-                        filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id_underscored)+'.txt'
+                        filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
                         #print(filename)
-                        with open(filename, 'rb') as handle:
-                            human_disease_gene_prediction_hash = pickle.load(handle)
+
+                        with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
+                            filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
+                            for row in filereader:
+                                (gene_candidate_ids, gene_candidate_labels, score) = row
+
                         print('Phenolog file open.')
                     except:
                         print('Trouble with Phenolog data for disease '+str(disease_id)+'.')
@@ -5545,7 +5546,7 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #print(str(len(read_only_disease_subset)))
 #main.assemble_owlsim_top_20_gene_candidates()
 #main.assemble_phenolog_gene_candidates_for_diseases()
-main.assemble_phenolog_orthogroup_candidates_for_diseases()
+#main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 #main.assemble_complete_disease_list()
 
@@ -5561,7 +5562,7 @@ main.assemble_phenolog_orthogroup_candidates_for_diseases()
 #main.convert_morbid_map_genes_to_orthologs()
 #main.create_ortholog_lookup_hashes()
 #main.assemble_owlsim_data_for_ROC()
-#main.assemble_ROC_score_lists()
+main.assemble_ROC_score_lists()
 
 
 elapsed_time = time.time() - start_time
