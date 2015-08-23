@@ -4712,7 +4712,7 @@ class main():
                 filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
                 for row in filereader:
                     (disease_gene_association_id, disease_id, gene_id) = row
-                    print(disease_id)
+                    print('Processing disease '+str(disease_id)+'.')
                     disease_id_underscored = re.sub(':', '_', disease_id)
                     if disease_id_underscored not in common_diseases_list:
                         print('Disease ID '+str(disease_id)+' not in common disease list.')
@@ -4735,26 +4735,39 @@ class main():
                         mouse_sim_ic = ''
                         mouse_sim_j = ''
 
+                        mouse_max_phenolog_score = ''
+                        mouse_additive_phenolog_score = ''
+
+                        zebrafish_max_phenolog_score = ''
+                        zebrafish_additive_phenolog_score = ''
+
 
                         try:
                             zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
                             print('Zebrafish LDO found.')
                             query_zfin_ldo_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
                             print('ZFIN gene ID: '+str(query_zfin_ldo_gene_id))
-
                         except:
                             print('No zebrafish LDO found.')
-                            zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
-                            #print('Zebrafish ortholog found.')
-                            if len(zebrafish_gene_ids) == 1:
-                                query_zfin_ortholog_gene_ids = zebrafish_gene_ids[0]
+
                         try:
                             zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
                             print('Zebrafish orthologs found.')
                             if len(zebrafish_gene_ids) == 1:
-                                zebrafish_ncbi_gene_id = zebrafish_gene_ids[0]
-                                zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
-                                print('ZFIN gene ID: '+str(zfin_gene_id))
+                                query_zfin_ortholog_gene_ids = ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[0]]
+                                print('ZFIN gene ID: '+str(query_zfin_ortholog_gene_ids))
+                            elif len(zebrafish_gene_ids) > 1:
+                                print('More than one zebrafish ortholog found.')
+                                query_zfin_ortholog_gene_ids = []
+                                for z in zebrafish_gene_ids:
+                                    try:
+                                        zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[z]]
+                                        query_zfin_ortholog_gene_ids.append(zfin_gene_id)
+                                        print('ZFIN gene ID: '+str(zfin_gene_id))
+                                    except:
+                                        print('No ZFIN gene ID found for '+str(z)+'.')
+                            else:
+                                print('No zebrafish orthologs found!!!')
                         except:
                             print('No zebrafish orthologs found.')
 
@@ -4770,15 +4783,28 @@ class main():
                             mouse_gene_ids = human_to_mouse_ortholog_hash[gene_id]
                             print('Mouse orthologs found.')
                             if len(mouse_gene_ids) == 1:
-                                mouse_ncbi_gene_id = mouse_gene_ids[0]
-                                mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
-                                print('MGI gene ID: '+str(mgi_gene_id))
+                                query_mgi_ortholog_gene_ids = ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[0]]
+                                print('MGI gene ID: '+str(query_mgi_ortholog_gene_ids))
+                            elif len(mouse_gene_ids) > 1:
+                                print('More than one mouse ortholog found.')
+                                query_mgi_ortholog_gene_ids = []
+                                for z in mouse_gene_ids:
+                                    try:
+                                        mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[z]]
+                                        query_mgi_ortholog_gene_ids.append(mgi_gene_id)
+                                        print('MGI gene ID: '+str(mgi_gene_id))
+                                    except:
+                                        print('No MGI gene ID found for '+str(z)+'.')
+                            else:
+                                print('No mouse orthologs found!!!')
                         except:
                             print('No mouse orthologs found.')
 
 
 
 
+
+                        '''
 
                         try:
                             filename = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id_underscored)+'.txt'
@@ -4867,11 +4893,6 @@ class main():
                     phenolog_score = ''
 
 
-
-
-
-
-
                         filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
                         #print(filename)
 
@@ -4914,6 +4935,8 @@ class main():
                                   zebrafish_max_ic, zebrafish_iccs, zebrafish_sim_ic, zebrafish_sim_j,
                                   mouse_max_ic, mouse_iccs, mouse_sim_ic, mouse_sim_j)
                     csvwriter.writerow(output_row)
+
+                    '''
 
 
 
