@@ -4718,6 +4718,13 @@ class main():
                         print('Disease ID '+str(disease_id)+' not in common disease list.')
                         continue
                     else:
+
+                        query_zfin_ldo_gene_id = ''
+                        query_zfin_ortholog_gene_ids = ''
+
+                        query_mgi_ldo_gene_id = ''
+                        query_mgi_ortholog_gene_ids = ''
+
                         zebrafish_max_ic = ''
                         zebrafish_iccs = ''
                         zebrafish_sim_ic = ''
@@ -4732,15 +4739,15 @@ class main():
                         try:
                             zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
                             print('Zebrafish LDO found.')
-                            zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
-                            print('ZFIN gene ID: '+str(zfin_gene_id))
+                            query_zfin_ldo_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
+                            print('ZFIN gene ID: '+str(query_zfin_ldo_gene_id))
 
                         except:
                             print('No zebrafish LDO found.')
                             zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
                             #print('Zebrafish ortholog found.')
                             if len(zebrafish_gene_ids) == 1:
-                                zebrafish_ncbi_gene_id = zebrafish_gene_ids[0]
+                                query_zfin_ortholog_gene_ids = zebrafish_gene_ids[0]
                         try:
                             zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
                             print('Zebrafish orthologs found.')
@@ -4755,8 +4762,8 @@ class main():
                         try:
                             mouse_ncbi_gene_id = human_to_mouse_ldo_hash[gene_id]
                             print('Mouse LDO found.')
-                            mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
-                            print('MGI gene ID: '+str(mgi_gene_id))
+                            query_mgi_ldo_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
+                            print('MGI gene ID: '+str(query_mgi_ldo_gene_id))
                         except:
                             print('No mouse LDO found.')
                         try:
