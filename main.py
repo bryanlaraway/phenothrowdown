@@ -4725,23 +4725,42 @@ class main():
                         query_mgi_ldo_gene_id = ''
                         query_mgi_ortholog_gene_ids = ''
 
-                        zebrafish_max_ic = ''
-                        zebrafish_iccs = ''
-                        zebrafish_sim_ic = ''
-                        zebrafish_sim_j = ''
+                        zebrafish_ldo_max_ic = 0
+                        zebrafish_ldo_iccs = 0
+                        zebrafish_ldo_sim_ic = 0
+                        zebrafish_ldo_sim_j = 0
 
-                        mouse_max_ic = ''
-                        mouse_iccs = ''
-                        mouse_sim_ic = ''
-                        mouse_sim_j = ''
+                        zebrafish_ortholog_max_ic = 0
+                        zebrafish_ortholog_iccs = 0
+                        zebrafish_ortholog_sim_ic = 0
+                        zebrafish_ortholog_sim_j = 0
 
-                        mouse_max_phenolog_score = ''
-                        mouse_additive_phenolog_score = ''
+                        mouse_ldo_max_ic = 0
+                        mouse_ldo_iccs = 0
+                        mouse_ldo_sim_ic = 0
+                        mouse_ldo_sim_j = 0
 
-                        zebrafish_max_phenolog_score = ''
-                        zebrafish_additive_phenolog_score = ''
+                        mouse_ortholog_max_ic = 0
+                        mouse_ortholog_iccs = 0
+                        mouse_ortholog_sim_ic = 0
+                        mouse_ortholog_sim_j = 0
+
+                        zebrafish_ldo_phenolog_max_score= 0
+                        zebrafish_ortholog_phenolog_max_score = 0
+                        mouse_ldo_phenolog_max_score = 0
+                        mouse_ortholog_phenolog_max_score = 0
+                        zebrafish_ldo_phenolog_additive_score = 0
+                        zebrafish_ortholog_phenolog_additive_score = 0
+                        mouse_ldo_phenolog_additive_score = 0
+                        mouse_ortholog_phenolog_additive_score = 0
+
+                        top_zebrafish_phenolog_max_score = 0
+                        top_zebrafish_phenolog_additive_score = 0
+                        top_mouse_phenolog_max_score = 0
+                        top_mouse_phenolog_additive_score = 0
 
 
+                        # Get orthologs for the human NCBI Gene IDs and convert to mgi/zfin IDs.
                         try:
                             zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
                             print('Zebrafish LDO found.')
@@ -4754,8 +4773,8 @@ class main():
                             zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
                             print('Zebrafish orthologs found.')
                             if len(zebrafish_gene_ids) == 1:
-                                query_zfin_ortholog_gene_ids = ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[0]]
-                                print('ZFIN gene ID: '+str(query_zfin_ortholog_gene_ids))
+                                query_zfin_ortholog_gene_ids = [ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[0]]]
+                                print('ZFIN gene ID: '+str(query_zfin_ortholog_gene_ids[0]))
                             elif len(zebrafish_gene_ids) > 1:
                                 print('More than one zebrafish ortholog found.')
                                 query_zfin_ortholog_gene_ids = []
@@ -4771,7 +4790,6 @@ class main():
                         except:
                             print('No zebrafish orthologs found.')
 
-
                         try:
                             mouse_ncbi_gene_id = human_to_mouse_ldo_hash[gene_id]
                             print('Mouse LDO found.')
@@ -4783,8 +4801,8 @@ class main():
                             mouse_gene_ids = human_to_mouse_ortholog_hash[gene_id]
                             print('Mouse orthologs found.')
                             if len(mouse_gene_ids) == 1:
-                                query_mgi_ortholog_gene_ids = ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[0]]
-                                print('MGI gene ID: '+str(query_mgi_ortholog_gene_ids))
+                                query_mgi_ortholog_gene_ids = [ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[0]]]
+                                print('MGI gene ID: '+str(query_mgi_ortholog_gene_ids[0]))
                             elif len(mouse_gene_ids) > 1:
                                 print('More than one mouse ortholog found.')
                                 query_mgi_ortholog_gene_ids = []
@@ -4800,146 +4818,200 @@ class main():
                         except:
                             print('No mouse orthologs found.')
 
-
-
-
-
-                        '''
+                        # Extract the OWLSim scores for the disease-gene association.
 
                         try:
                             filename = 'out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+str(disease_id_underscored)+'.txt'
                             #print(filename)
                             with open(filename, 'rb') as handle:
                                 human_disease_gene_prediction_hash = pickle.load(handle)
-                            print('OWLSim file open.')
+                                print('OWLSim file open.')
+
                             try:
-                                zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
-                                print('Zebrafish LDO found.')
-                                zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
-                                print('ZFIN gene ID: '+str(zfin_gene_id))
-                                print(human_disease_gene_prediction_hash[zfin_gene_id])
-                                zebrafish_max_ic = human_disease_gene_prediction_hash[zfin_gene_id]['maxIC']
-                                zebrafish_iccs = human_disease_gene_prediction_hash[zfin_gene_id]['ICCS']
-                                zebrafish_sim_ic = human_disease_gene_prediction_hash[zfin_gene_id]['simIC']
-                                zebrafish_sim_j = human_disease_gene_prediction_hash[zfin_gene_id]['simJ']
+                                print(human_disease_gene_prediction_hash[query_zfin_ldo_gene_id])
+                                zebrafish_ldo_max_ic = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['maxIC']
+                                zebrafish_ldo_iccs = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['ICCS']
+                                zebrafish_ldo_sim_ic = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simIC']
+                                zebrafish_ldo_sim_j = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simJ']
                             except:
                                 print('No zebrafish OWLSim scores found for LDO.')
-                                try:
-                                    zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
-                                    print('Zebrafish ortholog found.')
-                                    if len(zebrafish_gene_ids) == 1:
-                                        zebrafish_ncbi_gene_id = zebrafish_gene_ids[0]
-                                        zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
-                                        print('ZFIN gene ID: '+str(zfin_gene_id))
-                                        print(human_disease_gene_prediction_hash[zfin_gene_id])
-                                        zebrafish_max_ic = human_disease_gene_prediction_hash[zfin_gene_id]['maxIC']
-                                        zebrafish_iccs = human_disease_gene_prediction_hash[zfin_gene_id]['ICCS']
-                                        zebrafish_sim_ic = human_disease_gene_prediction_hash[zfin_gene_id]['simIC']
-                                        zebrafish_sim_j = human_disease_gene_prediction_hash[zfin_gene_id]['simJ']
-                                    elif len(zebrafish_gene_ids) > 1:
-                                        print('More than one ortholog gene ID found!')
-                                        # TODO: Need to handle multiple genes.
-                                        for x in zebrafish_gene_ids:
-                                            print(x)
-                                            zfin_gene_id = ncbi_gene_to_zfin_gene_hash[x]
-                                            print('ZFIN gene ID: '+str(zfin_gene_id))
-                                            print(human_disease_gene_prediction_hash[zfin_gene_id])
-
-                                except:
-                                    print('No zebrafish OWLSim scores found.')
 
                             try:
-                                mouse_ncbi_gene_id = human_to_mouse_ldo_hash[gene_id]
-                                print('Mouse LDO found.')
-                                mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
-                                print('MGI gene ID: '+str(mgi_gene_id))
-                                print(human_disease_gene_prediction_hash[mgi_gene_id])
-                                mouse_max_ic = human_disease_gene_prediction_hash[mgi_gene_id]['maxIC']
-                                mouse_iccs = human_disease_gene_prediction_hash[mgi_gene_id]['ICCS']
-                                mouse_sim_ic = human_disease_gene_prediction_hash[mgi_gene_id]['simIC']
-                                mouse_sim_j = human_disease_gene_prediction_hash[mgi_gene_id]['simJ']
+                                if len(query_zfin_ortholog_gene_ids) == 1:
+                                    zfin_query_id = query_zfin_ortholog_gene_ids[0]
+                                    print('ZFIN gene ID: '+str(zfin_query_id))
+                                    print(human_disease_gene_prediction_hash[zfin_query_id])
+                                    zebrafish_ortholog_max_ic = human_disease_gene_prediction_hash[zfin_query_id]['maxIC']
+                                    zebrafish_ortholog_iccs = human_disease_gene_prediction_hash[zfin_query_id]['ICCS']
+                                    zebrafish_ortholog_sim_ic = human_disease_gene_prediction_hash[zfin_query_id]['simIC']
+                                    zebrafish_ortholog_sim_j = human_disease_gene_prediction_hash[zfin_query_id]['simJ']
+                                elif len(query_zfin_ortholog_gene_ids) > 1:
+                                    print('More than one zebrafish ortholog gene ID found!')
+                                    for x in query_zfin_ortholog_gene_ids:
+                                        print('ZFIN gene ID: '+str(x))
+                                        try:
+                                            print(human_disease_gene_prediction_hash[x])
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_max_ic:
+                                                zebrafish_ortholog_max_ic = human_disease_gene_prediction_hash[x]['maxIC']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_iccs:
+                                                zebrafish_ortholog_iccs = human_disease_gene_prediction_hash[x]['ICCS']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_sim_ic:
+                                                zebrafish_ortholog_sim_ic = human_disease_gene_prediction_hash[x]['simIC']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_sim_j:
+                                                zebrafish_ortholog_sim_j = human_disease_gene_prediction_hash[x]['simJ']
+                                        except:
+                                            print('No OWLSim scores found for zebrafish ortholog '+str(x)+'.')
+                                elif len(query_zfin_ortholog_gene_ids) == 0:
+                                    print('No zebrafish orthologs to process.')
+                            except:
+                                print('No zebrafish OWLSim scores found for orthologs.')
+
+                            try:
+                                print(human_disease_gene_prediction_hash[query_mgi_ldo_gene_id])
+                                mouse_ldo_max_ic = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['maxIC']
+                                mouse_ldo_iccs = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['ICCS']
+                                mouse_ldo_sim_ic = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['simIC']
+                                mouse_ldo_sim_j = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['simJ']
                             except:
                                 print('No mouse OWLSim scores found for LDO.')
-                                try:
-                                    mouse_gene_ids = human_to_mouse_ortholog_hash[gene_id]
-                                    print('Mouse ortholog found.')
-                                    if len(mouse_gene_ids) == 1:
-                                        mouse_ncbi_gene_id = mouse_gene_ids[0]
-                                        mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
-                                        print('MGI gene ID: '+str(mgi_gene_id))
-                                        print(human_disease_gene_prediction_hash[mgi_gene_id])
-                                        mouse_max_ic = human_disease_gene_prediction_hash[mgi_gene_id]['maxIC']
-                                        mouse_iccs = human_disease_gene_prediction_hash[mgi_gene_id]['ICCS']
-                                        mouse_sim_ic = human_disease_gene_prediction_hash[mgi_gene_id]['simIC']
-                                        mouse_sim_j = human_disease_gene_prediction_hash[mgi_gene_id]['simJ']
-                                    elif len(mouse_gene_ids) > 1:
-                                        print('More than one ortholog gene ID found!')
-                                        # TODO: Need to handle multiple genes.
-                                        for x in mouse_gene_ids:
-                                            print(x)
-                                            mgi_gene_id = ncbi_gene_to_mgi_gene_hash[x]
-                                            print('MGI gene ID: '+str(mgi_gene_id))
-                                            print(human_disease_gene_prediction_hash[mgi_gene_id])
-                                except:
-                                    print('No mouse OWLSim scores found.')
+                            # TODO: Would it make sense to consider the LDO when taking the max values for the orthologs?
+                            try:
 
-
+                                if len(query_mgi_ortholog_gene_ids) == 1:
+                                    mgi_query_id = query_mgi_ortholog_gene_ids[0]
+                                    print('MGI gene ID: '+str(mgi_query_id))
+                                    print(human_disease_gene_prediction_hash[mgi_query_id])
+                                    mouse_ortholog_max_ic = human_disease_gene_prediction_hash[mgi_query_id]['maxIC']
+                                    mouse_ortholog_iccs = human_disease_gene_prediction_hash[mgi_query_id]['ICCS']
+                                    mouse_ortholog_sim_ic = human_disease_gene_prediction_hash[mgi_query_id]['simIC']
+                                    mouse_ortholog_sim_j = human_disease_gene_prediction_hash[mgi_query_id]['simJ']
+                                elif len(query_mgi_ortholog_gene_ids) > 1:
+                                    print('More than one mouse ortholog gene ID found!')
+                                    for x in query_mgi_ortholog_gene_ids:
+                                        print('MGI gene ID: '+str(x))
+                                        try:
+                                            print(human_disease_gene_prediction_hash[x])
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_max_ic:
+                                                mouse_ortholog_max_ic = human_disease_gene_prediction_hash[x]['maxIC']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_iccs:
+                                                mouse_ortholog_iccs = human_disease_gene_prediction_hash[x]['ICCS']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_sim_ic:
+                                                mouse_ortholog_sim_ic = human_disease_gene_prediction_hash[x]['simIC']
+                                            if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_sim_j:
+                                                mouse_ortholog_sim_j = human_disease_gene_prediction_hash[x]['simJ']
+                                        except:
+                                            print('No OWLSim scores found for mouse ortholog '+str(x)+'.')
+                                elif len(query_mgi_ortholog_gene_ids) == 0:
+                                    print('No mouse orthologs to process.')
+                            except:
+                                print('No mouse OWLSim scores found for orthologs.')
                         except:
                             print('Trouble with OWLSim data for disease '+str(disease_id)+'.')
 
 
-                    # TODO: Need to add phenolog data lookup here.
+                        # TODO: Need to add phenolog data lookup here.
 
-                    phenolog_score = ''
+                        phenolog_score = ''
 
+                        #query_zfin_ldo_gene_id = ''
+                        #query_zfin_ortholog_gene_ids = ''
 
-                        filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
-                        #print(filename)
+                        #query_mgi_ldo_gene_id = ''
+                        #query_mgi_ortholog_gene_ids = ''
+                        all_query_ids = []
+                        if query_zfin_ldo_gene_id != '':
+                            all_query_ids.append(query_zfin_ldo_gene_id)
+                        if query_zfin_ortholog_gene_ids != '':
+                            if len(query_zfin_ortholog_gene_ids) == 1:
+                                all_query_ids.append(query_zfin_ortholog_gene_ids)
+                            elif len(query_zfin_ortholog_gene_ids) > 1:
+                                for x in query_zfin_ortholog_gene_ids:
+                                    all_query_ids.append(x)
 
-                        with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
-                            filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
-                            for row in filereader:
-                                (gene_candidate_ids, gene_candidate_labels, score) = row
-                                if len(gene_candidate_ids) == 1:
-                                    gene_id = gene_candidate_ids[0]
-                                    try:
-                                        zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
-                                        print('Zebrafish LDO found.')
-                                        zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
-                                        print('ZFIN gene ID: '+str(zfin_gene_id))
-                                        print(human_disease_gene_prediction_hash[zfin_gene_id])
-                                        zebrafish_phenolog_score = ''
-                                        zebrafish_max_ic = human_disease_gene_prediction_hash[zfin_gene_id]['maxIC']
-                                        zebrafish_iccs = human_disease_gene_prediction_hash[zfin_gene_id]['ICCS']
-                                        zebrafish_sim_ic = human_disease_gene_prediction_hash[zfin_gene_id]['simIC']
-                                        zebrafish_sim_j = human_disease_gene_prediction_hash[zfin_gene_id]['simJ']
-
-
-
-                                if len(gene_candidate_ids) > 1:
-                                    for gene_id in gene_candidate_ids:
-                                        try:
-
-                                        except:
-                                elif len(gene_candidate_ids) == 0:
-                                    continue
+                        if query_mgi_ldo_gene_id != '':
+                            all_query_ids.append(query_mgi_ldo_gene_id)
+                        if query_mgi_ortholog_gene_ids != '':
+                            if len(query_mgi_ortholog_gene_ids) == 1:
+                                all_query_ids.append(query_mgi_ortholog_gene_ids)
+                            elif len(query_mgi_ortholog_gene_ids) > 1:
+                                for x in query_mgi_ortholog_gene_ids:
+                                    all_query_ids.append(x)
 
 
+                        if all_query_ids != []:
 
-                        print('Phenolog file open.')
-                    except:
-                        print('Trouble with Phenolog data for disease '+str(disease_id)+'.')
+                            filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
+                            #print(filename)
 
+                            with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
+                                filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
+                                print('Phenolog file open.')
+                                for row in filereader:
+                                    (gene_candidate_ids, gene_candidate_labels, score) = row
+                                    if gene_candidate_ids == [] or gene_candidate_ids == '':
+                                        continue
+                                    elif len(gene_candidate_ids) == 1:
+                                        candidate_gene_id = gene_candidate_ids[0]
+                                        if candidate_gene_id in all_query_ids:
+                                            #Extract phenolog values.
+                                            if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_max_score:
+                                                zebrafish_ldo_phenolog_max_score = score
+                                            if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_max_score:
+                                                zebrafish_ortholog_phenolog_max_score = score
+                                            if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_max_score:
+                                                mouse_ldo_phenolog_max_score = score
+                                            if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_max_score:
+                                                mouse_ortholog_phenolog_max_score = score
+
+
+
+                            filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/additive_scores/'+str(disease_id_underscored)+'.txt'
+                            #print(filename)
+
+                            with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
+                                filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
+                                print('Phenolog file open.')
+                                for row in filereader:
+                                    (gene_candidate_ids, gene_candidate_labels, score) = row
+                                    if gene_candidate_ids == [] or gene_candidate_ids == '':
+                                        continue
+                                    elif len(gene_candidate_ids) == 1:
+                                        candidate_gene_id = gene_candidate_ids[0]
+                                        if candidate_gene_id in all_query_ids:
+                                            #Extract phenolog values.
+                                            if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_additive_score:
+                                                zebrafish_ldo_phenolog_additive_score = score
+                                            if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_additive_score:
+                                                zebrafish_ortholog_phenolog_additive_score = score
+                                            if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_additive_score:
+                                                mouse_ldo_phenolog_additive_score = score
+                                            if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_additive_score:
+                                                mouse_ortholog_phenolog_additive_score = score
+
+
+
+                    top_zebrafish_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
+                    top_zebrafish_phenolog_additive_score = max(zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score)
+                    top_mouse_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score)
+                    top_mouse_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score)
 
                     output_row = (disease_gene_association_id, disease_id, gene_id,
-                                  zebrafish_max_ic, zebrafish_iccs, zebrafish_sim_ic, zebrafish_sim_j,
-                                  mouse_max_ic, mouse_iccs, mouse_sim_ic, mouse_sim_j)
+                                  zebrafish_ldo_max_ic, zebrafish_ldo_iccs, zebrafish_ldo_sim_ic, zebrafish_ldo_sim_j,
+                                  zebrafish_ortholog_max_ic, zebrafish_ortholog_iccs, zebrafish_ortholog_sim_ic, zebrafish_ortholog_sim_j,
+                                  mouse_ldo_max_ic, mouse_ldo_iccs, mouse_ldo_sim_ic, mouse_ldo_sim_j,
+                                  mouse_ortholog_max_ic, mouse_ortholog_iccs, mouse_ortholog_sim_ic, mouse_ortholog_sim_j,
+                                  zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score,
+                                  mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score,
+                                  zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score,
+                                  mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
+                                  top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
+                                  top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score)
                     csvwriter.writerow(output_row)
 
-                    '''
 
 
 
+        '''
         with open('out/roc/max_ic_list.txt', 'wb') as handle:
             pickle.dump(max_ic_list, handle)
         with open('out/roc/iccs_list.txt', 'wb') as handle:
@@ -4952,6 +5024,7 @@ class main():
             pickle.dump(phenolog_gene_score_list, handle)
         with open('out/roc/phenolog_ortholog_score_list.txt', 'wb') as handle:
             pickle.dump(phenolog_ortholog_score_list, handle)
+        '''
 
         return
 
@@ -5935,6 +6008,9 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #main.assemble_owlsim_data_for_ROC()
 #main.assemble_ROC_score_lists()
 main.assemble_ROC_score_lists_alternate()
+
+
+
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
