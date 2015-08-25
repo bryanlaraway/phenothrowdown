@@ -15,6 +15,7 @@ import sys
 import re
 import csv
 import pickle
+import ast
 from decimal import Decimal, getcontext
 #import cProfile
 import numpy
@@ -4715,7 +4716,8 @@ class main():
                     print('Processing disease '+str(disease_id)+'.')
                     disease_id_underscored = re.sub(':', '_', disease_id)
                     if disease_id_underscored not in common_diseases_list:
-                        print('Disease ID '+str(disease_id)+' not in common disease list.')
+                    #if disease_id_underscored != 'OMIM_601583':
+                        #print('Disease ID '+str(disease_id)+' not in common disease list.')
                         continue
                     else:
 
@@ -4911,13 +4913,6 @@ class main():
 
                         # TODO: Need to add phenolog data lookup here.
 
-                        phenolog_score = ''
-
-                        #query_zfin_ldo_gene_id = ''
-                        #query_zfin_ortholog_gene_ids = ''
-
-                        #query_mgi_ldo_gene_id = ''
-                        #query_mgi_ortholog_gene_ids = ''
                         all_query_ids = []
                         if query_zfin_ldo_gene_id != '':
                             all_query_ids.append(query_zfin_ldo_gene_id)
@@ -4948,10 +4943,16 @@ class main():
                                 print('Phenolog file open.')
                                 for row in filereader:
                                     (gene_candidate_ids, gene_candidate_labels, score) = row
+                                    gene_candidate_ids = ast.literal_eval(gene_candidate_ids)
+                                    #gene_candidate_ids = [n.strip for n in gene_candidate_ids]
+                                    score = re.sub('[()]', '', score)
+                                    score = float(score)
                                     if gene_candidate_ids == [] or gene_candidate_ids == '':
                                         continue
                                     elif len(gene_candidate_ids) == 1:
                                         candidate_gene_id = gene_candidate_ids[0]
+                                        print('Only one gene candidate ID present.')
+                                        print(candidate_gene_id)
                                         if candidate_gene_id in all_query_ids:
                                             #Extract phenolog values.
                                             if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_max_score:
@@ -4962,6 +4963,18 @@ class main():
                                                 mouse_ldo_phenolog_max_score = score
                                             if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_max_score:
                                                 mouse_ortholog_phenolog_max_score = score
+                                    elif len(gene_candidate_ids) > 1:
+                                        for candidate_gene_id in gene_candidate_ids:
+                                            if candidate_gene_id in all_query_ids:
+                                                if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_max_score:
+                                                    zebrafish_ldo_phenolog_max_score = score
+                                                if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_max_score:
+                                                    zebrafish_ortholog_phenolog_max_score = score
+                                                if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_max_score:
+                                                    mouse_ldo_phenolog_max_score = score
+                                                if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_max_score:
+                                                    mouse_ortholog_phenolog_max_score = score
+
 
 
 
@@ -4973,40 +4986,88 @@ class main():
                                 print('Phenolog file open.')
                                 for row in filereader:
                                     (gene_candidate_ids, gene_candidate_labels, score) = row
+                                    gene_candidate_ids = ast.literal_eval(gene_candidate_ids)
+                                    #gene_candidate_ids = [n.strip for n in gene_candidate_ids]
+                                    #print(score)
+                                    score = re.sub('[()]', '', score)
+                                    score = float(score)
+                                    #print(score)
                                     if gene_candidate_ids == [] or gene_candidate_ids == '':
+                                        print('No gene candidates found.')
                                         continue
                                     elif len(gene_candidate_ids) == 1:
+                                        print('Only one gene candidate ID present.')
                                         candidate_gene_id = gene_candidate_ids[0]
+                                        print(candidate_gene_id)
                                         if candidate_gene_id in all_query_ids:
+                                            print('MATCH FOUND!')
+                                            print(score)
                                             #Extract phenolog values.
                                             if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_additive_score:
                                                 zebrafish_ldo_phenolog_additive_score = score
+                                                print(zebrafish_ldo_phenolog_additive_score)
                                             if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_additive_score:
                                                 zebrafish_ortholog_phenolog_additive_score = score
                                             if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_additive_score:
                                                 mouse_ldo_phenolog_additive_score = score
                                             if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_additive_score:
                                                 mouse_ortholog_phenolog_additive_score = score
+                                    elif len(gene_candidate_ids) > 1:
+                                        print('More than one gene candidate ID present.')
+                                        for candidate_gene_id in gene_candidate_ids:
+                                            print(candidate_gene_id)
+                                            if candidate_gene_id in all_query_ids:
+                                                print('MATCH FOUND!')
+                                                print(score)
+                                                #Extract phenolog values.
+                                                if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_additive_score:
+                                                    zebrafish_ldo_phenolog_additive_score = score
+                                                if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_additive_score:
+                                                    zebrafish_ortholog_phenolog_additive_score = score
+                                                if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_additive_score:
+                                                    mouse_ldo_phenolog_additive_score = score
+                                                if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_additive_score:
+                                                    mouse_ortholog_phenolog_additive_score = score
 
+                        top_ldo_max_ic_score = max(zebrafish_ldo_max_ic, mouse_ldo_max_ic)
+                        top_ldo_iccs_score = max(zebrafish_ldo_iccs, mouse_ldo_iccs)
+                        top_ldo_sim_ic_score = max(zebrafish_ldo_sim_ic, mouse_ldo_sim_ic)
+                        top_ldo_sim_j_score = max(zebrafish_ldo_sim_j, mouse_ldo_sim_j)
 
+                        top_ortholog_max_ic_score = max(zebrafish_ortholog_max_ic, mouse_ortholog_max_ic)
+                        top_ortholog_iccs_score = max(zebrafish_ortholog_iccs, mouse_ortholog_iccs)
+                        top_ortholog_sim_ic_score = max(zebrafish_ortholog_sim_ic, mouse_ortholog_sim_ic)
+                        top_ortholog_sim_j_score = max(zebrafish_ortholog_sim_j, mouse_ortholog_sim_j)
 
-                    top_zebrafish_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
-                    top_zebrafish_phenolog_additive_score = max(zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score)
-                    top_mouse_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score)
-                    top_mouse_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score)
+                        top_owlsim_max_ic_score = max(top_ldo_max_ic_score, top_ortholog_max_ic_score)
+                        top_owlsim_iccs_score = max(top_ldo_iccs_score, top_ortholog_iccs_score)
+                        top_owlsim_sim_ic_score = max(top_ldo_sim_ic_score, top_ortholog_sim_ic_score)
+                        top_owlsim_sim_j_score = max(top_ldo_sim_j_score, top_ortholog_sim_j_score)
 
-                    output_row = (disease_gene_association_id, disease_id, gene_id,
-                                  zebrafish_ldo_max_ic, zebrafish_ldo_iccs, zebrafish_ldo_sim_ic, zebrafish_ldo_sim_j,
-                                  zebrafish_ortholog_max_ic, zebrafish_ortholog_iccs, zebrafish_ortholog_sim_ic, zebrafish_ortholog_sim_j,
-                                  mouse_ldo_max_ic, mouse_ldo_iccs, mouse_ldo_sim_ic, mouse_ldo_sim_j,
-                                  mouse_ortholog_max_ic, mouse_ortholog_iccs, mouse_ortholog_sim_ic, mouse_ortholog_sim_j,
-                                  zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score,
-                                  mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score,
-                                  zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score,
-                                  mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
-                                  top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
-                                  top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score)
-                    csvwriter.writerow(output_row)
+                        top_zebrafish_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
+                        top_zebrafish_phenolog_additive_score = max(zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score)
+                        top_mouse_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score)
+                        top_mouse_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score)
+
+                        top_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score, zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
+                        top_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score, zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score)
+
+                        output_row = (disease_gene_association_id, disease_id, gene_id,
+                                      zebrafish_ldo_max_ic, zebrafish_ldo_iccs, zebrafish_ldo_sim_ic, zebrafish_ldo_sim_j,
+                                      zebrafish_ortholog_max_ic, zebrafish_ortholog_iccs, zebrafish_ortholog_sim_ic, zebrafish_ortholog_sim_j,
+                                      mouse_ldo_max_ic, mouse_ldo_iccs, mouse_ldo_sim_ic, mouse_ldo_sim_j,
+                                      mouse_ortholog_max_ic, mouse_ortholog_iccs, mouse_ortholog_sim_ic, mouse_ortholog_sim_j,
+                                      top_ldo_max_ic_score, top_ldo_iccs_score, top_ldo_sim_ic_score, top_ldo_sim_j_score ,
+                                      top_ortholog_max_ic_score, top_ortholog_iccs_score, top_ortholog_sim_ic_score, top_ortholog_sim_j_score,
+                                      top_owlsim_max_ic_score, top_owlsim_iccs_score, top_owlsim_sim_ic_score, top_owlsim_sim_j_score,
+                                      zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score,
+                                      mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score,
+                                      zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score,
+                                      mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
+                                      top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
+                                      top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score,
+                                      top_phenolog_max_score, top_phenolog_additive_score)
+                        csvwriter.writerow(output_row)
 
 
 
@@ -5027,6 +5088,108 @@ class main():
         '''
 
         return
+
+
+    def parse_scores_for_ROC_analysis(self):
+
+
+        zebrafish_ldo_max_ic_list = []
+        zebrafish_ldo_iccs_list = []
+        zebrafish_ldo_sim_ic_list = []
+        zebrafish_ldo_sim_j_list = []
+
+        zebrafish_ortholog_max_ic_list = []
+        zebrafish_ortholog_iccs_list = []
+        zebrafish_ortholog_sim_ic_list = []
+        zebrafish_ortholog_sim_j_list = []
+
+        mouse_ldo_max_ic_list = []
+        mouse_ldo_iccs_list = []
+        mouse_ldo_sim_ic_list = []
+        mouse_ldo_sim_j_list = []
+
+        mouse_ortholog_max_ic_list = []
+        mouse_ortholog_iccs_list = []
+        mouse_ortholog_sim_ic_list = []
+        mouse_ortholog_sim_j_list = []
+
+        top_ldo_max_ic_list = []
+        top_ldo_iccs_list = []
+        top_ldo_sim_ic_list = []
+        top_ldo_sim_j_list = []
+
+        top_ortholog_max_ic_list = []
+        top_ortholog_iccs_list = []
+        top_ortholog_sim_ic_list = []
+        top_ortholog_sim_j_list = []
+
+        top_owlsim_max_ic_list = []
+        top_owlsim_iccs_list = []
+        top_owlsim_sim_ic_list = []
+        top_owlsim_sim_j_list = []
+
+        zebrafish_ldo_phenolog_max_score_list = []
+        zebrafish_ortholog_phenolog_max_score_list = []
+
+        mouse_ldo_phenolog_max_score_list = []
+        mouse_ortholog_phenolog_max_score_list = []
+
+        zebrafish_ldo_phenolog_additive_score_list = []
+        zebrafish_ortholog_phenolog_additive_score_list = []
+
+        mouse_ldo_phenolog_additive_score_list = []
+        mouse_ortholog_phenolog_additive_score_list = []
+
+        top_zebrafish_phenolog_max_score_list = []
+        top_zebrafish_phenolog_additive_score_list = []
+
+        top_mouse_phenolog_max_score_list = []
+        top_mouse_phenolog_additive_score_list = []
+
+        top_phenolog_max_score_list = []
+        top_phenolog_additive_score_list = []
+
+        list_of_ones = []
+        one = 1
+
+
+
+        with open('inter/omim/morbid_disease_predictions.csv', 'r', encoding="iso-8859-1") as csvfile:
+            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
+            for row in filereader:
+                (disease_gene_association_id, disease_id, gene_id,
+                  zebrafish_ldo_max_ic, zebrafish_ldo_iccs, zebrafish_ldo_sim_ic, zebrafish_ldo_sim_j,
+                  zebrafish_ortholog_max_ic, zebrafish_ortholog_iccs, zebrafish_ortholog_sim_ic, zebrafish_ortholog_sim_j,
+                  mouse_ldo_max_ic, mouse_ldo_iccs, mouse_ldo_sim_ic, mouse_ldo_sim_j,
+                  mouse_ortholog_max_ic, mouse_ortholog_iccs, mouse_ortholog_sim_ic, mouse_ortholog_sim_j,
+                  top_ldo_max_ic_score, top_ldo_iccs_score, top_ldo_sim_ic_score, top_ldo_sim_j_score ,
+                  top_ortholog_max_ic_score, top_ortholog_iccs_score, top_ortholog_sim_ic_score, top_ortholog_sim_j_score,
+                  top_owlsim_max_ic_score, top_owlsim_iccs_score, top_owlsim_sim_ic_score, top_owlsim_sim_j_score,
+                  zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score,
+                  mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score,
+                  zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score,
+                  mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
+                  top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
+                  top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score,
+                  top_phenolog_max_score, top_phenolog_additive_score) = row
+
+                top_phenolog_max_score_list.append(float(top_owlsim_sim_ic_score))
+                list_of_ones.append(one)
+
+
+                #if top_phenolog_additive_score != '0' and top_phenolog_additive_score != '0.0':
+                #print(disease_gene_association_id)
+                #print(disease_id)
+                    #print(top_phenolog_additive_score)
+        with open('out/roc/top_phenolog_max_score_list.json', 'w') as handle:
+            json.dump(top_phenolog_max_score_list, handle)
+        with open('out/roc/list_of_ones.json', 'w') as handle:
+            json.dump(list_of_ones, handle)
+
+
+        return
+
+
 
 
 #disease_subset = ['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
@@ -6007,7 +6170,9 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #main.create_ortholog_lookup_hashes()
 #main.assemble_owlsim_data_for_ROC()
 #main.assemble_ROC_score_lists()
-main.assemble_ROC_score_lists_alternate()
+
+#main.assemble_ROC_score_lists_alternate()
+main.parse_scores_for_ROC_analysis()
 
 
 
