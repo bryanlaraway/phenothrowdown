@@ -4658,7 +4658,7 @@ class main():
     '''
 
     def assemble_ROC_score_lists_alternate(self):
-
+        labels = 'TRUE'
         max_ic_list = []
         iccs_list = []
         sim_ic_list = []
@@ -4708,7 +4708,24 @@ class main():
             zebrafish_to_mouse_ortholog_hash = pickle.load(handle)
 
         with open('inter/omim/morbid_disease_predictions.csv', 'w') as csvfile1:
-            csvwriter = csv.writer(csvfile1, delimiter='\t', quotechar='\"')
+            csvwriter = csv.writer(csvfile1, quotechar='\"')
+            output_row = ('disease_gene_association_id', 'disease_id', 'gene_id',
+                          'zebrafish_ldo_max_ic', 'zebrafish_ldo_iccs', 'zebrafish_ldo_sim_ic', 'ebrafish_ldo_sim_j',
+                          'zebrafish_ortholog_max_ic', 'zebrafish_ortholog_iccs', 'zebrafish_ortholog_sim_ic', 'zebrafish_ortholog_sim_j',
+                          'mouse_ldo_max_ic', 'mouse_ldo_iccs', 'mouse_ldo_sim_ic', 'mouse_ldo_sim_j',
+                          'mouse_ortholog_max_ic', 'mouse_ortholog_iccs', 'mouse_ortholog_sim_ic', 'mouse_ortholog_sim_j',
+                          'top_ldo_max_ic_score', 'top_ldo_iccs_score', 'top_ldo_sim_ic_score', 'top_ldo_sim_j_score',
+                          'top_ortholog_max_ic_score', 'top_ortholog_iccs_score', 'top_ortholog_sim_ic_score', 'top_ortholog_sim_j_score',
+                          'top_owlsim_max_ic_score', 'top_owlsim_iccs_score', 'top_owlsim_sim_ic_score', 'top_owlsim_sim_j_score',
+                          'zebrafish_ldo_phenolog_max_score', 'zebrafish_ortholog_phenolog_max_score',
+                          'mouse_ldo_phenolog_max_score', 'mouse_ortholog_phenolog_max_score',
+                          'zebrafish_ldo_phenolog_additive_score', 'zebrafish_ortholog_phenolog_additive_score',
+                          'mouse_ldo_phenolog_additive_score', 'mouse_ortholog_phenolog_additive_score',
+                          'top_zebrafish_phenolog_max_score', 'top_zebrafish_phenolog_additive_score',
+                          'top_mouse_phenolog_max_score', 'top_mouse_phenolog_additive_score',
+                          'top_phenolog_max_score', 'top_phenolog_additive_score', 'category')
+            csvwriter.writerow(output_row)
+
             with open('inter/omim/morbid_disease_to_gene_trimmed.csv', 'r', encoding="iso-8859-1") as csvfile2:
                 filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
                 for row in filereader:
@@ -5052,6 +5069,12 @@ class main():
                         top_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score, zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
                         top_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score, zebrafish_ldo_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_score)
 
+                        #if labels == 'TRUE':
+                            #labels = 'FALSE'
+                        #else:
+                            #labels = 'TRUE'
+
+
                         output_row = (disease_gene_association_id, disease_id, gene_id,
                                       zebrafish_ldo_max_ic, zebrafish_ldo_iccs, zebrafish_ldo_sim_ic, zebrafish_ldo_sim_j,
                                       zebrafish_ortholog_max_ic, zebrafish_ortholog_iccs, zebrafish_ortholog_sim_ic, zebrafish_ortholog_sim_j,
@@ -5066,7 +5089,7 @@ class main():
                                       mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
                                       top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
                                       top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score,
-                                      top_phenolog_max_score, top_phenolog_additive_score)
+                                      top_phenolog_max_score, top_phenolog_additive_score, labels)
                         csvwriter.writerow(output_row)
 
 
@@ -5150,7 +5173,7 @@ class main():
         top_phenolog_additive_score_list = []
 
         list_of_ones = []
-        one = 1
+        category = True
 
 
 
@@ -5171,7 +5194,7 @@ class main():
                   mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score,
                   top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_additive_score,
                   top_mouse_phenolog_max_score, top_mouse_phenolog_additive_score,
-                  top_phenolog_max_score, top_phenolog_additive_score) = row
+                  top_phenolog_max_score, top_phenolog_additive_score, category) = row
 
                 top_phenolog_max_score_list.append(float(top_owlsim_sim_ic_score))
                 list_of_ones.append(one)
@@ -6171,8 +6194,8 @@ with open('inter/omim/disorder_list.txt', 'rb') as handle:
 #main.assemble_owlsim_data_for_ROC()
 #main.assemble_ROC_score_lists()
 
-#main.assemble_ROC_score_lists_alternate()
-main.parse_scores_for_ROC_analysis()
+main.assemble_ROC_score_lists_alternate()
+##main.parse_scores_for_ROC_analysis()
 
 
 
