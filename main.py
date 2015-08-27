@@ -5366,48 +5366,49 @@ class main():
                         sim_ic_score_list  = []
                         sim_j_score_list  = []
 
-                        zebrafish_ldo_max_ic_rank = len(max_ic_score_list)
-                        zebrafish_ldo_iccs_rank = len(iccs_score_list)
-                        zebrafish_ldo_sim_ic_rank = len(sim_ic_score_list)
-                        zebrafish_ldo_sim_j_rank = len(sim_j_score_list)
-                        zebrafish_ortholog_max_ic_rank = len(max_ic_score_list)
-                        zebrafish_ortholog_iccs_rank = len(iccs_score_list)
-                        zebrafish_ortholog_sim_ic_rank = len(sim_ic_score_list)
-                        zebrafish_ortholog_sim_j_rank = len(sim_j_score_list)
-
-                        mouse_ldo_max_ic_rank = len(max_ic_score_list)
-                        mouse_ldo_iccs_rank = len(iccs_score_list)
-                        mouse_ldo_sim_ic_rank = len(sim_ic_score_list)
-                        mouse_ldo_sim_j_rank = len(sim_j_score_list)
-                        mouse_ortholog_max_ic_rank = len(max_ic_score_list)
-                        mouse_ortholog_iccs_rank = len(iccs_score_list)
-                        mouse_ortholog_sim_ic_rank = len(sim_ic_score_list)
-                        mouse_ortholog_sim_j_rank = len(sim_j_score_list)
-
-                        try:
-
-                            for x in human_disease_gene_prediction_hash:
+                        for x in human_disease_gene_prediction_hash:
+                            try:
                                 max_ic_score_list.append(human_disease_gene_prediction_hash[x]['maxIC'])
                                 iccs_score_list.append(human_disease_gene_prediction_hash[x]['ICCS'])
                                 sim_ic_score_list.append(human_disease_gene_prediction_hash[x]['simIC'])
                                 sim_j_score_list.append(human_disease_gene_prediction_hash[x]['simJ'])
+                            except:
+                                continue
 
-                            max_ic_score_list.sort(reverse=True)
-                            iccs_score_list.sort(reverse=True)
-                            sim_ic_score_list.sort(reverse=True)
-                            sim_j_score_list.sort(reverse=True)
+                        max_ic_score_list.sort(reverse=True)
+                        iccs_score_list.sort(reverse=True)
+                        sim_ic_score_list.sort(reverse=True)
+                        sim_j_score_list.sort(reverse=True)
 
+                        zebrafish_ldo_max_ic_rank = len(max_ic_score_list)+1
+                        zebrafish_ldo_iccs_rank = len(iccs_score_list)+1
+                        zebrafish_ldo_sim_ic_rank = len(sim_ic_score_list)+1
+                        zebrafish_ldo_sim_j_rank = len(sim_j_score_list)+1
+                        zebrafish_ortholog_max_ic_rank = len(max_ic_score_list)+1
+                        zebrafish_ortholog_iccs_rank = len(iccs_score_list)+1
+                        zebrafish_ortholog_sim_ic_rank = len(sim_ic_score_list)+1
+                        zebrafish_ortholog_sim_j_rank = len(sim_j_score_list)+1
 
+                        mouse_ldo_max_ic_rank = len(max_ic_score_list)+1
+                        mouse_ldo_iccs_rank = len(iccs_score_list)+1
+                        mouse_ldo_sim_ic_rank = len(sim_ic_score_list)+1
+                        mouse_ldo_sim_j_rank = len(sim_j_score_list)+1
+                        mouse_ortholog_max_ic_rank = len(max_ic_score_list)+1
+                        mouse_ortholog_iccs_rank = len(iccs_score_list)+1
+                        mouse_ortholog_sim_ic_rank = len(sim_ic_score_list)+1
+                        mouse_ortholog_sim_j_rank = len(sim_j_score_list)+1
+
+                        try:
                             try:
                                 print(human_disease_gene_prediction_hash[query_zfin_ldo_gene_id])
                                 zebrafish_ldo_max_ic = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['maxIC']
                                 zebrafish_ldo_iccs = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['ICCS']
                                 zebrafish_ldo_sim_ic = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simIC']
                                 zebrafish_ldo_sim_j = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simJ']
-                                zebrafish_ldo_max_ic_rank = max_ic_score_list.index(zebrafish_ldo_max_ic)
-                                zebrafish_ldo_iccs_rank = iccs_score_list.index(zebrafish_ldo_iccs)
-                                zebrafish_ldo_sim_ic_rank = sim_ic_score_list.index(zebrafish_ldo_sim_ic)
-                                zebrafish_ldo_sim_j_rank = sim_j_score_list.index(zebrafish_ldo_sim_j)
+                                zebrafish_ldo_max_ic_rank = max_ic_score_list.index(zebrafish_ldo_max_ic)+1
+                                zebrafish_ldo_iccs_rank = iccs_score_list.index(zebrafish_ldo_iccs)+1
+                                zebrafish_ldo_sim_ic_rank = sim_ic_score_list.index(zebrafish_ldo_sim_ic)+1
+                                zebrafish_ldo_sim_j_rank = sim_j_score_list.index(zebrafish_ldo_sim_j)+1
                             except:
                                 print('No zebrafish OWLSim scores found for LDO.')
 
@@ -5420,10 +5421,10 @@ class main():
                                     zebrafish_ortholog_iccs = human_disease_gene_prediction_hash[zfin_query_id]['ICCS']
                                     zebrafish_ortholog_sim_ic = human_disease_gene_prediction_hash[zfin_query_id]['simIC']
                                     zebrafish_ortholog_sim_j = human_disease_gene_prediction_hash[zfin_query_id]['simJ']
-                                    zebrafish_ortholog_max_ic_rank = max_ic_score_list.index(zebrafish_ortholog_max_ic)
-                                    zebrafish_ortholog_iccs_rank = iccs_score_list.index(zebrafish_ortholog_iccs)
-                                    zebrafish_ortholog_sim_ic_rank = sim_ic_score_list.index(zebrafish_ortholog_sim_ic)
-                                    zebrafish_ortholog_sim_j_rank = sim_j_score_list.index(zebrafish_ortholog_sim_j)
+                                    zebrafish_ortholog_max_ic_rank = max_ic_score_list.index(zebrafish_ortholog_max_ic)+1
+                                    zebrafish_ortholog_iccs_rank = iccs_score_list.index(zebrafish_ortholog_iccs)+1
+                                    zebrafish_ortholog_sim_ic_rank = sim_ic_score_list.index(zebrafish_ortholog_sim_ic)+1
+                                    zebrafish_ortholog_sim_j_rank = sim_j_score_list.index(zebrafish_ortholog_sim_j)+1
                                 elif len(query_zfin_ortholog_gene_ids) > 1:
                                     print('More than one zebrafish ortholog gene ID found!')
                                     for x in query_zfin_ortholog_gene_ids:
@@ -5432,16 +5433,16 @@ class main():
                                             print(human_disease_gene_prediction_hash[x])
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_max_ic:
                                                 zebrafish_ortholog_max_ic = human_disease_gene_prediction_hash[x]['maxIC']
-                                                zebrafish_ortholog_max_ic_rank = max_ic_score_list.index(zebrafish_ortholog_max_ic)
+                                                zebrafish_ortholog_max_ic_rank = max_ic_score_list.index(zebrafish_ortholog_max_ic)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_iccs:
                                                 zebrafish_ortholog_iccs = human_disease_gene_prediction_hash[x]['ICCS']
-                                                zebrafish_ortholog_iccs_rank = iccs_score_list.index(zebrafish_ortholog_iccs)
+                                                zebrafish_ortholog_iccs_rank = iccs_score_list.index(zebrafish_ortholog_iccs)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_sim_ic:
                                                 zebrafish_ortholog_sim_ic = human_disease_gene_prediction_hash[x]['simIC']
-                                                zebrafish_ortholog_sim_ic_rank = sim_ic_score_list.index(zebrafish_ortholog_sim_ic)
+                                                zebrafish_ortholog_sim_ic_rank = sim_ic_score_list.index(zebrafish_ortholog_sim_ic)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > zebrafish_ortholog_sim_j:
                                                 zebrafish_ortholog_sim_j = human_disease_gene_prediction_hash[x]['simJ']
-                                                zebrafish_ortholog_sim_j_rank = sim_j_score_list.index(zebrafish_ortholog_sim_j)
+                                                zebrafish_ortholog_sim_j_rank = sim_j_score_list.index(zebrafish_ortholog_sim_j)+1
                                         except:
                                             print('No OWLSim scores found for zebrafish ortholog '+str(x)+'.')
                                 elif len(query_zfin_ortholog_gene_ids) == 0:
@@ -5455,10 +5456,10 @@ class main():
                                 mouse_ldo_iccs = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['ICCS']
                                 mouse_ldo_sim_ic = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['simIC']
                                 mouse_ldo_sim_j = human_disease_gene_prediction_hash[query_mgi_ldo_gene_id]['simJ']
-                                mouse_ldo_max_ic_rank = max_ic_score_list.index(mouse_ldo_max_ic)
-                                mouse_ldo_iccs_rank = iccs_score_list.index(mouse_ldo_iccs)
-                                mouse_ldo_sim_ic_rank = sim_ic_score_list.index(mouse_ldo_sim_ic)
-                                mouse_ldo_sim_j_rank = sim_j_score_list.index(mouse_ldo_sim_j)
+                                mouse_ldo_max_ic_rank = max_ic_score_list.index(mouse_ldo_max_ic)+1
+                                mouse_ldo_iccs_rank = iccs_score_list.index(mouse_ldo_iccs)+1
+                                mouse_ldo_sim_ic_rank = sim_ic_score_list.index(mouse_ldo_sim_ic)+1
+                                mouse_ldo_sim_j_rank = sim_j_score_list.index(mouse_ldo_sim_j)+1
                             except:
                                 print('No mouse OWLSim scores found for LDO.')
                             # TODO: Would it make sense to consider the LDO when taking the max values for the orthologs?
@@ -5472,10 +5473,10 @@ class main():
                                     mouse_ortholog_iccs = human_disease_gene_prediction_hash[mgi_query_id]['ICCS']
                                     mouse_ortholog_sim_ic = human_disease_gene_prediction_hash[mgi_query_id]['simIC']
                                     mouse_ortholog_sim_j = human_disease_gene_prediction_hash[mgi_query_id]['simJ']
-                                    mouse_ortholog_max_ic_rank = max_ic_score_list.index(mouse_ortholog_max_ic)
-                                    mouse_ortholog_iccs_rank = iccs_score_list.index(mouse_ortholog_iccs)
-                                    mouse_ortholog_sim_ic_rank = sim_ic_score_list.index(mouse_ortholog_sim_ic)
-                                    mouse_ortholog_sim_j_rank = sim_j_score_list.index(mouse_ortholog_sim_j)
+                                    mouse_ortholog_max_ic_rank = max_ic_score_list.index(mouse_ortholog_max_ic)+1
+                                    mouse_ortholog_iccs_rank = iccs_score_list.index(mouse_ortholog_iccs)+1
+                                    mouse_ortholog_sim_ic_rank = sim_ic_score_list.index(mouse_ortholog_sim_ic)+1
+                                    mouse_ortholog_sim_j_rank = sim_j_score_list.index(mouse_ortholog_sim_j)+1
                                 elif len(query_mgi_ortholog_gene_ids) > 1:
                                     print('More than one mouse ortholog gene ID found!')
                                     for x in query_mgi_ortholog_gene_ids:
@@ -5484,16 +5485,16 @@ class main():
                                             print(human_disease_gene_prediction_hash[x])
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_max_ic:
                                                 mouse_ortholog_max_ic = human_disease_gene_prediction_hash[x]['maxIC']
-                                                mouse_ortholog_max_ic_rank = max_ic_score_list.index(mouse_ortholog_max_ic)
+                                                mouse_ortholog_max_ic_rank = max_ic_score_list.index(mouse_ortholog_max_ic)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_iccs:
                                                 mouse_ortholog_iccs = human_disease_gene_prediction_hash[x]['ICCS']
-                                                mouse_ortholog_iccs_rank = iccs_score_list.index(mouse_ortholog_iccs)
+                                                mouse_ortholog_iccs_rank = iccs_score_list.index(mouse_ortholog_iccs)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_sim_ic:
                                                 mouse_ortholog_sim_ic = human_disease_gene_prediction_hash[x]['simIC']
-                                                mouse_ortholog_sim_ic_rank = sim_ic_score_list.index(mouse_ortholog_sim_ic)
+                                                mouse_ortholog_sim_ic_rank = sim_ic_score_list.index(mouse_ortholog_sim_ic)+1
                                             if human_disease_gene_prediction_hash[x]['maxIC'] > mouse_ortholog_sim_j:
                                                 mouse_ortholog_sim_j = human_disease_gene_prediction_hash[x]['simJ']
-                                                mouse_ortholog_sim_j_rank = sim_j_score_list.index(mouse_ortholog_sim_j)
+                                                mouse_ortholog_sim_j_rank = sim_j_score_list.index(mouse_ortholog_sim_j)+1
                                         except:
                                             print('No OWLSim scores found for mouse ortholog '+str(x)+'.')
                                 elif len(query_mgi_ortholog_gene_ids) == 0:
@@ -5542,10 +5543,13 @@ class main():
                                     phenolog_max_score_list.append(score)
                                 phenolog_max_score_list.sort(reverse=True)
 
-                                zebrafish_ldo_phenolog_max_rank = len(phenolog_max_score_list)
-                                zebrafish_ortholog_phenolog_max_rank = len(phenolog_max_score_list)
-                                mouse_ldo_phenolog_max_rank = len(phenolog_max_score_list)
-                                mouse_ortholog_phenolog_max_rank = len(phenolog_max_score_list)
+                                zebrafish_ldo_phenolog_max_rank = len(phenolog_max_score_list)+1
+                                zebrafish_ortholog_phenolog_max_rank = len(phenolog_max_score_list)+1
+                                mouse_ldo_phenolog_max_rank = len(phenolog_max_score_list)+1
+                                mouse_ortholog_phenolog_max_rank = len(phenolog_max_score_list)+1
+                            with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
+                                filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
+                                print('Phenolog file open.')
                                 for row in filereader:
                                     (gene_candidate_ids, gene_candidate_labels, score) = row
                                     gene_candidate_ids = ast.literal_eval(gene_candidate_ids)
@@ -5556,37 +5560,43 @@ class main():
                                         continue
                                     elif len(gene_candidate_ids) == 1:
                                         candidate_gene_id = gene_candidate_ids[0]
-                                        print('Only one gene candidate ID present.')
-                                        print(candidate_gene_id)
+                                        #print('Only one gene candidate ID present.')
+                                        #print(candidate_gene_id)
                                         if candidate_gene_id in all_query_ids:
                                             #Extract phenolog values.
+                                            print(candidate_gene_id)
+                                            print('MATCH FOUND!')
+                                            print(score)
                                             if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_max_score:
                                                 zebrafish_ldo_phenolog_max_score = score
-                                                zebrafish_ldo_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ldo_phenolog_max_score)
+                                                zebrafish_ldo_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ldo_phenolog_max_score)+1
                                             if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_max_score:
                                                 zebrafish_ortholog_phenolog_max_score = score
-                                                zebrafish_ortholog_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ortholog_phenolog_max_score)
+                                                zebrafish_ortholog_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ortholog_phenolog_max_score)+1
                                             if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_max_score:
                                                 mouse_ldo_phenolog_max_score = score
-                                                mouse_ldo_phenolog_max_rankscor = phenolog_max_score_list.index(mouse_ldo_phenolog_max_score)
+                                                mouse_ldo_phenolog_max_rank = phenolog_max_score_list.index(mouse_ldo_phenolog_max_score)+1
                                             if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_max_score:
                                                 mouse_ortholog_phenolog_max_score = score
-                                                mouse_ortholog_phenolog_max_rank = phenolog_max_score_list.index(mouse_ortholog_phenolog_max_score)
+                                                mouse_ortholog_phenolog_max_rank = phenolog_max_score_list.index(mouse_ortholog_phenolog_max_score)+1
                                     elif len(gene_candidate_ids) > 1:
                                         for candidate_gene_id in gene_candidate_ids:
                                             if candidate_gene_id in all_query_ids:
+                                                print(candidate_gene_id)
+                                                print('MATCH FOUND!')
+                                                print(score)
                                                 if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_max_score:
                                                     zebrafish_ldo_phenolog_max_score = score
-                                                    zebrafish_ldo_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ldo_phenolog_max_score)
+                                                    zebrafish_ldo_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ldo_phenolog_max_score)+1
                                                 if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_max_score:
                                                     zebrafish_ortholog_phenolog_max_score = score
-                                                    zebrafish_ortholog_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ortholog_phenolog_max_score)
+                                                    zebrafish_ortholog_phenolog_max_rank = phenolog_max_score_list.index(zebrafish_ortholog_phenolog_max_score)+1
                                                 if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_max_score:
                                                     mouse_ldo_phenolog_max_score = score
-                                                    mouse_ldo_phenolog_max_rank = phenolog_max_score_list.index(mouse_ldo_phenolog_max_score)
+                                                    mouse_ldo_phenolog_max_rank = phenolog_max_score_list.index(mouse_ldo_phenolog_max_score)+1
                                                 if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_max_score:
                                                     mouse_ortholog_phenolog_max_score = score
-                                                    mouse_ortholog_phenolog_max_rank = phenolog_max_score_list.index(mouse_ortholog_phenolog_max_score)
+                                                    mouse_ortholog_phenolog_max_rank = phenolog_max_score_list.index(mouse_ortholog_phenolog_max_score)+1
 
                             filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/additive_scores/'+str(disease_id_underscored)+'.txt'
                             #print(filename)
@@ -5601,10 +5611,13 @@ class main():
                                     phenolog_additive_score_list.append(score)
                                 phenolog_additive_score_list.sort(reverse=True)
 
-                                zebrafish_ldo_phenolog_additive_rank = len(phenolog_additive_score_list)
-                                zebrafish_ortholog_phenolog_additive_rank = len(phenolog_additive_score_list)
-                                mouse_ldo_phenolog_additive_rank = len(phenolog_additive_score_list)
-                                mouse_ortholog_phenolog_additive_rank = len(phenolog_additive_score_list)
+                                zebrafish_ldo_phenolog_additive_rank = len(phenolog_additive_score_list)+1
+                                zebrafish_ortholog_phenolog_additive_rank = len(phenolog_additive_score_list)+1
+                                mouse_ldo_phenolog_additive_rank = len(phenolog_additive_score_list)+1
+                                mouse_ortholog_phenolog_additive_rank = len(phenolog_additive_score_list)+1
+
+                            with open(filename, 'r', encoding="iso-8859-1") as csvfile2:
+                                filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
 
                                 for row in filereader:
                                     (gene_candidate_ids, gene_candidate_labels, score) = row
@@ -5618,86 +5631,136 @@ class main():
                                         print('No gene candidates found.')
                                         continue
                                     elif len(gene_candidate_ids) == 1:
-                                        print('Only one gene candidate ID present.')
+                                        #print('Only one gene candidate ID present.')
                                         candidate_gene_id = gene_candidate_ids[0]
-                                        print(candidate_gene_id)
+                                        #print(candidate_gene_id)
                                         if candidate_gene_id in all_query_ids:
+                                            print(candidate_gene_id)
                                             print('MATCH FOUND!')
                                             print(score)
                                             #Extract phenolog values.
                                             if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_additive_score:
                                                 zebrafish_ldo_phenolog_additive_score = score
-                                                zebrafish_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ldo_phenolog_additive_score)
+                                                zebrafish_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ldo_phenolog_additive_score)+1
                                                 print(zebrafish_ldo_phenolog_additive_score)
                                             if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_additive_score:
                                                 zebrafish_ortholog_phenolog_additive_score = score
-                                                zebrafish_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ortholog_phenolog_additive_score)
+                                                zebrafish_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ortholog_phenolog_additive_score)+1
                                             if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_additive_score:
                                                 mouse_ldo_phenolog_additive_score = score
-                                                mouse_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ldo_phenolog_additive_score)
+                                                mouse_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ldo_phenolog_additive_score)+1
                                             if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_additive_score:
                                                 mouse_ortholog_phenolog_additive_score = score
-                                                mouse_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ortholog_phenolog_additive_score)
+                                                mouse_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ortholog_phenolog_additive_score)+1
                                     elif len(gene_candidate_ids) > 1:
-                                        print('More than one gene candidate ID present.')
+                                        #print('More than one gene candidate ID present.')
                                         for candidate_gene_id in gene_candidate_ids:
-                                            print(candidate_gene_id)
+                                            #print(candidate_gene_id)
                                             if candidate_gene_id in all_query_ids:
+                                                print(candidate_gene_id)
                                                 print('MATCH FOUND!')
                                                 print(score)
                                                 #Extract phenolog values.
                                                 if candidate_gene_id == query_zfin_ldo_gene_id and score > zebrafish_ldo_phenolog_additive_score:
                                                     zebrafish_ldo_phenolog_additive_score = score
-                                                    zebrafish_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ldo_phenolog_additive_score)
+                                                    zebrafish_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ldo_phenolog_additive_score)+1
                                                 if candidate_gene_id in query_zfin_ortholog_gene_ids and score > zebrafish_ortholog_phenolog_additive_score:
                                                     zebrafish_ortholog_phenolog_additive_score = score
-                                                    zebrafish_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ortholog_phenolog_additive_score)
+                                                    zebrafish_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(zebrafish_ortholog_phenolog_additive_score)+1
                                                 if candidate_gene_id == query_mgi_ldo_gene_id and score > mouse_ldo_phenolog_additive_score:
                                                     mouse_ldo_phenolog_additive_score = score
-                                                    mouse_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ldo_phenolog_additive_score)
+                                                    mouse_ldo_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ldo_phenolog_additive_score)+1
                                                 if candidate_gene_id in query_mgi_ortholog_gene_ids and score > mouse_ortholog_phenolog_additive_score:
                                                     mouse_ortholog_phenolog_additive_score = score
-                                                    mouse_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ortholog_phenolog_additive_score)
+                                                    mouse_ortholog_phenolog_additive_rank = phenolog_additive_score_list.index(mouse_ortholog_phenolog_additive_score)+1
 
 
                         top_ldo_max_ic_score = max(zebrafish_ldo_max_ic, mouse_ldo_max_ic)
-                        top_ldo_max_ic_rank = min(zebrafish_ldo_max_ic_rank, mouse_ldo_max_ic_rank)
+                        if top_ldo_max_ic_score == 0:
+                            top_ldo_max_ic_rank = len(max_ic_score_list)+1
+                        else:
+                            top_ldo_max_ic_rank = max_ic_score_list.index(top_ldo_max_ic_score)+1
+                        #top_ldo_max_ic_rank = min(zebrafish_ldo_max_ic_rank, mouse_ldo_max_ic_rank)
 
                         top_ldo_iccs_score = max(zebrafish_ldo_iccs, mouse_ldo_iccs)
-                        top_ldo_iccs_rank = min(zebrafish_ldo_iccs_rank, mouse_ldo_iccs_rank)
+                        if top_ldo_iccs_score == 0:
+                            top_ldo_iccs_rank = len(iccs_score_list)+1
+                        else:
+                            top_ldo_iccs_rank = iccs_score_list.index(top_ldo_iccs_score)+1
+                        #top_ldo_iccs_rank = min(zebrafish_ldo_iccs_rank, mouse_ldo_iccs_rank)
 
                         top_ldo_sim_ic_score = max(zebrafish_ldo_sim_ic, mouse_ldo_sim_ic)
-                        top_ldo_sim_ic_rank = min(zebrafish_ldo_sim_ic_rank, mouse_ldo_sim_ic_rank)
+                        if top_ldo_sim_ic_score == 0:
+                            top_ldo_sim_ic_rank = len(sim_ic_score_list)+1
+                        else:
+                            top_ldo_sim_ic_rank = sim_ic_score_list.index(top_ldo_sim_ic_score)+1
+                        #top_ldo_sim_ic_rank = min(zebrafish_ldo_sim_ic_rank, mouse_ldo_sim_ic_rank)
 
                         top_ldo_sim_j_score = max(zebrafish_ldo_sim_j, mouse_ldo_sim_j)
-                        top_ldo_sim_j_rank = min(zebrafish_ldo_sim_j_rank, mouse_ldo_sim_j_rank)
+                        if top_ldo_sim_j_score == 0:
+                            top_ldo_sim_j_rank = len(sim_j_score_list)+1
+                        else:
+                            top_ldo_sim_j_rank = sim_j_score_list.index(top_ldo_sim_j_score)+1
+                        #top_ldo_sim_j_rank = min(zebrafish_ldo_sim_j_rank, mouse_ldo_sim_j_rank)
 
 
 
                         top_ortholog_max_ic_score = max(zebrafish_ortholog_max_ic, mouse_ortholog_max_ic)
-                        top_ortholog_max_ic_rank = min(zebrafish_ortholog_max_ic_rank, mouse_ortholog_max_ic_rank)
+                        if top_ortholog_max_ic_score == 0:
+                            top_ortholog_max_ic_rank = len(max_ic_score_list)+1
+                        else:
+                            top_ortholog_max_ic_rank = max_ic_score_list.index(top_ortholog_max_ic_score)+1
+                        #top_ortholog_max_ic_rank = min(zebrafish_ortholog_max_ic_rank, mouse_ortholog_max_ic_rank)
 
                         top_ortholog_iccs_score = max(zebrafish_ortholog_iccs, mouse_ortholog_iccs)
-                        top_ortholog_iccs_rank = min(zebrafish_ortholog_iccs_rank, mouse_ortholog_iccs_rank)
+                        if top_ortholog_iccs_score == 0:
+                            top_ortholog_iccs_rank = len(iccs_score_list)+1
+                        else:
+                            top_ortholog_iccs_rank = iccs_score_list.index(top_ortholog_iccs_score)+1
+                        #top_ortholog_iccs_rank = min(zebrafish_ortholog_iccs_rank, mouse_ortholog_iccs_rank)
 
                         top_ortholog_sim_ic_score = max(zebrafish_ortholog_sim_ic, mouse_ortholog_sim_ic)
-                        top_ortholog_sim_ic_rank = min(zebrafish_ortholog_sim_ic_rank, mouse_ortholog_sim_ic_rank)
+                        if top_ortholog_sim_ic_score == 0:
+                            top_ortholog_sim_ic_rank = len(sim_ic_score_list)+1
+                        else:
+                            top_ortholog_sim_ic_rank = sim_ic_score_list.index(top_ortholog_sim_ic_score)+1
+                        #top_ortholog_sim_ic_rank = min(zebrafish_ortholog_sim_ic_rank, mouse_ortholog_sim_ic_rank)
 
                         top_ortholog_sim_j_score = max(zebrafish_ortholog_sim_j, mouse_ortholog_sim_j)
-                        top_ortholog_sim_j_rank = min(zebrafish_ortholog_sim_j_rank, mouse_ortholog_sim_j_rank)
+                        if top_ortholog_sim_j_score == 0:
+                            top_ortholog_sim_j_rank = len(sim_j_score_list)+1
+                        else:
+                            top_ortholog_sim_j_rank = sim_j_score_list.index(top_ortholog_sim_j_score)+1
+                        #top_ortholog_sim_j_rank = min(zebrafish_ortholog_sim_j_rank, mouse_ortholog_sim_j_rank)
 
 
                         top_owlsim_max_ic_score = max(top_ldo_max_ic_score, top_ortholog_max_ic_score)
-                        top_owlsim_max_ic_rank = min(top_ldo_max_ic_rank, top_ortholog_max_ic_rank)
+                        if top_owlsim_max_ic_score == 0:
+                            top_owlsim_max_ic_rank = len(max_ic_score_list)+1
+                        else:
+                            top_owlsim_max_ic_rank = max_ic_score_list.index(top_owlsim_max_ic_score)+1
+                        #top_owlsim_max_ic_rank = min(top_ldo_max_ic_rank, top_ortholog_max_ic_rank)
 
                         top_owlsim_iccs_score = max(top_ldo_iccs_score, top_ortholog_iccs_score)
-                        top_owlsim_iccs_rank = min(top_ldo_iccs_rank, top_ortholog_iccs_rank)
+                        if top_owlsim_iccs_score == 0:
+                            top_owlsim_iccs_rank = len(iccs_score_list)+1
+                        else:
+                            top_owlsim_iccs_rank = iccs_score_list.index(top_owlsim_iccs_score)+1
+                        #top_owlsim_iccs_rank = min(top_ldo_iccs_rank, top_ortholog_iccs_rank)
 
                         top_owlsim_sim_ic_score = max(top_ldo_sim_ic_score, top_ortholog_sim_ic_score)
-                        top_owlsim_sim_ic_rank = min(top_ldo_sim_ic_rank, top_ortholog_sim_ic_rank)
+                        if top_owlsim_sim_ic_score == 0:
+                            top_owlsim_sim_ic_rank = len(sim_ic_score_list)+1
+                        else:
+                            top_owlsim_sim_ic_rank = sim_ic_score_list.index(top_owlsim_sim_ic_score)+1
+                        #top_owlsim_sim_ic_rank = min(top_ldo_sim_ic_rank, top_ortholog_sim_ic_rank)
 
                         top_owlsim_sim_j_score = max(top_ldo_sim_j_score, top_ortholog_sim_j_score)
-                        top_owlsim_sim_j_rank = min(top_ldo_sim_j_rank, top_ortholog_sim_j_rank)
+                        if top_owlsim_sim_j_score == 0:
+                            top_owlsim_sim_j_rank = len(sim_j_score_list)+1
+                        else:
+                            top_owlsim_sim_j_rank = sim_j_score_list.index(top_owlsim_sim_j_score)+1
+                        #top_owlsim_sim_j_rank = min(top_ldo_sim_j_rank, top_ortholog_sim_j_rank)
 
 
                         top_zebrafish_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)

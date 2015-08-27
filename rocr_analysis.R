@@ -6,10 +6,17 @@ library(rjson)
 library(ggplot2)
 
 
+
+
+
 mydata_mix <- read.csv("/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/morbid_disease_predictions_true_false.csv")  # read csv file 
 mydata_mix
 
+mydata_ranks <- read.csv("/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/morbid_disease_predictions_with_rankings.csv")  # read csv file 
+mydata_ranks
 
+newdata <- mydata_ranks[order(mydata_ranks$top_phenolog_max_rank),]
+newdata$top_phenolog_max_rank_percentage <- mydata_ranks$top_phenolog_max_rank.rank/nrow(newdata$top_phenolog_max_rank)
 
 mydata <- read.csv("/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/morbid_disease_predictions.csv")  # read csv file 
 mydata
