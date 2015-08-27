@@ -3,14 +3,31 @@ install.packages("rjson")
 install.packages("ggplot2")
 library(ROCR)
 library(rjson)
-library(ggplot)
+library(ggplot2)
+
+
+mydata_mix <- read.csv("/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/morbid_disease_predictions_true_false.csv")  # read csv file 
+mydata_mix
+
 
 
 mydata <- read.csv("/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/morbid_disease_predictions.csv")  # read csv file 
+mydata
+pred <- prediction(mydata$top_owlsim_iccs_score, mydata$category)
+perf1 <- performance(pred, "sens", "spec")
+plot(perf1)
+
+
+
+"mydata$category"
 # mydata[,category] <- [, mydata$category] != 0
-pred <- prediction( mydata$top_owlsim_iccs_score, mydata$category)
-
-
+pred <- prediction(mydata_mix$top_owlsim_iccs_score, mydata_mix$category)
+perf1 <- performance(pred, "sens", "spec")
+plot(perf1)
+perf <- performance(pred,"tpr","fpr")
+plot(perf)
+newdata <- mydata_mix[order(mydata_mix$category),]
+newdata
 
 
 json_file <- "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/roc/top_phenolog_max_score_list.json"
@@ -26,6 +43,8 @@ print(labels)
 print(ROCR.simple)
 data(ROCR.simple)
 pred <- prediction( ROCR.simple$predictions, ROCR.simple$labels)
+perf1 <- performance(pred, "sens", "spec")
+plot(perf1)
 perf <- performance(pred,"tpr","fpr")
 plot(perf)
 
