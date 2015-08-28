@@ -5504,9 +5504,6 @@ class main():
                         except:
                             print('Trouble with OWLSim data for disease '+str(disease_id)+'.')
 
-
-                        # TODO: Need to add phenolog data lookup here.
-
                         all_query_ids = []
                         if query_zfin_ldo_gene_id != '':
                             all_query_ids.append(query_zfin_ldo_gene_id)
@@ -5526,9 +5523,7 @@ class main():
                                 for x in query_mgi_ortholog_gene_ids:
                                     all_query_ids.append(x)
 
-
                         if all_query_ids != []:
-
                             filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
                             #print(filename)
                             phenolog_max_score_list = []
