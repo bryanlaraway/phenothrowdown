@@ -4593,8 +4593,6 @@ class main():
 
 
 
-
-
                         filename = 'out/phenolog_gene_cand/human_disease_gene_candidate_predictions/all_genes/max_scores/'+str(disease_id_underscored)+'.txt'
                         #print(filename)
 
@@ -5227,6 +5225,10 @@ class main():
                           'top_zebrafish_phenolog_additive_score', 'top_zebrafish_phenolog_additive_rank',
                           'top_mouse_phenolog_max_score', 'top_mouse_phenolog_max_rank',
                           'top_mouse_phenolog_additive_score', 'top_mouse_phenolog_additive_rank',
+                          'top_ldo_phenolog_max_score', 'top_ldo_phenolog_max_rank',
+                          'top_ldo_phenolog_additive_score', 'top_ldo_phenolog_additive_rank',
+                          'top_ortholog_phenolog_max_score', 'top_ortholog_phenolog_max_rank',
+                          'top_ortholog_phenolog_additive_score', 'top_ortholog_phenolog_additive_rank',
                           'top_phenolog_max_score', 'top_phenolog_max_rank',
                           'top_phenolog_additive_score', 'top_phenolog_additive_rank',
                           'category')
@@ -5415,10 +5417,10 @@ class main():
                                 zebrafish_ldo_iccs_score = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['ICCS']
                                 zebrafish_ldo_sim_ic_score = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simIC']
                                 zebrafish_ldo_sim_j_score = human_disease_gene_prediction_hash[query_zfin_ldo_gene_id]['simJ']
-                                zebrafish_ldo_max_ic_rank = max_ic_score_list.index(zebrafish_ldo_max_ic)+1
-                                zebrafish_ldo_iccs_rank = iccs_score_list.index(zebrafish_ldo_iccs)+1
-                                zebrafish_ldo_sim_ic_rank = sim_ic_score_list.index(zebrafish_ldo_sim_ic)+1
-                                zebrafish_ldo_sim_j_rank = sim_j_score_list.index(zebrafish_ldo_sim_j)+1
+                                zebrafish_ldo_max_ic_rank = max_ic_score_list.index(zebrafish_ldo_max_ic_score)+1
+                                zebrafish_ldo_iccs_rank = iccs_score_list.index(zebrafish_ldo_iccs_score)+1
+                                zebrafish_ldo_sim_ic_rank = sim_ic_score_list.index(zebrafish_ldo_sim_ic_score)+1
+                                zebrafish_ldo_sim_j_rank = sim_j_score_list.index(zebrafish_ldo_sim_j_score)+1
                             except:
                                 print('No zebrafish OWLSim scores found for LDO.')
 
@@ -5842,6 +5844,20 @@ class main():
                         #top_owlsim_sim_j_rank = min(top_ldo_sim_j_rank, top_ortholog_sim_j_rank)
 
 
+                        top_ldo_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, mouse_ldo_phenolog_max_score)
+                        top_ldo_phenolog_max_rank = min(zebrafish_ldo_phenolog_max_rank, mouse_ldo_phenolog_max_rank)
+
+                        top_ldo_phenolog_additive_score = max(zebrafish_ldo_phenolog_additive_score, mouse_ldo_phenolog_additive_score)
+                        top_ldo_phenolog_additive_rank = min(zebrafish_ldo_phenolog_additive_rank, mouse_ldo_phenolog_additive_rank)
+
+
+                        top_ortholog_phenolog_max_score = max(zebrafish_ortholog_phenolog_max_score, mouse_ortholog_phenolog_max_score)
+                        top_ortholog_phenolog_max_rank = min(zebrafish_ortholog_phenolog_max_rank, mouse_ortholog_phenolog_max_rank)
+
+                        top_ortholog_phenolog_additive_score = max(zebrafish_ortholog_phenolog_additive_score, mouse_ortholog_phenolog_additive_score)
+                        top_ortholog_phenolog_additive_rank = min(zebrafish_ortholog_phenolog_additive_rank, mouse_ortholog_phenolog_additive_rank)
+
+
                         top_zebrafish_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
                         top_zebrafish_phenolog_max_rank = min(zebrafish_ldo_phenolog_max_rank, zebrafish_ortholog_phenolog_max_rank)
 
@@ -5853,7 +5869,6 @@ class main():
 
                         top_mouse_phenolog_additive_score = max(mouse_ldo_phenolog_additive_score, mouse_ortholog_phenolog_additive_score)
                         top_mouse_phenolog_additive_rank = min(mouse_ldo_phenolog_additive_rank, mouse_ortholog_phenolog_additive_rank)
-
 
                         top_phenolog_max_score = max(mouse_ldo_phenolog_max_score, mouse_ortholog_phenolog_max_score, zebrafish_ldo_phenolog_max_score, zebrafish_ortholog_phenolog_max_score)
                         top_phenolog_max_rank = min(mouse_ldo_phenolog_max_rank, mouse_ortholog_phenolog_max_rank, zebrafish_ldo_phenolog_max_rank, zebrafish_ortholog_phenolog_max_rank)
@@ -5869,148 +5884,148 @@ class main():
 
 
 
-                        if zebrafish_ldo_max_ic_score == 0:
+                        if zebrafish_ldo_max_ic_score == 0 and zebrafish_ldo_max_ic_rank == len(max_ic_score_list)+1:
                             zebrafish_ldo_max_ic_score = ''
                             zebrafish_ldo_max_ic_rank = ''
 
-                        if zebrafish_ldo_iccs_score == 0:
+                        if zebrafish_ldo_iccs_score == 0 and zebrafish_ldo_iccs_rank == len(iccs_score_list)+1:
                             zebrafish_ldo_iccs_score = ''
                             zebrafish_ldo_iccs_rank = ''
 
-                        if zebrafish_ldo_sim_ic_score == 0:
+                        if zebrafish_ldo_sim_ic_score == 0 and zebrafish_ldo_sim_ic_rank == len(sim_ic_score_list)+1:
                             zebrafish_ldo_sim_ic_score = ''
                             zebrafish_ldo_sim_ic_rank = ''
 
-                        if zebrafish_ldo_sim_j_score == 0:
+                        if zebrafish_ldo_sim_j_score == 0 and zebrafish_ldo_sim_j_rank == len(sim_j_score_list)+1:
                             zebrafish_ldo_sim_j_score = ''
                             zebrafish_ldo_sim_j_rank = ''
 
-                        if zebrafish_ortholog_max_ic_score == 0:
+                        if zebrafish_ortholog_max_ic_score == 0 and zebrafish_ortholog_max_ic_rank == len(max_ic_score_list)+1:
                             zebrafish_ortholog_max_ic_score = ''
                             zebrafish_ortholog_max_ic_rank = ''
 
-                        if zebrafish_ortholog_iccs_score == 0:
+                        if zebrafish_ortholog_iccs_score == 0 and zebrafish_ortholog_iccs_rank == len(iccs_score_list)+1:
                             zebrafish_ortholog_iccs_score = ''
                             zebrafish_ortholog_iccs_rank = ''
 
-                        if zebrafish_ortholog_sim_ic_score == 0:
+                        if zebrafish_ortholog_sim_ic_score == 0 and zebrafish_ortholog_sim_ic_rank == len(sim_ic_score_list)+1:
                             zebrafish_ortholog_sim_ic_score = ''
                             zebrafish_ortholog_sim_ic_rank = ''
 
-                        if zebrafish_ortholog_sim_j_score == 0:
+                        if zebrafish_ortholog_sim_j_score == 0 and zebrafish_ortholog_sim_j_rank == len(sim_j_score_list)+1:
                             zebrafish_ortholog_sim_j_score = ''
                             zebrafish_ortholog_sim_j_rank = ''
 
-                        if top_zebrafish_max_ic_score == 0:
+                        if top_zebrafish_max_ic_score == 0 and top_zebrafish_max_ic_rank == len(max_ic_score_list)+1:
                             top_zebrafish_max_ic_score = ''
                             top_zebrafish_max_ic_rank = ''
 
-                        if top_zebrafish_iccs_score == 0:
+                        if top_zebrafish_iccs_score == 0 and top_zebrafish_iccs_rank == len(iccs_score_list)+1:
                             top_zebrafish_iccs_score = ''
                             top_zebrafish_iccs_rank = ''
 
-                        if top_zebrafish_sim_ic_score == 0:
+                        if top_zebrafish_sim_ic_score == 0 and top_zebrafish_sim_ic_rank == len(sim_ic_score_list)+1:
                             top_zebrafish_sim_ic_score = ''
                             top_zebrafish_sim_ic_rank = ''
 
-                        if top_zebrafish_sim_j_score == 0:
+                        if top_zebrafish_sim_j_score == 0 and top_zebrafish_sim_j_rank == len(sim_j_score_list)+1:
                             top_zebrafish_sim_j_score = ''
                             top_zebrafish_sim_j_rank = ''
 
-                        if mouse_ldo_max_ic_score == 0:
+                        if mouse_ldo_max_ic_score == 0 and mouse_ldo_max_ic_rank == len(max_ic_score_list)+1:
                             mouse_ldo_max_ic_score = ''
                             mouse_ldo_max_ic_rank = ''
 
-                        if mouse_ldo_iccs_score == 0:
+                        if mouse_ldo_iccs_score == 0 and mouse_ldo_iccs_rank == len(iccs_score_list)+1:
                             mouse_ldo_iccs_score = ''
                             mouse_ldo_iccs_rank = ''
 
 
-                        if mouse_ldo_sim_ic_score == 0:
+                        if mouse_ldo_sim_ic_score == 0 and mouse_ldo_sim_ic_rank == len(sim_ic_score_list)+1:
                             mouse_ldo_sim_ic_score = ''
                             mouse_ldo_sim_ic_rank = ''
 
-                        if mouse_ldo_sim_j_score == 0:
+                        if mouse_ldo_sim_j_score == 0 and mouse_ldo_sim_j_rank == len(sim_j_score_list)+1:
                             mouse_ldo_sim_j_score = ''
                             mouse_ldo_sim_j_rank = ''
 
-                        if mouse_ortholog_max_ic_score == 0:
+                        if mouse_ortholog_max_ic_score == 0 and mouse_ortholog_max_ic_rank == len(max_ic_score_list)+1:
                             mouse_ortholog_max_ic_score = ''
                             mouse_ortholog_max_ic_rank = ''
 
-                        if mouse_ortholog_iccs_score == 0:
+                        if mouse_ortholog_iccs_score == 0 and mouse_ortholog_iccs_rank == len(iccs_score_list)+1:
                             mouse_ortholog_iccs_score = ''
                             mouse_ortholog_iccs_rank = ''
 
-                        if mouse_ortholog_sim_ic_score == 0:
+                        if mouse_ortholog_sim_ic_score == 0 and mouse_ortholog_sim_ic_rank == len(sim_ic_score_list)+1:
                             mouse_ortholog_sim_ic_score = ''
                             mouse_ortholog_sim_ic_rank = ''
 
-                        if mouse_ortholog_sim_j_score == 0:
+                        if mouse_ortholog_sim_j_score == 0 and mouse_ortholog_sim_j_rank == len(sim_j_score_list)+1:
                             mouse_ortholog_sim_j_score = ''
                             mouse_ortholog_sim_j_rank = ''
 
-                        if top_mouse_max_ic_score == 0:
+                        if top_mouse_max_ic_score == 0 and top_mouse_max_ic_rank == len(max_ic_score_list)+1:
                             top_mouse_max_ic_score = ''
                             top_mouse_max_ic_rank = ''
 
-                        if top_mouse_iccs_score == 0:
+                        if top_mouse_iccs_score == 0 and top_mouse_iccs_rank == len(iccs_score_list)+1:
                             top_mouse_iccs_score = ''
                             top_mouse_iccs_rank = ''
 
-                        if top_mouse_sim_ic_score == 0:
+                        if top_mouse_sim_ic_score == 0 and top_mouse_sim_ic_rank == len(sim_ic_score_list)+1:
                             top_mouse_sim_ic_score = ''
                             top_mouse_sim_ic_rank = ''
 
-                        if top_mouse_sim_j_score == 0:
+                        if top_mouse_sim_j_score == 0 and top_mouse_sim_j_rank == len(sim_j_score_list)+1:
                             top_mouse_sim_j_score = ''
                             top_mouse_sim_j_rank = ''
 
-                        if top_ldo_max_ic_score == 0:
+                        if top_ldo_max_ic_score == 0 and top_ldo_max_ic_rank == len(max_ic_score_list)+1:
                             top_ldo_max_ic_score = ''
                             top_ldo_max_ic_rank = ''
 
-                        if top_ldo_iccs_score == 0:
+                        if top_ldo_iccs_score == 0 and top_ldo_iccs_rank == len(iccs_score_list)+1:
                             top_ldo_iccs_score = ''
                             top_ldo_iccs_rank = ''
 
-                        if top_ldo_sim_ic_score == 0:
+                        if top_ldo_sim_ic_score == 0 and top_ldo_sim_ic_rank == len(sim_ic_score_list)+1:
                             top_ldo_sim_ic_score = ''
                             top_ldo_sim_ic_rank = ''
 
-                        if top_ldo_sim_j_score == 0:
+                        if top_ldo_sim_j_score == 0 and top_ldo_sim_j_rank == len(sim_j_score_list)+1:
                             top_ldo_sim_j_score = ''
                             top_ldo_sim_j_rank = ''
 
-                        if top_ortholog_max_ic_score == 0:
+                        if top_ortholog_max_ic_score == 0 and top_ortholog_max_ic_rank == len(max_ic_score_list)+1:
                             top_ortholog_max_ic_score = ''
                             top_ortholog_max_ic_rank = ''
 
-                        if top_ortholog_iccs_score == 0:
+                        if top_ortholog_iccs_score == 0 and top_ortholog_iccs_rank == len(iccs_score_list)+1:
                             top_ortholog_iccs_score = ''
                             top_ortholog_iccs_rank = ''
 
-                        if top_ortholog_sim_ic_score == 0:
+                        if top_ortholog_sim_ic_score == 0 and top_ortholog_sim_ic_rank == len(sim_ic_score_list)+1:
                             top_ortholog_sim_ic_score = ''
                             top_ortholog_sim_ic_rank = ''
 
-                        if top_ortholog_sim_j_score == 0:
+                        if top_ortholog_sim_j_score == 0 and top_ortholog_sim_j_rank == len(sim_j_score_list)+1:
                             top_ortholog_sim_j_score = ''
                             top_ortholog_sim_j_rank = ''
 
-                        if top_owlsim_max_ic_score == 0:
+                        if top_owlsim_max_ic_score == 0 and top_owlsim_max_ic_rank == len(max_ic_score_list)+1:
                             top_owlsim_max_ic_score = ''
                             top_owlsim_max_ic_rank = ''
 
-                        if top_owlsim_iccs_score == 0:
+                        if top_owlsim_iccs_score == 0 and top_owlsim_iccs_rank == len(iccs_score_list)+1:
                             top_owlsim_iccs_score = ''
                             top_owlsim_iccs_rank = ''
 
-                        if top_owlsim_sim_ic_score == 0:
+                        if top_owlsim_sim_ic_score == 0 and top_owlsim_sim_ic_rank == len(sim_ic_score_list)+1:
                             top_owlsim_sim_ic_score = ''
                             top_owlsim_sim_ic_rank = ''
 
-                        if top_owlsim_sim_j_score == 0:
+                        if top_owlsim_sim_j_score == 0 and top_owlsim_sim_j_rank == len(sim_j_score_list)+1:
                             top_owlsim_sim_j_score = ''
                             top_owlsim_sim_j_rank = ''
 
@@ -6061,6 +6076,22 @@ class main():
                         if top_mouse_phenolog_additive_score == 0:
                             top_mouse_phenolog_additive_score = ''
                             top_mouse_phenolog_additive_rank = ''
+
+                        if top_ldo_phenolog_max_score == 0:
+                            top_ldo_phenolog_max_score = ''
+                            top_ldo_phenolog_max_rank = ''
+
+                        if top_ldo_phenolog_additive_score == 0:
+                            top_ldo_phenolog_additive_score = ''
+                            top_ldo_phenolog_additive_rank = ''
+
+                        if top_ortholog_phenolog_max_score == 0:
+                            top_ortholog_phenolog_max_score = ''
+                            top_ortholog_phenolog_max_rank = ''
+
+                        if top_ortholog_phenolog_additive_score == 0:
+                            top_ortholog_phenolog_additive_score = ''
+                            top_ortholog_phenolog_additive_rank = ''
 
                         if top_phenolog_max_score == 0:
                             top_phenolog_max_score = ''
@@ -6119,6 +6150,10 @@ class main():
                                       top_zebrafish_phenolog_additive_score, top_zebrafish_phenolog_additive_rank,
                                       top_mouse_phenolog_max_score, top_mouse_phenolog_max_rank,
                                       top_mouse_phenolog_additive_score, top_mouse_phenolog_additive_rank,
+                                      top_ldo_phenolog_max_score, top_ldo_phenolog_max_rank,
+                                      top_ldo_phenolog_additive_score, top_ldo_phenolog_additive_rank,
+                                      top_ortholog_phenolog_max_score, top_ortholog_phenolog_max_rank,
+                                      top_ortholog_phenolog_additive_score, top_ortholog_phenolog_additive_rank,
                                       top_phenolog_max_score, top_phenolog_max_rank,
                                       top_phenolog_additive_score, top_phenolog_additive_rank,
                                       labels)
