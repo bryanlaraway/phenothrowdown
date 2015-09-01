@@ -5706,142 +5706,152 @@ class main():
 
 
                         top_zebrafish_max_ic_score = max(zebrafish_ldo_max_ic_score, zebrafish_ortholog_max_ic_score)
-                        if top_zebrafish_max_ic_score == 0:
-                            top_zebrafish_max_ic_rank = len(max_ic_score_list)+1
-                        else:
-                            top_zebrafish_max_ic_rank = max_ic_score_list.index(top_zebrafish_max_ic_score)+1
+                        top_zebrafish_max_ic_rank = min(zebrafish_ldo_max_ic_rank, zebrafish_ortholog_max_ic_rank)
+                        #if top_zebrafish_max_ic_score == 0 and top_zebrafish_max_ic_rank :
+                            #top_zebrafish_max_ic_rank = len(max_ic_score_list)+1
+                        #else:
+                            #top_zebrafish_max_ic_rank = max_ic_score_list.index(top_zebrafish_max_ic_score)+1
 
                         top_zebrafish_iccs_score = max(zebrafish_ldo_iccs_score, zebrafish_ortholog_iccs_score)
-                        if top_zebrafish_iccs_score == 0:
-                            top_zebrafish_iccs_rank = len(iccs_score_list)+1
-                        else:
-                            top_zebrafish_iccs_rank = iccs_score_list.index(top_zebrafish_iccs_score)+1
+                        top_zebrafish_iccs_rank = min(zebrafish_ldo_iccs_rank, zebrafish_ortholog_iccs_rank)
+                        #if top_zebrafish_iccs_score == 0:
+                            #top_zebrafish_iccs_rank = len(iccs_score_list)+1
+                        #else:
+                            #top_zebrafish_iccs_rank = iccs_score_list.index(top_zebrafish_iccs_score)+1
 
                         top_zebrafish_sim_ic_score = max(zebrafish_ldo_sim_ic_score, zebrafish_ortholog_sim_ic_score)
-                        if top_zebrafish_sim_ic_score == 0:
-                            top_zebrafish_sim_ic_rank = len(sim_ic_score_list)+1
-                        else:
-                            top_zebrafish_sim_ic_rank = sim_ic_score_list.index(top_zebrafish_sim_ic_score)+1
+                        top_zebrafish_sim_ic_rank = min(zebrafish_ldo_sim_ic_rank, zebrafish_ortholog_sim_ic_rank)
+                        #if top_zebrafish_sim_ic_score == 0:
+                            #top_zebrafish_sim_ic_rank = len(sim_ic_score_list)+1
+                        #else:
+                            #top_zebrafish_sim_ic_rank = sim_ic_score_list.index(top_zebrafish_sim_ic_score)+1
 
                         top_zebrafish_sim_j_score = max(zebrafish_ldo_sim_j_score, zebrafish_ortholog_sim_j_score)
-                        if top_zebrafish_sim_j_score == 0:
-                            top_zebrafish_sim_j_rank = len(sim_j_score_list)+1
-                        else:
-                            top_zebrafish_sim_j_rank = sim_j_score_list.index(top_zebrafish_sim_j_score)+1
+                        top_zebrafish_sim_j_rank = min(zebrafish_ldo_sim_j_rank, zebrafish_ortholog_sim_j_rank)
+                        #if top_zebrafish_sim_j_score == 0:
+                            #top_zebrafish_sim_j_rank = len(sim_j_score_list)+1
+                        #else:
+                            #top_zebrafish_sim_j_rank = sim_j_score_list.index(top_zebrafish_sim_j_score)+1
 
 
 
                         top_mouse_max_ic_score = max(mouse_ldo_max_ic_score, mouse_ortholog_max_ic_score)
-                        if top_mouse_max_ic_score == 0:
-                            top_mouse_max_ic_rank = len(max_ic_score_list)+1
-                        else:
-                            top_mouse_max_ic_rank = max_ic_score_list.index(top_mouse_max_ic_score)+1
+                        top_mouse_max_ic_rank = min(mouse_ldo_max_ic_rank, mouse_ortholog_max_ic_rank)
+                        #if top_mouse_max_ic_score == 0:
+                            #top_mouse_max_ic_rank = len(max_ic_score_list)+1
+                        #else:
+                            #top_mouse_max_ic_rank = max_ic_score_list.index(top_mouse_max_ic_score)+1
 
                         top_mouse_iccs_score = max(mouse_ldo_iccs_score, mouse_ortholog_iccs_score)
-                        if top_mouse_iccs_score == 0:
-                            top_mouse_iccs_rank = len(iccs_score_list)+1
-                        else:
-                            top_mouse_iccs_rank = iccs_score_list.index(top_mouse_iccs_score)+1
+                        top_mouse_iccs_rank = min(mouse_ldo_iccs_rank, mouse_ortholog_iccs_rank)
+                        #if top_mouse_iccs_score == 0:
+                            #top_mouse_iccs_rank = len(iccs_score_list)+1
+                        #else:
+                            #top_mouse_iccs_rank = iccs_score_list.index(top_mouse_iccs_score)+1
 
                         top_mouse_sim_ic_score = max(mouse_ldo_sim_ic_score, mouse_ortholog_sim_ic_score)
-                        if top_mouse_sim_ic_score == 0:
-                            top_mouse_sim_ic_rank = len(sim_ic_score_list)+1
-                        else:
-                            top_mouse_sim_ic_rank = sim_ic_score_list.index(top_mouse_sim_ic_score)+1
+                        top_mouse_sim_ic_rank = min(mouse_ldo_sim_ic_rank, mouse_ortholog_sim_ic_rank)
+                        #if top_mouse_sim_ic_score == 0:
+                            #top_mouse_sim_ic_rank = len(sim_ic_score_list)+1
+                        #else:
+                            #top_mouse_sim_ic_rank = sim_ic_score_list.index(top_mouse_sim_ic_score)+1
 
                         top_mouse_sim_j_score = max(mouse_ldo_sim_j_score, mouse_ortholog_sim_j_score)
-                        if top_mouse_sim_j_score == 0:
-                            top_mouse_sim_j_rank = len(sim_j_score_list)+1
-                        else:
-                            top_mouse_sim_j_rank = sim_j_score_list.index(top_mouse_sim_j_score)+1
+                        top_mouse_sim_j_rank = min(mouse_ldo_sim_j_rank, mouse_ortholog_sim_j_rank)
+                        #if top_mouse_sim_j_score == 0:
+                            #top_mouse_sim_j_rank = len(sim_j_score_list)+1
+                        #else:
+                            #top_mouse_sim_j_rank = sim_j_score_list.index(top_mouse_sim_j_score)+1
 
 
                         top_ldo_max_ic_score = max(zebrafish_ldo_max_ic_score, mouse_ldo_max_ic_score)
-                        if top_ldo_max_ic_score == 0:
-                            top_ldo_max_ic_rank = len(max_ic_score_list)+1
-                        else:
-                            top_ldo_max_ic_rank = max_ic_score_list.index(top_ldo_max_ic_score)+1
                         #top_ldo_max_ic_rank = min(zebrafish_ldo_max_ic_rank, mouse_ldo_max_ic_rank)
+                        #if top_ldo_max_ic_score == 0:
+                            #top_ldo_max_ic_rank = len(max_ic_score_list)+1
+                        #else:
+                            #top_ldo_max_ic_rank = max_ic_score_list.index(top_ldo_max_ic_score)+1
+                        top_ldo_max_ic_rank = min(zebrafish_ldo_max_ic_rank, mouse_ldo_max_ic_rank)
 
                         top_ldo_iccs_score = max(zebrafish_ldo_iccs_score, mouse_ldo_iccs_score)
-                        if top_ldo_iccs_score == 0:
-                            top_ldo_iccs_rank = len(iccs_score_list)+1
-                        else:
-                            top_ldo_iccs_rank = iccs_score_list.index(top_ldo_iccs_score)+1
-                        #top_ldo_iccs_rank = min(zebrafish_ldo_iccs_rank, mouse_ldo_iccs_rank)
+                        #op_ldo_iccs_rank = min(zebrafish_ldo_iccs_rank, mouse_ldo_iccs_rank)
+                        #if top_ldo_iccs_score == 0:
+                            #top_ldo_iccs_rank = len(iccs_score_list)+1
+                        #else:
+                            #top_ldo_iccs_rank = iccs_score_list.index(top_ldo_iccs_score)+1
+                        top_ldo_iccs_rank = min(zebrafish_ldo_iccs_rank, mouse_ldo_iccs_rank)
 
                         top_ldo_sim_ic_score = max(zebrafish_ldo_sim_ic_score, mouse_ldo_sim_ic_score)
-                        if top_ldo_sim_ic_score == 0:
-                            top_ldo_sim_ic_rank = len(sim_ic_score_list)+1
-                        else:
-                            top_ldo_sim_ic_rank = sim_ic_score_list.index(top_ldo_sim_ic_score)+1
-                        #top_ldo_sim_ic_rank = min(zebrafish_ldo_sim_ic_rank, mouse_ldo_sim_ic_rank)
+                        #if top_ldo_sim_ic_score == 0:
+                            #top_ldo_sim_ic_rank = len(sim_ic_score_list)+1
+                        #else:
+                            #top_ldo_sim_ic_rank = sim_ic_score_list.index(top_ldo_sim_ic_score)+1
+                        top_ldo_sim_ic_rank = min(zebrafish_ldo_sim_ic_rank, mouse_ldo_sim_ic_rank)
 
                         top_ldo_sim_j_score = max(zebrafish_ldo_sim_j_score, mouse_ldo_sim_j_score)
-                        if top_ldo_sim_j_score == 0:
-                            top_ldo_sim_j_rank = len(sim_j_score_list)+1
-                        else:
-                            top_ldo_sim_j_rank = sim_j_score_list.index(top_ldo_sim_j_score)+1
-                        #top_ldo_sim_j_rank = min(zebrafish_ldo_sim_j_rank, mouse_ldo_sim_j_rank)
+                        #if top_ldo_sim_j_score == 0:
+                            #top_ldo_sim_j_rank = len(sim_j_score_list)+1
+                        #else:
+                            #top_ldo_sim_j_rank = sim_j_score_list.index(top_ldo_sim_j_score)+1
+                        top_ldo_sim_j_rank = min(zebrafish_ldo_sim_j_rank, mouse_ldo_sim_j_rank)
 
 
 
                         top_ortholog_max_ic_score = max(zebrafish_ortholog_max_ic_score, mouse_ortholog_max_ic_score)
-                        if top_ortholog_max_ic_score == 0:
-                            top_ortholog_max_ic_rank = len(max_ic_score_list)+1
-                        else:
-                            top_ortholog_max_ic_rank = max_ic_score_list.index(top_ortholog_max_ic_score)+1
-                        #top_ortholog_max_ic_rank = min(zebrafish_ortholog_max_ic_rank, mouse_ortholog_max_ic_rank)
+                        #if top_ortholog_max_ic_score == 0:
+                            #top_ortholog_max_ic_rank = len(max_ic_score_list)+1
+                        #else:
+                            #top_ortholog_max_ic_rank = max_ic_score_list.index(top_ortholog_max_ic_score)+1
+                        top_ortholog_max_ic_rank = min(zebrafish_ortholog_max_ic_rank, mouse_ortholog_max_ic_rank)
 
                         top_ortholog_iccs_score = max(zebrafish_ortholog_iccs_score, mouse_ortholog_iccs_score)
-                        if top_ortholog_iccs_score == 0:
-                            top_ortholog_iccs_rank = len(iccs_score_list)+1
-                        else:
-                            top_ortholog_iccs_rank = iccs_score_list.index(top_ortholog_iccs_score)+1
-                        #top_ortholog_iccs_rank = min(zebrafish_ortholog_iccs_rank, mouse_ortholog_iccs_rank)
+                        #if top_ortholog_iccs_score == 0:
+                            #top_ortholog_iccs_rank = len(iccs_score_list)+1
+                        #else:
+                            #top_ortholog_iccs_rank = iccs_score_list.index(top_ortholog_iccs_score)+1
+                        top_ortholog_iccs_rank = min(zebrafish_ortholog_iccs_rank, mouse_ortholog_iccs_rank)
 
                         top_ortholog_sim_ic_score = max(zebrafish_ortholog_sim_ic_score, mouse_ortholog_sim_ic_score)
-                        if top_ortholog_sim_ic_score == 0:
-                            top_ortholog_sim_ic_rank = len(sim_ic_score_list)+1
-                        else:
-                            top_ortholog_sim_ic_rank = sim_ic_score_list.index(top_ortholog_sim_ic_score)+1
-                        #top_ortholog_sim_ic_rank = min(zebrafish_ortholog_sim_ic_rank, mouse_ortholog_sim_ic_rank)
+                        #if top_ortholog_sim_ic_score == 0:
+                            #top_ortholog_sim_ic_rank = len(sim_ic_score_list)+1
+                        #else:
+                            #top_ortholog_sim_ic_rank = sim_ic_score_list.index(top_ortholog_sim_ic_score)+1
+                        top_ortholog_sim_ic_rank = min(zebrafish_ortholog_sim_ic_rank, mouse_ortholog_sim_ic_rank)
 
                         top_ortholog_sim_j_score = max(zebrafish_ortholog_sim_j_score, mouse_ortholog_sim_j_score)
-                        if top_ortholog_sim_j_score == 0:
-                            top_ortholog_sim_j_rank = len(sim_j_score_list)+1
-                        else:
-                            top_ortholog_sim_j_rank = sim_j_score_list.index(top_ortholog_sim_j_score)+1
-                        #top_ortholog_sim_j_rank = min(zebrafish_ortholog_sim_j_rank, mouse_ortholog_sim_j_rank)
+                        #if top_ortholog_sim_j_score == 0:
+                            #top_ortholog_sim_j_rank = len(sim_j_score_list)+1
+                        #else:
+                            #top_ortholog_sim_j_rank = sim_j_score_list.index(top_ortholog_sim_j_score)+1
+                        top_ortholog_sim_j_rank = min(zebrafish_ortholog_sim_j_rank, mouse_ortholog_sim_j_rank)
 
 
                         top_owlsim_max_ic_score = max(top_ldo_max_ic_score, top_ortholog_max_ic_score)
-                        if top_owlsim_max_ic_score == 0:
-                            top_owlsim_max_ic_rank = len(max_ic_score_list)+1
-                        else:
-                            top_owlsim_max_ic_rank = max_ic_score_list.index(top_owlsim_max_ic_score)+1
-                        #top_owlsim_max_ic_rank = min(top_ldo_max_ic_rank, top_ortholog_max_ic_rank)
+                        #if top_owlsim_max_ic_score == 0 and min():
+                            #top_owlsim_max_ic_rank = len(max_ic_score_list)+1
+                        #else:
+                            #top_owlsim_max_ic_rank = max_ic_score_list.index(top_owlsim_max_ic_score)+1
+                        top_owlsim_max_ic_rank = min(top_ldo_max_ic_rank, top_ortholog_max_ic_rank)
 
                         top_owlsim_iccs_score = max(top_ldo_iccs_score, top_ortholog_iccs_score)
-                        if top_owlsim_iccs_score == 0:
-                            top_owlsim_iccs_rank = len(iccs_score_list)+1
-                        else:
-                            top_owlsim_iccs_rank = iccs_score_list.index(top_owlsim_iccs_score)+1
-                        #top_owlsim_iccs_rank = min(top_ldo_iccs_rank, top_ortholog_iccs_rank)
+                        #if top_owlsim_iccs_score == 0:
+                            #top_owlsim_iccs_rank = len(iccs_score_list)+1
+                        #else:
+                            #top_owlsim_iccs_rank = iccs_score_list.index(top_owlsim_iccs_score)+1
+                        top_owlsim_iccs_rank = min(top_ldo_iccs_rank, top_ortholog_iccs_rank)
 
                         top_owlsim_sim_ic_score = max(top_ldo_sim_ic_score, top_ortholog_sim_ic_score)
-                        if top_owlsim_sim_ic_score == 0:
-                            top_owlsim_sim_ic_rank = len(sim_ic_score_list)+1
-                        else:
-                            top_owlsim_sim_ic_rank = sim_ic_score_list.index(top_owlsim_sim_ic_score)+1
-                        #top_owlsim_sim_ic_rank = min(top_ldo_sim_ic_rank, top_ortholog_sim_ic_rank)
+                        #if top_owlsim_sim_ic_score == 0:
+                            #top_owlsim_sim_ic_rank = len(sim_ic_score_list)+1
+                        #else:
+                            #top_owlsim_sim_ic_rank = sim_ic_score_list.index(top_owlsim_sim_ic_score)+1
+                        top_owlsim_sim_ic_rank = min(top_ldo_sim_ic_rank, top_ortholog_sim_ic_rank)
 
                         top_owlsim_sim_j_score = max(top_ldo_sim_j_score, top_ortholog_sim_j_score)
-                        if top_owlsim_sim_j_score == 0:
-                            top_owlsim_sim_j_rank = len(sim_j_score_list)+1
-                        else:
-                            top_owlsim_sim_j_rank = sim_j_score_list.index(top_owlsim_sim_j_score)+1
-                        #top_owlsim_sim_j_rank = min(top_ldo_sim_j_rank, top_ortholog_sim_j_rank)
+                        #if top_owlsim_sim_j_score == 0:
+                            #top_owlsim_sim_j_rank = len(sim_j_score_list)+1
+                        #else:
+                            #top_owlsim_sim_j_rank = sim_j_score_list.index(top_owlsim_sim_j_score)+1
+                        top_owlsim_sim_j_rank = min(top_ldo_sim_j_rank, top_ortholog_sim_j_rank)
 
 
                         top_ldo_phenolog_max_score = max(zebrafish_ldo_phenolog_max_score, mouse_ldo_phenolog_max_score)
