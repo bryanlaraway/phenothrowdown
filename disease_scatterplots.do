@@ -2,11 +2,42 @@
 Author: Bryan Laraway
 */
 
-/* Laptop file location */
+/* Laptop file locations */
 insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_260530.csv"
 
-/* Desktop file location */
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_157900.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_167400.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_260530.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_272120.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_305400.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_614592.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_84.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_110.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_478.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_791.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_904.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_1873.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_2812.csv"
+insheet using "/Users/larawayb/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_46348.csv"
+
+/* Desktop file locations */
 insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_260530.csv"
+
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_157900.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_167400.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_260530.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_272120.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_395400.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/OMIM_6145920.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_84.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_110.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_478.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_791.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_904.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_1873.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_2812.csv"
+insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/out/scatterplot_data/ORPHANET_46348.csv"
+
 
 
 twoway (scatter max_ic_score phenolog_max_score), name(maxICvsPhenologMax) title("maxIC vs Phenolog Max Score") ytitle(Max IC) xtitle(Phenolog Max Score) 

@@ -1756,7 +1756,8 @@ class main():
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                     for gene_candidate_id in top_20_max_ic:
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        max_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'], 2))+')'
+                        #max_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'], 2))+')'
+                        max_ic = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['maxIC'])+')'
                         #output_row = (gene_candidate_id, gene_candidate_label, max_ic)
                         if re.match('MGI:.*', gene_candidate_id):
                             species = '[Mouse]'
@@ -1779,7 +1780,8 @@ class main():
                             print('Species not found.')
                             species = 'Unknown'
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
+                        #iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
+                        iccs = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'])+')'
                         #output_row = (gene_candidate_id, gene_candidate_label, iccs)
                         output_row = (gene_candidate_label, iccs, species)
                         csvwriter.writerow(output_row)
@@ -1794,7 +1796,8 @@ class main():
                             print('Species not found.')
                             species = 'Unknown'
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
+                        #sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
+                        sim_ic = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'])+')'
                         #output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
                         output_row = (gene_candidate_label, sim_ic, species)
                         csvwriter.writerow(output_row)
@@ -1809,7 +1812,8 @@ class main():
                             print('Species not found.')
                             species = 'Unknown'
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
+                        #sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
+                        sim_j = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'])+')'
                         #output_row = (gene_candidate_id, gene_candidate_label, sim_j)
                         output_row = (gene_candidate_label, sim_j, species)
                         csvwriter.writerow(output_row)
@@ -3754,11 +3758,11 @@ class main():
                         panther_id = gene_to_ortholog_hash[x]
                     except:
                         if re.match('MGI:.*', x):
-                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_mouse.txt')
+                            panther_id = self.get_ortholog(x, 'inter/panther/panther_mouse.txt')
                         elif re.match('ZFIN:.*', x):
-                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_zebrafish.txt')
+                            panther_id = self.get_ortholog(x, 'inter/panther/panther_zebrafish.txt')
                         elif re.match('NCBIGene:.*', x):
-                            panther_id =  self.get_ortholog(x, 'inter/panther/panther_human.txt')
+                            panther_id = self.get_ortholog(x, 'inter/panther/panther_human.txt')
                     if panther_id != 'fail' and panther_id not in orthogroup_to_gene_hash:
                         orthogroup_to_gene_hash[panther_id] = [x]
                     elif panther_id != 'fail' and x not in orthogroup_to_gene_hash[panther_id]:
@@ -3796,7 +3800,8 @@ class main():
                         gene_candidate_labels = []
                         for x in gene_candidate_ids:
                             gene_candidate_labels.append(gene_id_to_label_hash[x])
-                        score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        #score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        score = '('+str(max_phenotype_gene_candidate_hash[orthogroup_candidate_id])+')'
                         output_row =  (gene_candidate_ids, gene_candidate_labels, score)
                         #output_row =  (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
                         csvwriter.writerow(output_row)
@@ -3807,7 +3812,8 @@ class main():
                         gene_candidate_labels = []
                         for x in gene_candidate_ids:
                             gene_candidate_labels.append(gene_id_to_label_hash[x])
-                        score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        #score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        score = '('+str(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id])+')'
                         output_row =  (gene_candidate_ids, gene_candidate_labels, score)
                         #output_row = (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
                         csvwriter.writerow(output_row)
@@ -3823,7 +3829,8 @@ class main():
                         gene_candidate_labels = []
                         for x in gene_candidate_ids:
                             gene_candidate_labels.append(gene_id_to_label_hash[x])
-                        score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        #score = '('+str(round(max_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        score = '('+str(max_phenotype_gene_candidate_hash[orthogroup_candidate_id])+')'
                         output_row =  (gene_candidate_ids, gene_candidate_labels, score)
                         #output_row =  (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
                         csvwriter.writerow(output_row)
@@ -3834,8 +3841,9 @@ class main():
                         gene_candidate_labels = []
                         for x in gene_candidate_ids:
                             gene_candidate_labels.append(gene_id_to_label_hash[x])
-                        score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
-                        output_row =  (gene_candidate_ids, gene_candidate_labels, score)
+                        #score = '('+str(round(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id], 2))+')'
+                        score = '('+str(additive_phenotype_gene_candidate_hash[orthogroup_candidate_id])+')'
+                        output_row = (gene_candidate_ids, gene_candidate_labels, score)
                         #output_row = (gene_candidate_labels, score) #(gene_candidate_ids, gene_candidate_labels, score)
                         csvwriter.writerow(output_row)
                 if i not in phenolog_disease_list:
@@ -3914,14 +3922,16 @@ class main():
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                     for gene_candidate_id in max_phenotype_gene_candidate_hash:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        #score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        score = '('+str(max_phenotype_gene_candidate_hash[gene_candidate_id])+')'
                         output_row = (gene_candidate_id, score)
                         csvwriter.writerow(output_row)
                 with open(human_total_additive_outfile, 'w', newline='') as additive_csvfile:
                     csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
                     for gene_candidate_id in additive_phenotype_gene_candidate_hash:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        #score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        score = '('+str(additive_phenotype_gene_candidate_hash[gene_candidate_id])+')'
                         output_row = (gene_candidate_id, score)
                         csvwriter.writerow(output_row)
 
@@ -3932,14 +3942,16 @@ class main():
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
                     for gene_candidate_id in top_20_max:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        #score = '('+str(round(max_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        score = '('+str(max_phenotype_gene_candidate_hash[gene_candidate_id])+')'
                         output_row = (gene_candidate_id, score)
                         csvwriter.writerow(output_row)
                 with open(human_additive_outfile, 'w', newline='') as additive_csvfile:
                     csvwriter = csv.writer(additive_csvfile, delimiter='\t', quotechar='\"')
                     for gene_candidate_id in top_20_additive:
                         #gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
-                        score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        #score = '('+str(round(additive_phenotype_gene_candidate_hash[gene_candidate_id], 2))+')'
+                        score = '('+str(additive_phenotype_gene_candidate_hash[gene_candidate_id])+')'
                         output_row = (gene_candidate_id, score)
                         csvwriter.writerow(output_row)
             except:
@@ -6147,12 +6159,12 @@ class main():
             add_score_list.sort(reverse=True)
 
             for gene_candidate_id in disease_gene_score_hash:
-                max_ic_rank = max_ic_score_list.index(disease_gene_score_hash[gene_candidate_id]['maxIC'])
-                iccs_rank = iccs_score_list.index(disease_gene_score_hash[gene_candidate_id]['ICCS'])
-                sim_ic_rank = sim_ic_score_list.index(disease_gene_score_hash[gene_candidate_id]['simIC'])
-                sim_j_rank = sim_j_score_list.index(disease_gene_score_hash[gene_candidate_id]['simJ'])
-                max_rank = max_score_list.index(disease_gene_score_hash[gene_candidate_id]['Max'])
-                add_rank = add_score_list.index(disease_gene_score_hash[gene_candidate_id]['Add'])
+                max_ic_rank = max_ic_score_list.index(disease_gene_score_hash[gene_candidate_id]['maxIC'])+1
+                iccs_rank = iccs_score_list.index(disease_gene_score_hash[gene_candidate_id]['ICCS'])+1
+                sim_ic_rank = sim_ic_score_list.index(disease_gene_score_hash[gene_candidate_id]['simIC'])+1
+                sim_j_rank = sim_j_score_list.index(disease_gene_score_hash[gene_candidate_id]['simJ'])+1
+                max_rank = max_score_list.index(disease_gene_score_hash[gene_candidate_id]['Max'])+1
+                add_rank = add_score_list.index(disease_gene_score_hash[gene_candidate_id]['Add'])+1
 
 
                 disease_gene_rank_hash[gene_candidate_id] = {'maxIC_rank' : max_ic_rank, 'simJ_rank' : sim_j_rank, 'ICCS_rank' : iccs_rank, 'simIC_rank' : sim_ic_rank, 'Max_rank' : max_rank, 'Add_rank' : add_rank}
