@@ -6139,12 +6139,12 @@ class main():
                 max_score_list.append(disease_gene_score_hash[gene_candidate_id]['Max'])
                 add_score_list.append(disease_gene_score_hash[gene_candidate_id]['Add'])
 
-            max_ic_score_list.sort()
-            iccs_score_list.sort()
-            sim_ic_score_list.sort()
-            sim_j_score_list.sort()
-            max_score_list.sort()
-            add_score_list.sort()
+            max_ic_score_list.sort(reverse=True)
+            iccs_score_list.sort(reverse=True)
+            sim_ic_score_list.sort(reverse=True)
+            sim_j_score_list.sort(reverse=True)
+            max_score_list.sort(reverse=True)
+            add_score_list.sort(reverse=True)
 
             for gene_candidate_id in disease_gene_score_hash:
                 max_ic_rank = max_ic_score_list.index(disease_gene_score_hash[gene_candidate_id]['maxIC'])
