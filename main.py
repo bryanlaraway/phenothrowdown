@@ -1739,7 +1739,16 @@ class main():
 
         #print(human_disease_gene_prediction_hash)
         #disease_id = 'ORPHANET:2824'
-        for disease_id in disease_subset:
+
+
+        human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
+        with open(human_disease_list_file, 'rb') as handle:
+            human_disease_list = pickle.load(handle)
+        #for i in disease_subset:
+        print(len(human_disease_list))
+
+        #for disease_id in disease_subset:
+        for disease_id in human_disease_list:
             try:
                 disease_id = re.sub(':', '_', disease_id)
                 print('Processing disease ID '+str(disease_id)+'.')
@@ -3425,6 +3434,15 @@ class main():
         phenotype_id_to_label_hash.update(zebrafish_phenotype_id_to_label_hash)
         nearest_neighbor_hash = {}
 
+        phenotype_exclusion_subset = ['HP:0003581', 'HP:0003831', 'HP:0011463', 'HP:0003577', 'HP:0003829',
+                                      'HP:0003593', 'HP:0003587', 'HP:0003621', 'HP:0003584', 'HP:0003596',
+                                      'HP:0003623', 'HP:0003680', 'HP:0003674', 'HP:0003812', 'HP:0003676',
+                                      'HP:0003677', 'HP:0003828', 'HP:0011462', 'HP:0003743', 'HP:0001472',
+                                      'HP:0001425', 'HP:0012275', 'HP:0001423', 'HP:0010982', 'HP:0001417',
+                                      'HP:0001466', 'HP:0003745', 'HP:0003744', 'HP:0001419', 'HP:0010984',
+                                      'HP:0001426', 'HP:0000007', 'HP:0001450', 'HP:0001475', 'HP:0001470',
+                                      'HP:0001444', 'HP:0001427', 'HP:0000006', 'HP:0001428', 'HP:0001452',
+                                      'HP:0001442']
 
         phenotype_ortholog_prediction_matrix = numpy.zeros((len(phenotype_list), len(ortholog_list)))
 
@@ -3449,7 +3467,7 @@ class main():
                     break
 
                 test_distance_slice = distance_matrix[y]
-
+                #TODO: Adjust this code so that all non-organismal phenotypes are dropped from HPO.
                 # The following code will set distance values to zero in the test distance slice
                 # if the matching phenotype is from the same species as the test phenotype.
                 for x in range(0, len(phenotype_list)):
@@ -3457,6 +3475,8 @@ class main():
                         match_phenotype_id = phenotype_list[x]
                         match_phenotype_prefix = re.sub(':.*', '', match_phenotype_id)
                         if phenotype_filter == match_phenotype_prefix:
+                            test_distance_slice[x] = -1
+                        if match_phenotype_id in phenotype_exclusion_subset:
                             test_distance_slice[x] = -1
 
                 intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
@@ -3668,6 +3688,16 @@ class main():
 
         # Does it make sense to drop out the genes that are currently associated with the disease of interest?
 
+        phenotype_exclusion_subset = ['HP:0003581', 'HP:0003831', 'HP:0011463', 'HP:0003577', 'HP:0003829',
+                                      'HP:0003593', 'HP:0003587', 'HP:0003621', 'HP:0003584', 'HP:0003596',
+                                      'HP:0003623', 'HP:0003680', 'HP:0003674', 'HP:0003812', 'HP:0003676',
+                                      'HP:0003677', 'HP:0003828', 'HP:0011462', 'HP:0003743', 'HP:0001472',
+                                      'HP:0001425', 'HP:0012275', 'HP:0001423', 'HP:0010982', 'HP:0001417',
+                                      'HP:0001466', 'HP:0003745', 'HP:0003744', 'HP:0001419', 'HP:0010984',
+                                      'HP:0001426', 'HP:0000007', 'HP:0001450', 'HP:0001475', 'HP:0001470',
+                                      'HP:0001444', 'HP:0001427', 'HP:0000006', 'HP:0001428', 'HP:0001452',
+                                      'HP:0001442']
+
         phenolog_disease_list = []
 
         with open('inter/phenolog_gene_cand/nearest_neighbor_hash.txt', 'rb') as handle:
@@ -3742,6 +3772,10 @@ class main():
                 gene_list = []
                 cleared_phenotype_ids = []
                 nearest_neighbor_phenotypes = []
+                for x in phenotype_ids:
+                    if x in phenotype_exclusion_subset:
+                        phenotype_ids.remove(x)
+
                 for x in phenotype_ids:
                     try:
                         nearest_neighbor_phenotypes = nearest_neighbor_hash[x]
@@ -3868,6 +3902,16 @@ class main():
         # combine the gene candidate predictions (selectively update the score if it is greater than the prior score),
         # and then return the top 20 scoring gene candidates.
 
+        phenotype_exclusion_subset = ['HP:0003581', 'HP:0003831', 'HP:0011463', 'HP:0003577', 'HP:0003829',
+                                      'HP:0003593', 'HP:0003587', 'HP:0003621', 'HP:0003584', 'HP:0003596',
+                                      'HP:0003623', 'HP:0003680', 'HP:0003674', 'HP:0003812', 'HP:0003676',
+                                      'HP:0003677', 'HP:0003828', 'HP:0011462', 'HP:0003743', 'HP:0001472',
+                                      'HP:0001425', 'HP:0012275', 'HP:0001423', 'HP:0010982', 'HP:0001417',
+                                      'HP:0001466', 'HP:0003745', 'HP:0003744', 'HP:0001419', 'HP:0010984',
+                                      'HP:0001426', 'HP:0000007', 'HP:0001450', 'HP:0001475', 'HP:0001470',
+                                      'HP:0001444', 'HP:0001427', 'HP:0000006', 'HP:0001428', 'HP:0001452',
+                                      'HP:0001442']
+
         with open('inter/hpo/human_gene_id_to_label_hash.txt', 'rb') as handle:
             human_gene_id_to_label_hash = pickle.load(handle)
         with open('inter/mgi/mouse_gene_id_to_label_hash.txt', 'rb') as handle:
@@ -3910,6 +3954,12 @@ class main():
                 additive_phenotype_gene_candidate_hash = {}
                 phenotype_counter = 0
                 cleared_phenotype_ids = []
+
+                for x in phenotype_ids:
+                    if x in phenotype_exclusion_subset:
+                        phenotype_ids.remove(x)
+
+
                 for x in phenotype_ids:
                     try:
                         test_hash = phenolog_ortholog_prediction_hash[x]
@@ -7172,7 +7222,7 @@ read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHAN
 
 #print(str(len(read_only_disease_subset)))
 #main.assemble_owlsim_top_20_gene_candidates()
-main.assemble_phenolog_gene_candidates_for_diseases()
+#main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 #main.assemble_complete_disease_list()
@@ -7195,7 +7245,7 @@ main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_ROC_score_lists_with_rankings()
 ##main.parse_scores_for_ROC_analysis()
 
-#main.assemble_data_for_scatterplots()
+main.assemble_data_for_scatterplots()
 
 
 elapsed_time = time.time() - start_time
@@ -7211,3 +7261,7 @@ print('Processing completed in '+str(elapsed_time)+' seconds.')
 
 #http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0002169&b=ZP:0000411&b=ZP:0002713&b=ZP:&b=ZP:&b=ZP:0000692&b=ZP:0000054&b=ZP:0000043&b=ZP:0000038&b=ZP:0000737&b=ZP:&b=ZP:0001192&b=ZP:&b=3300
 # Local server URL format: http://0.0.0.0:9031/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
+
+#Test URL for OMIM:167400
+#http://owlsim.crbs.ucsd.edu/compareAttributeSets?a=MP:0002169&b=HP:0000006&b=HP:0000632&b=HP:0001649&b=HP:0001662&b=HP:0007328&b=HP:0200025&b=HP:0200026&b=HP:0003623
+#http://0.0.0.0:9031/compareAttributeSets?a=MP:0010864&b=HP:0001263&b=HP:0000878
