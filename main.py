@@ -3715,9 +3715,15 @@ class main():
         with open(human_file, 'rb') as handle:
             human_disease_phenotype_hash = pickle.load(handle)
 
-        disease_subset = read_only_disease_subset #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400'] #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
+        #disease_subset = read_only_disease_subset #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400'] #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
+        disease_subset = human_disease_phenotype_hash
 
-        for i in disease_subset:
+        human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
+        with open(human_disease_list_file, 'rb') as handle:
+            human_disease_list = pickle.load(handle)
+        #for i in disease_subset:
+        print(len(human_disease_list))
+        for i in human_disease_list:
             try:
                 i = re.sub(':', '_', i)
                 print('Processing disease ID '+str(i)+'.')
@@ -3883,7 +3889,12 @@ class main():
 
         disease_subset = read_only_disease_subset #['ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400']
 
-        for i in disease_subset:
+        human_disease_list_file = 'out/owlsim/human_disease_gene_candidate_predictions/human_disease_list.txt'
+        with open(human_disease_list_file, 'rb') as handle:
+            human_disease_list = pickle.load(handle)
+        #for i in disease_subset:
+        print(len(human_disease_list))
+        for i in human_disease_list:
             try:
                 i = re.sub(':', '_', i)
                 print('Processing disease ID '+str(i)+'.')
@@ -7161,7 +7172,7 @@ read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHAN
 
 #print(str(len(read_only_disease_subset)))
 #main.assemble_owlsim_top_20_gene_candidates()
-#main.assemble_phenolog_gene_candidates_for_diseases()
+main.assemble_phenolog_gene_candidates_for_diseases()
 #main.assemble_phenolog_orthogroup_candidates_for_diseases()
 
 #main.assemble_complete_disease_list()
@@ -7184,7 +7195,7 @@ read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHAN
 #main.assemble_ROC_score_lists_with_rankings()
 ##main.parse_scores_for_ROC_analysis()
 
-main.assemble_data_for_scatterplots()
+#main.assemble_data_for_scatterplots()
 
 
 elapsed_time = time.time() - start_time
