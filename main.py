@@ -3479,6 +3479,8 @@ class main():
                         if match_phenotype_id in phenotype_exclusion_subset:
                             test_distance_slice[x] = -1
 
+
+                #NOTE: If you want to adjust the number of nearest neighbors, change it here.
                 intermediate_nearest_neighbors = heapq.nlargest(11, range(len(test_distance_slice)), test_distance_slice.take)
                 phenotype_id = phenotype_list[y]
                 phenotype_label = phenotype_id_to_label_hash[phenotype_id]
@@ -3567,8 +3569,7 @@ class main():
             pickle.dump(phenotype_ortholog_candidate_hash, handle)
 
         return
-    #TODO: Write function for ranking gene candidate predictions using phenotype_ortholog_candidate_hash.
-    #TODO: Write function for assembling multiple gene candidate predictions for disease/genotype phenotypic profiles.
+
 
     def assemble_model_level_phenolog_gene_candidate_predictions(self):
         """
@@ -4022,6 +4023,269 @@ class main():
 
     ####### OMIM ASSERTED GENE PROCESSING #######
 
+    def get_morbid_map_disease_count(self):
+        disease_list = []
+        with open('raw/omim/morbidmap', 'r', encoding="iso-8859-1") as csvfile2:
+            filereader = csv.reader(csvfile2, delimiter='|', quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                (disorder_number, gene_symbol, gene_mim_number, cytogenetic_location) = row
+                if disorder_number not in disease_list:
+                    disease_list.append(disorder_number)
+        print('Total number of morbid map diseases: '+str(len(disease_list))+'.')
+
+        return
+
+
+    def get_disease_count_from_results(self):
+        disease_list = []
+        with open('inter/omim/morbid_disease_predictions_with_rankings_k10.csv', 'r', encoding="iso-8859-1") as csvfile2:
+            filereader = csv.reader(csvfile2, quotechar='\"')
+            next(filereader, None)
+            for row in filereader:
+                (disease_gene_association_id, disease_id, gene_id,
+                zebrafish_ldo_max_ic_score, zebrafish_ldo_max_ic_rank,
+                zebrafish_ldo_iccs_score, zebrafish_ldo_iccs_rank,
+                zebrafish_ldo_sim_ic_score, zebrafish_ldo_sim_ic_rank,
+                zebrafish_ldo_sim_j_score, zebrafish_ldo_sim_j_rank,
+                zebrafish_ortholog_max_ic_score, zebrafish_ortholog_max_ic_rank,
+                zebrafish_ortholog_iccs_score, zebrafish_ortholog_iccs_rank,
+                zebrafish_ortholog_sim_ic_score, zebrafish_ortholog_sim_ic_rank,
+                zebrafish_ortholog_sim_j_score,zebrafish_ortholog_sim_j_rank,
+                top_zebrafish_max_ic_score, top_zebrafish_max_ic_rank,
+                top_zebrafish_iccs_score, top_zebrafish_iccs_rank,
+                top_zebrafish_sim_ic_score, top_zebrafish_sim_ic_rank,
+                top_zebrafish_sim_j_score, top_zebrafish_sim_j_rank,
+                mouse_ldo_max_ic_score, mouse_ldo_max_ic_rank,
+                mouse_ldo_iccs_score, mouse_ldo_iccs_rank,
+                mouse_ldo_sim_ic_score, mouse_ldo_sim_ic_rank,
+                mouse_ldo_sim_j_score, mouse_ldo_sim_j_rank,
+                mouse_ortholog_max_ic_score, mouse_ortholog_max_ic_rank,
+                mouse_ortholog_iccs_score, mouse_ortholog_iccs_rank,
+                mouse_ortholog_sim_ic_score, mouse_ortholog_sim_ic_rank,
+                mouse_ortholog_sim_j_score, mouse_ortholog_sim_j_rank,
+                top_mouse_max_ic_score, top_mouse_max_ic_rank,
+                top_mouse_iccs_score, top_mouse_iccs_rank,
+                top_mouse_sim_ic_score, top_mouse_sim_ic_rank,
+                top_mouse_sim_j_score, top_mouse_sim_j_rank,
+                top_ldo_max_ic_score, top_ldo_max_ic_rank,
+                top_ldo_iccs_score, top_ldo_iccs_rank,
+                top_ldo_sim_ic_score, top_ldo_sim_ic_rank,
+                top_ldo_sim_j_score , top_ldo_sim_j_rank,
+                top_ortholog_max_ic_score, top_ortholog_max_ic_rank,
+                top_ortholog_iccs_score, top_ortholog_iccs_rank,
+                top_ortholog_sim_ic_score, top_ortholog_sim_ic_rank,
+                top_ortholog_sim_j_score, top_ortholog_sim_j_rank,
+                top_owlsim_max_ic_score, top_owlsim_max_ic_rank,
+                top_owlsim_iccs_score, top_owlsim_iccs_rank,
+                top_owlsim_sim_ic_score, top_owlsim_sim_ic_rank,
+                top_owlsim_sim_j_score, top_owlsim_sim_j_rank,
+                zebrafish_ldo_phenolog_max_score, zebrafish_ldo_phenolog_max_rank,
+                zebrafish_ortholog_phenolog_max_score, zebrafish_ortholog_phenolog_max_rank,
+                mouse_ldo_phenolog_max_score, mouse_ldo_phenolog_max_rank,
+                mouse_ortholog_phenolog_max_score, mouse_ortholog_phenolog_max_rank,
+                zebrafish_ldo_phenolog_additive_score, zebrafish_ldo_phenolog_additive_rank,
+                zebrafish_ortholog_phenolog_additive_score, zebrafish_ortholog_phenolog_additive_rank,
+                mouse_ldo_phenolog_additive_score, mouse_ldo_phenolog_additive_rank,
+                mouse_ortholog_phenolog_additive_score, mouse_ortholog_phenolog_additive_rank,
+                top_zebrafish_phenolog_max_score, top_zebrafish_phenolog_max_rank,
+                top_zebrafish_phenolog_additive_score, top_zebrafish_phenolog_additive_rank,
+                top_mouse_phenolog_max_score, top_mouse_phenolog_max_rank,
+                top_mouse_phenolog_additive_score, top_mouse_phenolog_additive_rank,
+                top_ldo_phenolog_max_score, top_ldo_phenolog_max_rank,
+                top_ldo_phenolog_additive_score, top_ldo_phenolog_additive_rank,
+                top_ortholog_phenolog_max_score, top_ortholog_phenolog_max_rank,
+                top_ortholog_phenolog_additive_score, top_ortholog_phenolog_additive_rank,
+                top_phenolog_max_score, top_phenolog_max_rank,
+                top_phenolog_additive_score, top_phenolog_additive_rank, labels) = row
+                if disease_id not in disease_list:
+                    disease_list.append(disease_id)
+        print('Total number of morbid map diseases: '+str(len(disease_list))+'.')
+
+        return
+
+    def get_common_disease_count(self):
+
+        with open('inter/omim/common_disease_list.txt', 'rb') as handle:
+            disease_list = pickle.load(handle)
+
+        print('Total number of common OWLSim/Phenolog diseases: '+str(len(disease_list))+'.')
+
+        return
+
+    def get_common_genes_between_morbid_map_and_data_set(self):
+
+        with open('inter/zfin/zebrafish_gene_to_phenotype_hash.txt', 'rb') as handle:
+            zebrafish_gene_to_phenotype_hash = pickle.load(handle)
+        with open('inter/mgi/mouse_gene_phenotype_hash.txt', 'rb') as handle:
+            mouse_gene_to_phenotype_hash = pickle.load(handle)
+        with open('inter/panther/human_to_mouse_ldo_hash.txt', 'rb') as handle:
+            human_to_mouse_ldo_hash = pickle.load(handle)
+        with open('inter/panther/human_to_mouse_ortholog_hash.txt', 'rb') as handle:
+            human_to_mouse_ortholog_hash = pickle.load(handle)
+        with open('inter/panther/human_to_zebrafish_ldo_hash.txt', 'rb') as handle:
+            human_to_zebrafish_ldo_hash = pickle.load(handle)
+        with open('inter/panther/human_to_zebrafish_ortholog_hash.txt', 'rb') as handle:
+            human_to_zebrafish_ortholog_hash = pickle.load(handle)
+        with open('inter/omim/common_disease_list.txt', 'rb') as handle:
+            common_diseases_list = pickle.load(handle)
+        with open('inter/mgi/mgi_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
+            mgi_gene_to_ncbi_gene_hash = pickle.load(handle)
+        with open('inter/mgi/ncbi_gene_to_mgi_gene_hash.txt', 'rb') as handle:
+            ncbi_gene_to_mgi_gene_hash = pickle.load(handle)
+        with open('inter/zfin/zfin_gene_to_ncbi_gene_hash.txt', 'rb') as handle:
+            zfin_gene_to_ncbi_gene_hash = pickle.load(handle)
+        with open('inter/zfin/ncbi_gene_to_zfin_gene_hash.txt', 'rb') as handle:
+            ncbi_gene_to_zfin_gene_hash = pickle.load(handle)
+        with open('inter/omim/ncbi_gene_to_mim_hash.txt', 'rb') as handle:
+            ncbi_gene_to_mim_hash = pickle.load(handle)
+        with open('inter/omim/mim_to_ncbi_gene_hash.txt', 'rb') as handle:
+            mim_to_ncbi_gene_hash = pickle.load(handle)
+
+        zebrafish_ldo_count = 0
+        mouse_ldo_count = 0
+        zebrafish_ortholog_count = 0
+        mouse_ortholog_count = 0
+        total_mouse_count = 0
+        total_zebrafish_count = 0
+        overall_ldo_count = 0
+        overall_ortholog_count = 0
+        overall_match_count = 0
+
+        with open('inter/omim/morbid_disease_to_gene_trimmed.csv', 'r', encoding="iso-8859-1") as csvfile2:
+                filereader = csv.reader(csvfile2, delimiter='\t', quotechar='\"')
+                for row in filereader:
+                    (disease_gene_association_id, disease_id, gene_id) = row
+                    print('Processing disease '+str(disease_id)+'.')
+                    disease_id_underscored = re.sub(':', '_', disease_id)
+                    if disease_id_underscored not in common_diseases_list:
+                    #if disease_id_underscored != 'OMIM_601583':
+                        #print('Disease ID '+str(disease_id)+' not in common disease list.')
+                        continue
+                    else:
+
+
+                        # Get orthologs for the human NCBI Gene IDs and convert to mgi/zfin IDs.
+                        try:
+                            zebrafish_ncbi_gene_id = human_to_zebrafish_ldo_hash[gene_id]
+                            print('Zebrafish LDO found.')
+                            query_zfin_ldo_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_ncbi_gene_id]
+                            print('ZFIN gene ID: '+str(query_zfin_ldo_gene_id))
+                        except:
+                            print('No zebrafish LDO found.')
+
+                        try:
+                            zebrafish_gene_ids = human_to_zebrafish_ortholog_hash[gene_id]
+                            print('Zebrafish orthologs found.')
+                            if len(zebrafish_gene_ids) == 1:
+                                query_zfin_ortholog_gene_ids = [ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[0]]]
+                                print('ZFIN gene ID: '+str(query_zfin_ortholog_gene_ids[0]))
+                            elif len(zebrafish_gene_ids) > 1:
+                                print('More than one zebrafish ortholog found.')
+                                query_zfin_ortholog_gene_ids = []
+                                for z in zebrafish_gene_ids:
+                                    try:
+                                        zfin_gene_id = ncbi_gene_to_zfin_gene_hash[zebrafish_gene_ids[z]]
+                                        query_zfin_ortholog_gene_ids.append(zfin_gene_id)
+                                        print('ZFIN gene ID: '+str(zfin_gene_id))
+                                    except:
+                                        print('No ZFIN gene ID found for '+str(z)+'.')
+                            else:
+                                print('No zebrafish orthologs found!!!')
+                        except:
+                            print('No zebrafish orthologs found.')
+
+                        try:
+                            mouse_ncbi_gene_id = human_to_mouse_ldo_hash[gene_id]
+                            print('Mouse LDO found.')
+                            query_mgi_ldo_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_ncbi_gene_id]
+                            print('MGI gene ID: '+str(query_mgi_ldo_gene_id))
+                        except:
+                            print('No mouse LDO found.')
+                        try:
+                            mouse_gene_ids = human_to_mouse_ortholog_hash[gene_id]
+                            print('Mouse orthologs found.')
+                            if len(mouse_gene_ids) == 1:
+                                query_mgi_ortholog_gene_ids = [ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[0]]]
+                                print('MGI gene ID: '+str(query_mgi_ortholog_gene_ids[0]))
+                            elif len(mouse_gene_ids) > 1:
+                                print('More than one mouse ortholog found.')
+                                query_mgi_ortholog_gene_ids = []
+                                for z in mouse_gene_ids:
+                                    try:
+                                        mgi_gene_id = ncbi_gene_to_mgi_gene_hash[mouse_gene_ids[z]]
+                                        query_mgi_ortholog_gene_ids.append(mgi_gene_id)
+                                        print('MGI gene ID: '+str(mgi_gene_id))
+                                    except:
+                                        print('No MGI gene ID found for '+str(z)+'.')
+                            else:
+                                print('No mouse orthologs found!!!')
+                        except:
+                            print('No mouse orthologs found.')
+
+                        if query_zfin_ldo_gene_id == '' and query_zfin_ortholog_gene_ids == '' and query_mgi_ldo_gene_id == '' and query_mgi_ortholog_gene_ids == '':
+                            print('No mouse/zebrafish orthologs found for human gene '+str(gene_id)+'.')
+                            continue
+                        else:
+                            overall_match_flag = False
+                            overall_ortholog_flag = False
+                            overall_ldo_flag = False
+                            zebrafish_flag = False
+                            if query_zfin_ldo_gene_id in zebrafish_gene_to_phenotype_hash:
+                                zebrafish_ldo_count += 1
+                                zebrafish_flag = True
+                                overall_match_flag = True
+                                overall_ldo_flag = True
+                            ortholog_flag = False
+                            for x in query_zfin_ortholog_gene_ids:
+                                if x in zebrafish_gene_to_phenotype_hash:
+                                    ortholog_flag = True
+                                    zebrafish_flag = True
+                                    overall_match_flag = True
+                                    overall_ortholog_flag = True
+                            if ortholog_flag == True:
+                                zebrafish_ortholog_count += 1
+                            if zebrafish_flag == True:
+                                total_zebrafish_count += 1
+
+                            mouse_flag = False
+                            if query_mgi_ldo_gene_id in mouse_gene_to_phenotype_hash:
+                                mouse_ldo_count += 1
+                                mouse_flag = True
+                                overall_match_flag = True
+                                overall_ldo_flag = True
+                            ortholog_flag = False
+                            for x in query_mgi_ortholog_gene_ids:
+                                if x in mouse_gene_to_phenotype_hash:
+                                    ortholog_flag = True
+                                    mouse_flag = True
+                                    overall_match_flag = True
+                                    overall_ortholog_flag = True
+                            if ortholog_flag == True:
+                                mouse_ortholog_count += 1
+                            if mouse_flag == True:
+                                total_mouse_count += 1
+
+                            if overall_ldo_flag == True:
+                                overall_ldo_count += 1
+                            if overall_ortholog_flag == True:
+                                overall_ortholog_count += 1
+                            if overall_match_flag == True:
+                                overall_match_count += 1
+
+        print('Total zebrafish LDOs in data set: '+str(zebrafish_ldo_count))
+        print('Total zebrafish orthologs in data set: '+str(zebrafish_ortholog_count))
+        print('Total zebrafish record matches in data set: '+str(total_zebrafish_count))
+        print('Total mouse LDOs in data set: '+str(mouse_ldo_count))
+        print('Total mouse orthologs in data set: '+str(mouse_ortholog_count))
+        print('Total mouse record matches in data set: '+str(total_mouse_count))
+        print('Total LDOs in data set: '+str(overall_ldo_count))
+        print('Total orthologs in data set: '+str(overall_ortholog_count))
+        print('Total record matches in data set: '+str(overall_match_count))
+
+        return
+
+
     def create_zfin_gene_to_ncbi_hash(self):
 
         zfin_gene_to_ncbi_gene_hash = {}
@@ -4462,7 +4726,7 @@ class main():
                         csvwriter.writerow(output_row)
         return
 
-    def assemble_ROC_score_lists(self):
+    def assemble_rank_recall_score_lists(self):
         labels = 'TRUE'
         max_ic_list = []
         iccs_list = []
@@ -4931,7 +5195,7 @@ class main():
 
         return
 
-    def assemble_ROC_score_lists_with_rankings(self):
+    def assemble_rank_recall_score_lists_with_rankings(self):
         labels = 'TRUE'
         max_ic_list = []
         iccs_list = []
@@ -7215,7 +7479,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.assemble_gene_candidates_for_diseases_max_score()
 
 
-read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
+read_only_disease_subset = ['OMIM_114480', 'OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
 
 #with open('inter/omim/disorder_list.txt', 'rb') as handle:
     #read_only_disease_subset = pickle.load(handle)
@@ -7239,14 +7503,32 @@ read_only_disease_subset = ['OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHAN
 #main.convert_morbid_map_genes_to_orthologs()
 #main.create_ortholog_lookup_hashes()
 #main.assemble_owlsim_data_for_ROC()
-#main.assemble_ROC_score_lists()
+#main.assemble_rank_recall_score_lists()
 
-#main.assemble_ROC_score_lists_alternate()
-#main.assemble_ROC_score_lists_with_rankings()
+#main.assemble_rank_recall_score_lists_alternate()
+#main.assemble_rank_recall_score_lists_with_rankings()
 ##main.parse_scores_for_ROC_analysis()
 
+#main.assemble_data_for_scatterplots()
+
+
+#main.get_morbid_map_disease_count()
+
+
+
+
+##### RUN THIS SERIES FOR DIFFERENT DATA WITH ALTERED K-NEAREST NEIGHBORS #####
+
+#main.create_phenolog_gene_candidate_prediction_matrix()
+#main.assemble_phenolog_gene_candidate_predictions_for_phenotypes()
+#main.assemble_model_level_phenolog_gene_candidate_predictions()
+#main.assemble_phenolog_gene_candidates_for_diseases()
+#main.assemble_phenolog_orthogroup_candidates_for_diseases()
+#main.assemble_rank_recall_score_lists_with_rankings()
 main.assemble_data_for_scatterplots()
 
+
+#main.get_common_genes_between_morbid_map_and_data_set()
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')

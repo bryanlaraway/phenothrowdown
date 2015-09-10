@@ -10,8 +10,13 @@ insheet using "/Volumes/Time Machine/PycharmProjects/phenothrowdown/inter/omim/m
 
 
 gen ones = 1
-gen mouse_count = 4192
-gen zebrafish_count = 3800
+gen mouse_count = 3834
+gen mouse_ldo_count = 3834
+gen mouse_ortholog_count = 3699
+gen zebrafish_count = 1694
+gen zebrafish_ldo_count = 1662
+gen zebrafish_ortholog_count = 1026
+
 egen n = count(ones)
 
 /* Assembly of top OWLSim score graphs */
