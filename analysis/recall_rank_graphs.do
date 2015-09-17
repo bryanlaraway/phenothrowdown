@@ -741,6 +741,63 @@ twoway (line cumperc_42 top_mouse_phenolog_additive_rank, sort), name(top_mouse_
 
 
 
+count if top_owlsim_max_ic_score == . & top_owlsim_iccs_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_iccs_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_iccs_score == .
+
+count if top_owlsim_max_ic_score == . & top_owlsim_sim_ic_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_sim_ic_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_sim_ic_score == .
+
+count if top_owlsim_max_ic_score == . & top_owlsim_sim_j_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_sim_j_score != .
+count if top_owlsim_max_ic_score != . & top_owlsim_sim_j_score == .
+
+
+count if top_owlsim_iccs_score == . & top_owlsim_max_ic_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_max_ic_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_max_ic_score == .
+
+count if top_owlsim_iccs_score == . & top_owlsim_sim_ic_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_sim_ic_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_sim_ic_score == .
+
+count if top_owlsim_iccs_score == . & top_owlsim_sim_j_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_sim_j_score != .
+count if top_owlsim_iccs_score != . & top_owlsim_sim_j_score == .
+
+
+count if top_owlsim_sim_ic_score == . & top_owlsim_max_ic_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_max_ic_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_max_ic_score == .
+
+count if top_owlsim_sim_ic_score == . & top_owlsim_iccs_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_iccs_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_iccs_score == .
+
+count if top_owlsim_sim_ic_score == . & top_owlsim_sim_j_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_sim_j_score != .
+count if top_owlsim_sim_ic_score != . & top_owlsim_sim_j_score == .
+
+
+count if top_owlsim_sim_j_score == . & top_owlsim_max_ic_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_max_ic_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_max_ic_score == .
+
+count if top_owlsim_sim_j_score == . & top_owlsim_iccs_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_iccs_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_iccs_score == .
+
+count if top_owlsim_sim_j_score == . & top_owlsim_sim_ic_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_sim_ic_score != .
+count if top_owlsim_sim_j_score != . & top_owlsim_sim_ic_score == .
+
+
+count if top_phenolog_max_score == . & top_phenolog_additive_score != .
+count if top_phenolog_max_score != . & top_phenolog_additive_score != .
+count if top_phenolog_max_score != . & top_phenolog_additive_score == .
+
+
 
 
 /*

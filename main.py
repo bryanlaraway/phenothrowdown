@@ -1239,7 +1239,7 @@ class main():
                 #print(implicated_gene_ids)
                 if implicated_gene_ids == '' or implicated_gene_ids is None:
                     continue
-                if not re.match('.*,.*',implicated_gene_ids):
+                if not re.match('.*,.*', implicated_gene_ids):
                     print(implicated_gene_labels)
                     #print(genes)
                     if implicated_gene_ids not in mgi_gene_to_phenotype_hash:
@@ -1775,7 +1775,7 @@ class main():
                         else:
                             print('Species not found.')
                             species = 'Unknown'
-                        output_row = (gene_candidate_label, max_ic, species)
+                        output_row = (gene_candidate_id, gene_candidate_label, max_ic, species)
                         csvwriter.writerow(output_row)
                         #print('Gene candidate: '+str(gene_candidate)+', MaxIC:'+str(human_disease_gene_prediction_hash[gene_candidate]['maxIC']))
                 with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/iccs/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
@@ -1791,8 +1791,8 @@ class main():
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
                         #iccs = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'], 2))+')'
                         iccs = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['ICCS'])+')'
-                        #output_row = (gene_candidate_id, gene_candidate_label, iccs)
-                        output_row = (gene_candidate_label, iccs, species)
+                        output_row = (gene_candidate_id, gene_candidate_label, iccs)
+                        #output_row = (gene_candidate_label, iccs, species)
                         csvwriter.writerow(output_row)
                 with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simic/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
@@ -1807,8 +1807,8 @@ class main():
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
                         #sim_ic = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'], 2))+')'
                         sim_ic = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['simIC'])+')'
-                        #output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
-                        output_row = (gene_candidate_label, sim_ic, species)
+                        output_row = (gene_candidate_id, gene_candidate_label, sim_ic)
+                        #output_row = (gene_candidate_label, sim_ic, species)
                         csvwriter.writerow(output_row)
                 with open('out/owlsim/human_disease_gene_candidate_predictions/top_twenty_genes/simj/'+str(disease_id)+'.txt', 'w', newline='') as csvfile:
                     csvwriter = csv.writer(csvfile, delimiter='\t', quotechar='\"')
@@ -1823,8 +1823,8 @@ class main():
                         gene_candidate_label = gene_id_to_label_hash[gene_candidate_id]
                         #sim_j = '('+str(round(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'], 2))+')'
                         sim_j = '('+str(human_disease_gene_prediction_hash[gene_candidate_id]['simJ'])+')'
-                        #output_row = (gene_candidate_id, gene_candidate_label, sim_j)
-                        output_row = (gene_candidate_label, sim_j, species)
+                        output_row = (gene_candidate_id, gene_candidate_label, sim_j)
+                        #output_row = (gene_candidate_label, sim_j, species)
                         csvwriter.writerow(output_row)
                 owlsim_disease_list.append(disease_id)
             except:
@@ -6378,12 +6378,13 @@ class main():
 
         #disease_subset = ['OMIM_260530', 'OMIM_167400']
         disease_subset = read_only_disease_subset
-        disease_gene_score_hash = {}
-        disease_gene_rank_hash = {}
+
 
         #entity_b_hash = {'maxIC' : maxIC, 'simJ' : simJ, 'ICCS' : ICCS, 'simIC' : simIC}
 
         for disease_id in disease_subset:
+            disease_gene_score_hash = {}
+            disease_gene_rank_hash = {}
             with open('out/owlsim/human_disease_gene_candidate_predictions/all_genes/'+disease_id+'.txt', 'rb') as handle:
                 owlsim_score_hash = pickle.load(handle)
             phenolog_max_score = 0
@@ -7479,7 +7480,7 @@ print('INFO: Done processing mouse vs zebrafish random data set '+str(sys.argv[1
 #main.assemble_gene_candidates_for_diseases_max_score()
 
 
-read_only_disease_subset = ['OMIM_114480', 'OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
+read_only_disease_subset = ['OMIM_114500', 'OMIM_101600', 'OMIM_266300', 'OMIM_166710', 'OMIM_114480', 'OMIM_157900', 'OMIM_167400', 'OMIM_260530', 'ORPHANET_904', 'ORPHANET_84', 'ORPHANET_46348', 'OMIM_272120', 'ORPHANET_2812', 'ORPHANET_791', 'ORPHANET_478', 'ORPHANET_110', 'OMIM_614592', 'ORPHANET_1873', 'OMIM_305400', 'OMIM_157900']
 
 #with open('inter/omim/disorder_list.txt', 'rb') as handle:
     #read_only_disease_subset = pickle.load(handle)
@@ -7529,6 +7530,29 @@ main.assemble_data_for_scatterplots()
 
 
 #main.get_common_genes_between_morbid_map_and_data_set()
+'''
+phenotype_list = ['MP:0000445', 'MP:0000924', 'MP:0004350', 'MP:0008785', 'MP:0011410', 'MP:0010970', 'ZP:0007399', 'MP:0006400', 'MP:0009003', 'MP:0001019', 'MP:0001854', 'MP:0003419', 'MP:0006325', 'MP:0011087', 'MP:0004410', 'ZP:0000790', 'MP:0000088', 'MP:0006025', 'MP:0001732', 'MP:0005382', 'MP:0011085', 'ZP:0009826', 'MP:0000924', 'MP:0009479', 'MP:0009510', 'ZP:0004818', 'ZP:0005128', 'ZP:0005136', 'ZP:0005138', 'ZP:0010316', 'MP:0000537', 'MP:0000562', 'MP:0000564', 'MP:0000150', 'MP:0009743', 'MP:0005225', 'MP:0003675', 'ZP:0000148', 'MP:0000111', 'MP:0005371', 'ZP:0000153', 'MP:0000399', 'MP:0001051', 'ZP:0001178', 'ZP:0006744', 'MP:0000549', 'MP:0008278', 'MP:0000763', 'MP:0001788', 'MP:0004125', 'ZP:0005342', 'MP:0008856', 'MP:0005242', 'ZP:0004671', 'ZP:0008277', 'MP:0003842', 'MP:0008854', 'ZP:0004670', 'MP:0009345', 'MP:0011165', 'ZP:0007086', 'MP:0002349', 'MP:0004885', 'MP:0006389', 'MP:0006391', 'ZP:0000486', 'ZP:0002495', 'MP:0010970', 'ZP:0007399', 'MP:0003855', 'MP:0010911', 'MP:0001102', 'MP:0001051', 'MP:0009087', 'ZP:0007383', 'MP:0000497', 'MP:0000842', 'MP:0000843', 'MP:0001098', 'MP:0003617', 'MP:0004636', 'MP:0000088', 'MP:0004704', 'MP:0011087', 'MP:0005225', 'MP:0000564', 'MP:0000428', 'MP:0001732', 'MP:0003641', 'MP:0010402', 'ZP:0001457', 'ZP:0001556', 'ZP:0000153', 'MP:0011085', 'MP:0002841', 'MP:0010403', 'MP:0006198', 'MP:0010402', 'MP:0000274', 'MP:0004462', 'MP:0003675', 'MP:0011099', 'MP:0000914', 'MP:0000562', 'MP:0011108', 'MP:0001732', 'MP:0001293', 'MP:0000445', 'MP:0001300', 'MP:0011101', 'ZP:0006771', 'ZP:0006777', 'MP:0000980', 'MP:0000992', 'MP:0000995', 'MP:0000996', 'MP:0003301', 'MP:0003685', 'MP:0004034', 'MP:0004370', 'MP:0004214', 'MP:0002062', 'MP:0003958', 'ZP:0002358', 'MP:0000445', 'MP:0008525', 'MP:0001300', 'ZP:0000237', 'MP:0008066', 'ZP:0002633', 'MP:0010402', 'MP:0005358', 'MP:0003935', 'MP:0000088', 'MP:0011087', 'MP:0011099', 'MP:0000284', 'MP:0011085', 'MP:0001614', 'MP:0003675', 'ZP:0000479', 'MP:0003841', 'MP:0001699', 'ZP:0004805', 'MP:0009398', 'MP:0003855', 'MP:0003257', 'MP:0003705', 'MP:0000910', 'MP:0004667', 'MP:0000783', 'MP:0011085', 'MP:0011087', 'ZP:0001556', 'MP:0001406', 'MP:0000914', 'MP:0000111', 'MP:0001265', 'MP:0003631', 'MP:0001575', 'ZP:0001457', 'ZP:0001556', 'MP:0010402', 'ZP:0004860', 'MP:0001300', 'ZP:0000153', 'MP:0000111', 'MP:0000562', 'MP:0000107', 'MP:0000783', 'MP:0009906', 'ZP:0002794', 'MP:0009398', 'ZP:0001485', 'MP:0009784', 'ZP:0000486', 'ZP:0002495', 'MP:0009874', 'MP:0003097', 'MP:0003328', 'ZP:0001457', 'ZP:0001556', 'ZP:0003113', 'ZP:0004860', 'ZP:0008690', 'MP:0008856', 'MP:0005242', 'ZP:0002427', 'ZP:0008102', 'ZP:0004670', 'MP:0000788', 'MP:0002083', 'MP:0001732', 'MP:0001406', 'MP:0001265', 'MP:0011085', 'MP:0003631', 'MP:0000745', 'MP:0001513', 'MP:0001262', 'MP:0010996', 'MP:0012537', 'ZP:0010366', 'MP:0004346', 'MP:0004389', 'ZP:0009963', 'ZP:0001161', 'MP:0004376', 'MP:0000959', 'MP:0002758', 'MP:0000980', 'MP:0000992', 'MP:0000995', 'MP:0000996', 'MP:0003301', 'MP:0003685', 'MP:0004034', 'MP:0004370', 'MP:0004877', 'MP:0006165', 'MP:0009906', 'ZP:0001883', 'ZP:0001885', 'ZP:0001886', 'ZP:0001887', 'ZP:0001888', 'ZP:0001890', 'ZP:0001897', 'ZP:0001919', 'MP:0009398', 'ZP:0004253', 'ZP:0004256', 'ZP:0004257', 'ZP:0009328', 'ZP:0009329', 'ZP:0009330', 'MP:0000980', 'MP:0000992', 'MP:0000995', 'MP:0000996', 'MP:0000980', 'MP:0000992', 'MP:0000995', 'MP:0000996', 'MP:0003301', 'MP:0003685', 'MP:0004034', 'MP:0004370', 'MP:0006165', 'MP:0006210', 'MP:0000562', 'MP:0009743', 'MP:0000564', 'ZP:0001457', 'MP:0005225', 'ZP:0004860', 'ZP:0001556', 'MP:0000150', 'MP:0003675', 'ZP:0000148', 'MP:0010592', 'MP:0010620', 'MP:0005225', 'MP:0002349', 'MP:0004705', 'MP:0004885', 'MP:0009906', 'MP:0011362', 'ZP:0000824', 'ZP:0000496', 'ZP:0001485', 'MP:0006429', 'MP:0009570', 'MP:0004669', 'MP:0004708', 'MP:0010371', 'MP:0003855', 'MP:0001102', 'MP:0004638', 'ZP:0001494']
+print(len(phenotype_list))
+new_phenotype_list = []
+mouse_list = []
+zebrafish_list = []
+
+for x in phenotype_list:
+    if x not in new_phenotype_list:
+        new_phenotype_list.append(x)
+    if re.match('MP.*', x):
+        if x not in mouse_list:
+            mouse_list.append(x)
+    if re.match('ZP.*', x):
+        if x not in zebrafish_list:
+            zebrafish_list.append(x)
+print(new_phenotype_list)
+print(len(new_phenotype_list))
+print(mouse_list)
+print(len(mouse_list))
+print(zebrafish_list)
+print(len(zebrafish_list))
+'''
 
 elapsed_time = time.time() - start_time
 print('Processing completed in '+str(elapsed_time)+' seconds.')
