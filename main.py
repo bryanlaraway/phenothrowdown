@@ -801,64 +801,6 @@ class main():
         print('INFO: '+str(len(hpo_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
         return
 
-    def assemble_nif_animalqtl_phenotype_to_gene(self, limit=None):
-        """ Currently not used """
-        print('INFO:Assembling animalQTLdb phenotype to gene data.')
-        line_counter = 0
-        failure_counter = 0
-        raw = 'raw/animalqtldb/dvp.pr_nif_0000_02550_3'
-        inter = 'inter/aqtl/aqtl_pheno_gene_hash.txt'
-        aqtl_phenotype_to_gene_hash = {}
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            row_count = sum(1 for row in filereader)
-            row_count = row_count - 1
-            print(str(row_count)+' AQTL phenotype rows to process.')
-        if limit is not None:
-            print('Only parsing first '+str(limit)+' rows.')
-            row_count = limit
-        with open(raw, 'r', encoding="iso-8859-1") as csvfile:
-            filereader = csv.reader(csvfile, delimiter='\t', quotechar='\"')
-            next(filereader,None)
-            for row in filereader:
-                line_counter += 1
-                (e_uid, qtl_id, qtl_num, qtl_label, qtl_url, qtl_source, qtl_type_label, association_type_label,
-                 trait_category_label, trait_id, trait_num, trait_label, trait_url, vto_id, vto_label, cmo_id,
-                 cmo_label, pto_id, pto_label, gene_id, gene_label, gene_url, gene_num, gene_id_src, taxon_label,
-                 taxon_id, breed, organism, map_type, model, test_base, significance, genomic_location, chromosome,
-                 start_bp, stop_bp, frame, strand, score, genetic_location, peak_cm, range_cm, combo_flankmarkers,
-                 flankmarkers, flankmark_a1, flankmark_a2, flankmark_b1, flankmark_b2, peak_mark, publication_num,
-                 publication_url, publication_id, p_value, variance, bayes_value, f_statistics, lod_score,
-                 additive_effect, dominance_effect, likelihood_ratio, ls_means, v_uid, v_uuid, v_lastmodified) = row
-
-                print('INFO: Processing phenotype '+str(line_counter)+' out of '+str(row_count)+'.')
-
-                if trait_id == '' or trait_id is None:
-                    continue
-                elif gene_id == '' or gene_id is None:
-                    continue
-
-                print(trait_id)
-                #TODO: Separate by species.
-
-                #print(genes)
-                if trait_id not in aqtl_phenotype_to_gene_hash:
-                    aqtl_phenotype_to_gene_hash[trait_id] = [gene_id]
-                    #print(aqtl_phenotype_to_gene_hash[genotype_id])
-                else:
-                    aqtl_phenotype_to_gene_hash[trait_id].append(gene_id)
-                    #print(aqtl_phenotype_to_gene_hash[genotype_id])
-                    #print(len(aqtl_phenotype_to_gene_hash.keys()))
-                    print('Repeat phenotype: '+trait_id)
-                if limit is not None and line_counter > limit:
-                    break
-        #TODO: Need to filter out phenotypes that don't have any associated genes.
-        with open(inter, 'wb') as handle:
-            pickle.dump(aqtl_phenotype_to_gene_hash, handle)
-        print('INFO: Done assembling human phenotype to gene data.')
-        print('INFO: '+str(len(aqtl_phenotype_to_gene_hash.keys()))+' human phenotypes present.')
-        return
-
 
     ####### OWLSIM GENOTYPE/GENE TO PHENOTYPE #######
 
